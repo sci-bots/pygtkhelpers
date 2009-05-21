@@ -1,0 +1,6 @@
+.+\.pyc
+\..+\.swp
+MANIFEST
+dist
+build
+.coverage
