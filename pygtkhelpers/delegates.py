@@ -1,5 +1,5 @@
 
-
+import os
 
 import gobject, gtk
 
@@ -9,12 +9,33 @@ from .utils import gsignal
 
 
 def get_first_builder_window(builder):
+    """Get the first toplevel widget in a gtk.Builder hierarchy
+    """
     for obj in builder.get_objects():
         if isinstance(obj, gtk.Window):
             # first window
             return obj
 
+
 class BaseDelegate(gobject.GObject):
+    """Base delegate functionality.
+
+    This is abstract.
+
+    It uses hand-created, and gtk.Builder created ui's, and combinations of the
+    two, and is responsible for automatically loading ui files from resources,
+    and connecting signals.
+
+    Additionally, it is a gobject.GObject subclass, and so can be used with the
+    gsignal, and gproperty functions from pygtkhelpers.utils in order to add
+    property and signal functionality.
+
+    The abstract elements of this class are:
+
+        1. The way it gets a toplevel widget from a ui file
+        2. How it creates a default toplevel widget if one was not found in the
+           ui file, or no ui file is specified.
+    """
 
     builder_file = None
     builder_path = None
@@ -22,6 +43,7 @@ class BaseDelegate(gobject.GObject):
 
     def __init__(self):
         gobject.GObject.__init__(self)
+        self._props = {}
         self._toplevel = None
         self._load_builder()
         if self._toplevel is None:
@@ -30,17 +52,20 @@ class BaseDelegate(gobject.GObject):
         self.create_ui()
         self._connect_signals()
 
+    # Public API
+    def get_builder_toplevel(self, builder):
+        """Get the toplevel widget from a gtk.Builder file.
+        """
+        raise NotImplementedError
+
+    def create_default_toplevel(self):
+        raise NotImplementedError
+
     def _calculate_builder_path(self):
         if self.builder_path:
             self.builder_path = os.path.abspath(self.builder_path)
         elif self.builder_file:
             self.builder_path = resource_manager.get_resource('ui', self.builder_file)
-
-    def get_builder_toplevel(self, builder):
-        raise NotImplementedError
-
-    def create_default_toplevel(self):
-        raise NotImplementedError
 
     def _load_builder(self):
         self._calculate_builder_path()
@@ -64,7 +89,7 @@ class BaseDelegate(gobject.GObject):
     def _connect_signal(self, name):
         method = getattr(self, name)
         signal_type, widget_name, signal_name = self._parse_signal_handler(name)
-        widget = self.get_widget(widget_name)
+        widget = getattr(self, widget_name, None)
         if widget is None:
             raise LookupError('Widget named %s is not available.' )
         if signal_type == 'on':
@@ -79,18 +104,44 @@ class BaseDelegate(gobject.GObject):
                     '__' in  name):
                 yield name
 
-    def get_widget(self, name):
-        return getattr(self, name, None)
+    def _get_prop_handler(self, propname, action):
+        return getattr(self, '%s_property_%s' % (action, name), None)
+
+    # Private glib API for simple property handling
+    def do_get_property(self, name):
+        call = _get_prop_handler(name, 'set')
+        if call is not None:
+            return call()
+        else:
+            return self._props.get(name)
+
+    def do_set_property(self, name, value):
+        call = _get_prop_handler(name, 'set')
+        if call is not None:
+            call(value)
+        else:
+            self._props[name] = value
 
     def create_ui(self):
-        """
-        Create additional UI here.
+        """Create any UI by hand.
+
+        Override to create additional UI here.
+
+        This can contain any instance initialization, so for example mutation of
+        the gtk.Builder generated UI, or creating the UI in its entirety.
         """
 
 
 class SlaveView(BaseDelegate):
 
     def get_builder_toplevel(self, builder):
+        """Get the toplevel widget from a gtk.Builder file.
+
+        The slave view implementation first searches for the widget named as
+        self.toplevel_name (which defaults to "main". If this is missing, the
+        first toplevel widget is discovered in the Builder file, and it's
+        immediate child is used as the toplevel widget for the delegate.
+        """
         toplevel = builder.get_object(self.toplevel_name)
         if toplevel is None:
             toplevel = get_first_builder_window(builder).child
@@ -105,7 +156,16 @@ class SlaveView(BaseDelegate):
 class MainView(BaseDelegate):
 
     def get_builder_toplevel(self, builder):
+        """Get the toplevel widget from a gtk.Builder file.
+
+        The main view implementation first searches for the widget named as
+        self.toplevel_name (which defaults to "main". If this is missing, or not
+        a gtk.Window, the first toplevel window found in the gtk.Builder is
+        used.
+        """
         toplevel = builder.get_object(self.toplevel_name)
+        if not gobject.type_is_a(toplevel, gtk.Window):
+            toplevel = None
         if toplevel is None:
             toplevel = get_first_builder_window(builder)
         return toplevel

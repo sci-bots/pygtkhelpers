@@ -1,7 +1,7 @@
 
 from nose.tools import *
 
-import gtk
+import gtk, gobject
 
 from pygtkhelpers.delegates import SlaveView, MainView, BaseDelegate
 from pygtkhelpers.resources import resource_manager
@@ -45,6 +45,10 @@ class _Delegate5(SlaveView):
     def after_main__clicked(self, button):
         self.clicked = True
 
+class _Delegate6(MainView):
+
+    builder_file = 'test_slave.ui'
+    toplevel_name = 'label1'
 
 class _TestUIDelegate(SlaveView):
 
@@ -83,9 +87,13 @@ def test_ui_delegatge2():
     d = _TestUIDelegate2()
     assert hasattr(d, 'label1')
 
-def test_ui_delegatge2():
+def test_ui_delegatge3():
     d = _TestUIMainDelegate()
     assert hasattr(d, 'label1')
+
+def test_ui_main_delegate_bad_toplevel():
+    d = _Delegate6()
+    assert gobject.type_is_a(d._toplevel, gtk.Window)
 
 def test_signal_handle():
     d = _TestDelegate()
