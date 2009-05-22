@@ -5,7 +5,7 @@ import gtk, gobject
 
 from pygtkhelpers.delegates import SlaveView, MainView, BaseDelegate
 from pygtkhelpers.resources import resource_manager
-from pygtkhelpers.utils import refresh_gui
+from pygtkhelpers.utils import refresh_gui, gproperty
 
 resource_manager.add_resource('ui', 'tests/ui')
 
@@ -49,6 +49,17 @@ class _Delegate6(MainView):
 
     builder_file = 'test_slave.ui'
     toplevel_name = 'label1'
+
+class _Delegate7(SlaveView):
+
+    gproperty('a', int)
+    gproperty('b', int)
+
+    def set_property_b(self, value):
+        self._b = value
+
+    def get_property_b(self):
+        return 17
 
 class _TestUIDelegate(SlaveView):
 
@@ -107,5 +118,13 @@ def test_signal_after():
     refresh_gui()
     assert d.clicked
 
+def test_props():
+    d = _Delegate7()
+    assert d.get_property('a') == 0
+    d.set_property('a', 19)
+    assert d.get_property('a') == 19
+    d.set_property('b', 9)
+    assert d._b == 9
+    assert d.get_property('b') == 17
 
 
