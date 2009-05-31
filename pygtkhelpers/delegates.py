@@ -1,4 +1,16 @@
 
+"""
+    pygtkhelpers.delegates
+    ~~~~~~~~~~~~~~~~~~~~~~
+
+    Delegates, which combine some UI, some signals, some signal handlers, and
+    some properties,
+
+    :copyright: 2009 by Ali Afshar <aafshar@gmail.com>
+    :license: LGPL2 or later
+"""
+
+
 import os
 
 import gobject, gtk
