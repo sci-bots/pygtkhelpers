@@ -109,20 +109,18 @@ class BaseDelegate(gobject.GObject):
 
     # Private glib API for simple property handling
     def do_get_property(self, prop):
-        call = self._get_prop_handler(prop.name, 'set')
+        call = self._get_prop_handler(prop.name, 'get')
         if call is not None:
             return call()
         else:
-            return self._props.get(prop.name)
+            return self._props.get(prop.name, prop.default_value)
 
     def do_set_property(self, prop, value):
-        print prop, value, self._props
-        call = _get_prop_handler(prop.name, 'set')
+        call = self._get_prop_handler(prop.name, 'set')
         if call is not None:
             call(value)
         else:
             self._props[prop.name] = value
-        print prop, value, self._props
 
     def create_ui(self):
         """Create any UI by hand.

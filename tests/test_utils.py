@@ -24,7 +24,7 @@ def test_gproperty():
 
     class T2(gobject.GObject):
         __gtype_name__ = 'test2'
-        gproperty('a', int)
+        gproperty('a', int, default=0)
         assert_raises(TypeError, gproperty, 'b', bool)
         assert_raises(TypeError, gproperty, 'c', bool, default='a')
         assert_raises(TypeError, gproperty, 'd', bool, nick=1)
@@ -42,6 +42,7 @@ def test_gproperty():
         gproperty('p', object)
 
     t = T2()
+    print t
     assert t.get_property('a') == 0
 
 
