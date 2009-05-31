@@ -105,11 +105,11 @@ class BaseDelegate(gobject.GObject):
                 yield name
 
     def _get_prop_handler(self, propname, action):
-        return getattr(self, '%s_property_%s' % (action, name), None)
+        return getattr(self, '%s_property_%s' % (action, propname), None)
 
     # Private glib API for simple property handling
     def do_get_property(self, prop):
-        call = _get_prop_handler(prop.name, 'set')
+        call = self._get_prop_handler(prop.name, 'set')
         if call is not None:
             return call()
         else:
