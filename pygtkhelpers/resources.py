@@ -13,10 +13,10 @@ class ResourceManager(object):
 
     def get_resource(self, typename, filename):
         for resource in self.resources[typename]:
-            for name in os.listdir(resource):
-                if filename == name:
-                    return os.path.join(resource, filename)
-        raise ValueError('Resource does not exist.')
+            path = os.path.join(resource, filename)
+            if os.path.exists(path):
+                return path
+        raise LookupError('Resource does not exist.')
 
 
 resource_manager = ResourceManager()

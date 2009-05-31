@@ -13,5 +13,5 @@ def test_resource_find():
 
 def test_resource_nofind():
     resource_manager.add_resource('ui', 'tests/ui')
-    assert_raises(ValueError, resource_manager.get_resource, 'ui', 'test_bad_slave.ui')
+    assert_raises(LookupError, resource_manager.get_resource, 'ui', 'test_bad_slave.ui')
 
