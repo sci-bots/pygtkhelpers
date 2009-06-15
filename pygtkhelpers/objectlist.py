@@ -36,13 +36,21 @@ class ObjectList(gtk.TreeView):
         self.columns = tuple(columns)
         for col in columns:
             self.append_column(col.viewcolumn)
-    
+
+        self._id_to_iter = {}
+
     def __len__(self):
         return len(self.model)
+
+    def __contains__(self, item):
+        """identity based check of membership"""
+        return id(item) in self._id_to_iter
 
     def __getitem__(self, index):
         return self.model[index][0]
 
     def append(self, item):
-        self.model.append((item,))
-
+        if id(item) in self._id_to_iter:
+            raise ValueError("item %s allready in list"%item )
+        modeliter = self.model.append((item,))
+        self._id_to_iter[id(item)] = modeliter
