@@ -23,21 +23,19 @@ class Column(object):
         col.set_cell_data_func(cell, self._data_func)
         return col
 
-class ObjectList(gtk.ScrolledWindow):
+class ObjectList(gtk.TreeView):
 
     def __init__(self, columns=(), filtering=False, sorting=False):
-        gtk.ScrolledWindow.__init__(self)
-        
+        gtk.TreeView.__init__(self)
+
         self.treeview = gtk.TreeView()
         #XXX: make replacable
         self.store = gtk.ListStore(object)
-        self.treeview.set_model(self.store)
-        #XXX: allow user defined
-        self.set_policy(gtk.POLICY_NEVER, gtk.POLICY_NEVER) 
-        self.add(self.treeview)
+        self.set_model(self.store)
+
         self.columns = tuple(columns)
         for col in columns:
-            self.treeview.append_column(col.viewcolumn)
+            self.append_column(col.viewcolumn)
 
     def append(self, item):
         self.store.append((item,))
