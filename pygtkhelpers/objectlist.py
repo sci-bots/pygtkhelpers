@@ -30,13 +30,19 @@ class ObjectList(gtk.TreeView):
 
         self.treeview = gtk.TreeView()
         #XXX: make replacable
-        self.store = gtk.ListStore(object)
-        self.set_model(self.store)
+        self.model = gtk.ListStore(object)
+        self.set_model(self.model)
 
         self.columns = tuple(columns)
         for col in columns:
             self.append_column(col.viewcolumn)
+    
+    def __len__(self):
+        return len(self.model)
+
+    def __getitem__(self, index):
+        return self.model[index][0]
 
     def append(self, item):
-        self.store.append((item,))
+        self.model.append((item,))
 
