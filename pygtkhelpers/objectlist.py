@@ -54,3 +54,7 @@ class ObjectList(gtk.TreeView):
             raise ValueError("item %s allready in list"%item )
         modeliter = self.model.append((item,))
         self._id_to_iter[id(item)] = modeliter
+
+    def extend(self, iter):
+        for item in iter:
+            self.append(item)

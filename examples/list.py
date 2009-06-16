@@ -12,7 +12,13 @@ listing = ObjectList([
     Column('age', int),
     ])
 
-listing.append(User("test", "12"))
+listing.append(
+    User("test", 12)
+    )
+listing.extend([
+    User('hans', 34),
+    User('Zok', 60),
+    ])
 
 window = gtk.Window()
 window.add(listing)

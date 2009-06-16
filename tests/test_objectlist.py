@@ -33,3 +33,13 @@ def test_append():
 
     #dont allow the same object twice
     raises(ValueError, items.append, user)
+
+
+def test_extend():
+    items = ObjectList(user_columns)
+    items.extend([
+        User('hans', 22),
+        User('peter', 22),
+        ])
+    assert len(items)==2
+
