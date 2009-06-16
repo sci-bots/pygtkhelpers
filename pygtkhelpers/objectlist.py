@@ -1,16 +1,22 @@
 import gtk
 
+
+
 class Column(object):
-    def __init__(self, attr, type):
+    def __init__(self, attr, type, format="%s"):
         self.attr = attr
         self.type = type
+
+        self.format ="%s"
 
 
     #XXX: might be missplaced
     def _data_func(self, column, cell, model, iter):
         obj = model.get_value(iter, 0)
+        #XXX allow a callback?
+        data = getattr(obj, self.attr)
         #XXX: types
-        cell.set_property('text', getattr(obj, self.attr))
+        cell.set_property('text', self.format%data)
 
     #XXX: might be missplaced
     @property
