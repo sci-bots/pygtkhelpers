@@ -110,7 +110,7 @@ class BaseDelegate(gobject.GObject):
         signal_type, widget_name, signal_name = self._parse_signal_handler(name)
         widget = getattr(self, widget_name, None)
         if widget is None:
-            raise LookupError('Widget named %s is not available.' )
+            raise LookupError('Widget named %s is not available.'%widget_name )
         if signal_type == 'on':
             widget.connect(signal_name, method)
         elif signal_type == 'after':
