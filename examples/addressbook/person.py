@@ -5,7 +5,6 @@
     a simple class repressenting a person for usage in exampes
 """
 from __future__ import with_statement
-from datetime import datetime, date
 
 
 try: #XXX

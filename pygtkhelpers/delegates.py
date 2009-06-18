@@ -128,12 +128,16 @@ class BaseDelegate(gobject.GObject):
 
     def set_model(self, model):
         self._model = model
+        self.on_model_set()
         self.emit('model-set')
 
     def get_model(self):
         return self._model
 
     model = property(get_model, set_model)
+
+    def on_model_set(self):
+        """Override me for when models are set"""
 
     # Private glib API for simple property handling
     def do_get_property(self, prop):

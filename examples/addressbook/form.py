@@ -5,7 +5,7 @@ import gtk
 from pygtkhelpers.delegates import SlaveView
 from pygtkhelpers.utils import run_in_window, gsignal
 
-from person import Person, date
+from person import Person
 
 
 class PersonForm(SlaveView):
