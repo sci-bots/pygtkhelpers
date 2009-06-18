@@ -140,3 +140,29 @@ def refresh_gui(delay=0):
     while gtk.events_pending():
         gtk.main_iteration_do(block=False)
     time.sleep(delay)
+
+
+
+def _get_in_window(widget):
+    from .delegates import BaseDelegate
+    if isinstance(widget, gtk.Window):
+        return widget
+    elif isinstance(widget, BaseDelegate):
+        return _get_in_window(widget.widget)
+    else:
+        w = gtk.Window()
+        w.add(widget)
+        return w
+
+def run_in_window(target, on_destroy=gtk.main_quit):
+
+    w = _get_in_window(target)
+    if on_destroy:
+        w.connect('destroy', on_destroy)
+
+    w.resize(500, 400)
+    w.move(100, 100)
+    w.show_all()
+    gtk.main()
+
+
