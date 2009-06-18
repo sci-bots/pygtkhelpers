@@ -65,6 +65,7 @@ class BaseDelegate(gobject.GObject):
         self.widget = self._toplevel
         self.create_ui()
         self._connect_signals()
+        self.model = None
 
     # Public API
     def get_builder_toplevel(self, builder):
@@ -166,8 +167,7 @@ class SlaveView(BaseDelegate):
     def create_default_toplevel(self):
         return gtk.VBox()
 
-
-class MainView(BaseDelegate):
+class ToplevelView(BaseDelegate):
 
     def get_builder_toplevel(self, builder):
         """Get the toplevel widget from a gtk.Builder file.
@@ -187,3 +187,8 @@ class MainView(BaseDelegate):
     def create_default_toplevel(self):
         return gtk.Window()
 
+
+class WindowView(ToplevelView):
+    """A window"""
+    def set_title(self, title):
+        self.get_toplevel().set_title(title)
