@@ -3,7 +3,7 @@ from nose.tools import *
 
 import gtk, gobject
 
-from pygtkhelpers.delegates import SlaveView, MainView, BaseDelegate
+from pygtkhelpers.delegates import SlaveView, ToplevelView, BaseDelegate
 from pygtkhelpers.resources import resource_manager
 from pygtkhelpers.utils import refresh_gui, gproperty
 
@@ -45,7 +45,7 @@ class _Delegate5(SlaveView):
     def after_main__clicked(self, button):
         self.clicked = True
 
-class _Delegate6(MainView):
+class _Delegate6(ToplevelView):
 
     builder_file = 'test_slave.ui'
     toplevel_name = 'label1'
@@ -69,10 +69,21 @@ class _TestUIDelegate2(SlaveView):
 
     builder_path = 'tests/ui/test_slave.ui'
 
-class _TestUIMainDelegate(MainView):
+class _TestUIMainDelegate(ToplevelView):
 
     builder_file = 'test_slave.ui'
 
+class _TestUIDelegateBindSignalError(SlaveView):
+    def create_ui(self):
+        self.button = gtk.Button("test")
+        self.widget.pack_start(self.button)
+
+    def on_button__clacled(self, button):
+        pass
+
+class _TestUIDelegateSignalTargetMissing(SlaveView):
+    def on_button__clicked(self, button):
+        pass
 
 def test_delegate1():
     assert_raises(NotImplementedError, _Delegate1)
@@ -127,4 +138,10 @@ def test_props():
     assert d._b == 9
     assert d.get_property('b') == 17
 
+def test_bind_sinal_error_warning():
+    raises(TypeError, _TestUIDelegateBindSignalError)
+
+
+def test_find_signal_target_warning():
+    raises(LookupError, _TestUIDelegateSignalTargetMissing)
 
