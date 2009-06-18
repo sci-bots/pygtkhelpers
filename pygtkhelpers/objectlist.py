@@ -67,6 +67,11 @@ class ObjectList(gtk.TreeView):
     def __getitem__(self, index):
         return self.model[index][0]
 
+    def __delitem__(self, iter): #XXX
+        obj = self.model[iter][0]
+        del self._id_to_iter[id(obj)]
+        self.model.remove(iter)
+
     def append(self, item):
         if id(item) in self._id_to_iter:
             raise ValueError("item %s allready in list"%item )
@@ -84,3 +89,4 @@ class ObjectList(gtk.TreeView):
     def update(self, item):
         iter = self._id_to_iter[id(item)]
         self.model.set(iter, 0, item)
+

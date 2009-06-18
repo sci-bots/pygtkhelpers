@@ -76,6 +76,13 @@ class PersonList(SlaveView):
         self._select_file()
         self.objects.extend(from_json(self.current_file))
 
+    def on_remove__clicked(self, _):
+        #XXX: simplify later
+        selection = self.objects.get_selection()
+        # assume no select_multiple
+        model, iter = selection.get_selected()
+        del self.objects[iter]
+
 
 if __name__ == '__main__':
     listing = PersonList()
