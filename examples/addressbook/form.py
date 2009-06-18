@@ -10,7 +10,8 @@ from person import Person
 
 class PersonForm(SlaveView):
 
-    builder_path = os.path.join(os.path.dirname(__file__), 'address_form.ui')
+    builder_path = os.path.join(os.path.dirname(__file__),
+                                'address_form.ui')
     
     def create_ui(self):
         self.reset()
