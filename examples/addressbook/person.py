@@ -15,4 +15,4 @@ class Person(object):
 
 
     def __repr__(self):
-        return '<Person %r, %r - %r>'%(self.name, self.surname, self.age)
+        return '<Person %r, %r - %r>'%(self.name, self.surname, self.email)

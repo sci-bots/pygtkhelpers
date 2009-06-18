@@ -52,6 +52,10 @@ class ObjectList(gtk.TreeView):
         """identity based check of membership"""
         return id(item) in self._id_to_iter
 
+    def __iter__(self):
+        for row in self.model:
+            yield row[0]
+
     def __getitem__(self, index):
         return self.model[index][0]
 
@@ -64,3 +68,7 @@ class ObjectList(gtk.TreeView):
     def extend(self, iter):
         for item in iter:
             self.append(item)
+
+    def clear(self):
+        self.model.clear()
+        self._id_to_iter.clear()
