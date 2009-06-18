@@ -3,12 +3,8 @@ from pygtkhelpers.delegates import SlaveView
 from pygtkhelpers.objectlist import ObjectList, Column
 from pygtkhelpers.utils import run_in_window, gsignal
 
-from person import Person
+from person import Person, from_json, to_json
 
-try: #XXX
-    import json
-except:
-    import simplejson as json
 
 
 
@@ -36,7 +32,6 @@ class PersonList(SlaveView):
             self.buttons.add(button)
             return button
 
-
         self.add = button(gtk.STOCK_ADD)
         self.remove = button(gtk.STOCK_REMOVE)
 
@@ -56,9 +51,8 @@ class PersonList(SlaveView):
 
 
     def _select_file(self):
-        finder = gtk.FileChooserDialog(buttons=
-            (gtk.STOCK_OK, gtk.RESPONSE_OK,
-            gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+        finder = gtk.FileChooserDialog(
+            buttons=(gtk.STOCK_OK, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
             )
         response = finder.run()
         if gtk.RESPONSE_OK == response:
@@ -69,18 +63,10 @@ class PersonList(SlaveView):
         self._select_file()
         self.on_save__clicked(widget)
 
-
     def on_save__clicked(self, _):
-        assert self.current_file #XXX: error message
-        output = [{
-                    'name': item.name,
-                    'surname': item.surname,
-                    'email':item.email
-                } for item in self.objects]
+        assert self.current_file #XXX: error message?
+        to_json(self.objects, self.current_file)
 
-        with open(self.current_file, 'w') as f:
-            json.dump(output, f, indent=2)
-    
     def on_new__clicked(self, _):
         self.objects.clear()
         self.current_file = None
@@ -88,16 +74,14 @@ class PersonList(SlaveView):
     def on_open__clicked(self, _):
         self.objects.clear()
         self._select_file()
-        with open(self.current_file) as f:
-            items = json.load(f)
-            for item in items:
-                self.objects.append(Person(
-                    name=item['name'],
-                    surname=item['surname'],
-                    email=item['email'],
-                    ))
+        self.objects.extend(from_json(self.current_file))
 
-
+    def on_remove__clicked(self, _):
+        #XXX: simplify later
+        selection = self.objects.get_selection()
+        # assume no select_multiple
+        model, iter = selection.get_selected()
+        del self.objects[iter]
 
 
 if __name__ == '__main__':
