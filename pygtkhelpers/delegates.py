@@ -55,7 +55,9 @@ class BaseDelegate(gobject.GObject):
     builder_path = None
     toplevel_name = 'main'
 
+    #XXX: should those get self.model as extra parameter?
     gsignal('model-set')
+    gsignal('model-updated') # one should emmit that when changing the models
 
     def __init__(self):
         gobject.GObject.__init__(self)
