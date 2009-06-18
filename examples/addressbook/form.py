@@ -13,10 +13,16 @@ class PersonForm(SlaveView):
     builder_path = os.path.join(os.path.dirname(__file__), 'address_form.ui')
     
     def create_ui(self):
+        self.reset()
         self.connect('model-set', self._on_set_model)
         def print_model(slave):
             print slave.model
         self.connect('model-updated', print_model)
+
+    def reset(self):
+        self.firstname_entry.set_text('')
+        self.lastname_entry.set_text('')
+        self.email_entry.set_text('')
 
     def _on_set_model(self, _):
         if self.model:
@@ -44,7 +50,7 @@ class PersonForm(SlaveView):
             self.emit('model-updated')
 
 
-if __name__=='__ main__':
+if __name__=='__main__':
     person = Person('hans', 'man', 'hans.man@example.com')
     view = PersonForm()
     view.set_model(person)
