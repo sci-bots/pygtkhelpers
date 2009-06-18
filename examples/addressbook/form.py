@@ -14,7 +14,6 @@ class PersonForm(SlaveView):
     
     def create_ui(self):
         self.reset()
-        self.connect('model-set', self._on_set_model)
         def print_model(slave):
             print slave.model
         self.connect('model-updated', print_model)
@@ -24,15 +23,13 @@ class PersonForm(SlaveView):
         self.lastname_entry.set_text('')
         self.email_entry.set_text('')
 
-    def _on_set_model(self, _):
+    def on_model_set(self):
         if self.model:
-            self.firstname_entry.props.text = self.model.name
-            self.lastname_entry.props.text = self.model.surname
-            self.email_entry.props.text = self.model.email
+            self.firstname_entry.set_text(self.model.name)
+            self.lastname_entry.set_text(self.model.surname)
+            self.email_entry.set_text(self.model.email)
         else:
-            self.firstname_entry.props.text = ""
-            self.lastname_entry.props.text = ""
-            self.email_entry.props.text = ""
+            self.reset()
 
     def on_firstname_entry__changed(self, entry):
         if self.model:
