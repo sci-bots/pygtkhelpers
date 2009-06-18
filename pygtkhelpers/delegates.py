@@ -55,6 +55,8 @@ class BaseDelegate(gobject.GObject):
     builder_path = None
     toplevel_name = 'main'
 
+    gsignal('model-set')
+
     def __init__(self):
         gobject.GObject.__init__(self)
         self._props = {}
@@ -121,6 +123,15 @@ class BaseDelegate(gobject.GObject):
 
     def _get_prop_handler(self, propname, action):
         return getattr(self, '%s_property_%s' % (action, propname), None)
+
+    def set_model(self, model):
+        self._model = model
+        self.emit('model-set')
+
+    def get_model(self):
+        return self._model
+
+    model = property(get_model, set_model)
 
     # Private glib API for simple property handling
     def do_get_property(self, prop):
