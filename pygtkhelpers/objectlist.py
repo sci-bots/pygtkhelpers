@@ -1,4 +1,6 @@
 import gtk
+from pygtkhelpers.utils import gsignal
+
 
 
 
@@ -31,6 +33,8 @@ class Column(object):
 
 class ObjectList(gtk.TreeView):
 
+    gsignal('item-activated', object)
+
     def __init__(self, columns=(), filtering=False, sorting=False):
         gtk.TreeView.__init__(self)
 
@@ -44,6 +48,10 @@ class ObjectList(gtk.TreeView):
             self.append_column(col.viewcolumn)
 
         self._id_to_iter = {}
+
+        def on_row_activated(self, path, column, *k):
+            self.emit('item-activated', self.model[path][0])
+        self.connect('row-activated', on_row_activated)
 
     def __len__(self):
         return len(self.model)
@@ -72,3 +80,7 @@ class ObjectList(gtk.TreeView):
     def clear(self):
         self.model.clear()
         self._id_to_iter.clear()
+
+    def update(self, item):
+        iter = self._id_to_iter[id(item)]
+        self.model.set(iter, 0, item)
