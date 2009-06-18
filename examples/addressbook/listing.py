@@ -1,7 +1,7 @@
 import gtk
 from pygtkhelpers.delegates import SlaveView
 from pygtkhelpers.objectlist import ObjectList, Column
-from pygtkhelpers.utils import run_in_window
+from pygtkhelpers.utils import run_in_window, gsignal
 
 from person import Person
 
@@ -13,6 +13,8 @@ except:
 
 
 class PersonList(SlaveView):
+    gsignal('item-activated', object)
+
     columns = [
         Column('name', str),
         Column('surname', str),
@@ -44,6 +46,8 @@ class PersonList(SlaveView):
         self.save = button(stock=gtk.STOCK_SAVE)
         self.save_as = button(stock=gtk.STOCK_SAVE_AS)
 
+    def on_objects__item_activated(self, listing, item):
+        self.emit('item-activated', item)
 
     def on_add__clicked(self, *k):
         #XXX. better values or editing
