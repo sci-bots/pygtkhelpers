@@ -56,8 +56,11 @@ class BaseDelegate(gobject.GObject):
     toplevel_name = 'main'
 
     #XXX: should those get self.model as extra parameter?
+    # they get the delegate, so its there as delegate.model
     gsignal('model-set')
-    gsignal('model-updated') # one should emmit that when changing the models
+
+    # (attribute, value)
+    gsignal('model-updated', object, object) # one should emit that when changing the models
 
     def __init__(self):
         gobject.GObject.__init__(self)

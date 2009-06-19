@@ -6,15 +6,14 @@ from listing import PersonList
 from form import PersonForm
 
 class PersonEditor(SlaveView):
-    def create_default_toplevel(self):
-        return gtk.HBox()
 
     def create_ui(self):
+        self.pane = gtk.HPaned()
+        self.widget.add(self.pane)
         self.listing = PersonList()
         self.detail = PersonForm()
-        self.widget.add(self.listing.widget)
-        self.widget.add(self.detail.widget)
-
+        self.pane.pack1(self.listing.widget)
+        self.pane.pack2(self.detail.widget)
 
     def on_listing__item_activated(self, listing, item):
         self.detail.model = item

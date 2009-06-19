@@ -12,11 +12,10 @@ class PersonForm(SlaveView):
 
     builder_path = os.path.join(os.path.dirname(__file__),
                                 'address_form.ui')
-    
     def create_ui(self):
         self.reset()
-        def print_model(slave):
-            print slave.model
+        def print_model(slave, attribute, value):
+            print slave.model, attribute, value
         self.connect('model-updated', print_model)
 
     def reset(self):
@@ -34,18 +33,18 @@ class PersonForm(SlaveView):
 
     def on_firstname_entry__changed(self, entry):
         if self.model:
-            self.model.name = entry.props.text
-            self.emit('model-updated')
+            self.model.name = entry.get_text()
+            self.emit('model-updated', 'name', self.model.name)
 
     def on_lastname_entry__changed(self, entry):
         if self.model:
-            self.model.surname = entry.props.text
-            self.emit('model-updated')
+            self.model.surname = entry.get_text()
+            self.emit('model-updated', 'surname', self.model.surname)
 
     def on_email_entry__changed(self, entry):
         if self.model:
-            self.model.email = entry.props.text
-            self.emit('model-updated')
+            self.model.email = entry.get_text()
+            self.emit('model-updated', 'email', self.model.email)
 
 
 if __name__=='__main__':
