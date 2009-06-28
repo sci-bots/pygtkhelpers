@@ -43,3 +43,10 @@ def test_extend():
         ])
     assert len(items)==2
 
+def test_column_getattr():
+    name = Column('name', str)
+    age = Column('age', str)
+    user = User('hans', 22)
+
+    assert name.from_object(user) == 'hans'
+    assert age.from_object(user) == 22

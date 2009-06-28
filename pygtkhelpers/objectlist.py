@@ -12,11 +12,14 @@ class Column(object):
         self.format ="%s"
 
 
+    def from_object(self, object):
+        #XXX allow a callback?
+        return getattr(object, self.attr)
+
     #XXX: might be missplaced
     def _data_func(self, column, cell, model, iter):
         obj = model.get_value(iter, 0)
-        #XXX allow a callback?
-        data = getattr(obj, self.attr)
+        data = self.from_object(obj)
         #XXX: types
         cell.set_property('text', self.format%data)
 
@@ -73,7 +76,7 @@ class ObjectList(gtk.TreeView):
         self.model.remove(iter)
 
     def append(self, item):
-        if id(item) in self._id_to_iter:
+        if item in self:
             raise ValueError("item %s allready in list"%item )
         modeliter = self.model.append((item,))
         self._id_to_iter[id(item)] = modeliter
