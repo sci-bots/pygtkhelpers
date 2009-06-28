@@ -5,27 +5,29 @@ from pygtkhelpers.utils import gsignal
 
 
 class Column(object):
-    def __init__(self, attr, type, format="%s"):
+    def __init__(self, attr, title=None, type=str, **kw):
         self.attr = attr
         self.type = type
+        self.title = title or self.attr.capitalize()
 
-        self.format ="%s"
+        self.format = "%s"
 
 
     def from_object(self, object):
         #XXX allow a callback?
         return getattr(object, self.attr)
 
+    def format_data(self, data):
+        return self.format%data
+
     #XXX: might be missplaced
     def _data_func(self, column, cell, model, iter):
         obj = model.get_value(iter, 0)
         data = self.from_object(obj)
         #XXX: types
-        cell.set_property('text', self.format%data)
+        cell.set_property('text', self.format_data(data))
 
-    #XXX: might be missplaced
-    @property
-    def viewcolumn(self):
+    def make_viewcolumn(self):
         title = self.attr.capitalize()
         col = gtk.TreeViewColumn(title)
         #XXX: extend to more types
@@ -48,7 +50,7 @@ class ObjectList(gtk.TreeView):
 
         self.columns = tuple(columns)
         for col in columns:
-            self.append_column(col.viewcolumn)
+            self.append_column(col.make_viewcolumn())
 
         self._id_to_iter = {}
 
