@@ -44,9 +44,19 @@ def test_extend():
     assert len(items)==2
 
 def test_column_getattr():
-    name = Column('name', str)
-    age = Column('age', str)
+    name = Column('name', type=str)
+    age = Column('age', type=str)
     user = User('hans', 22)
 
     assert name.from_object(user) == 'hans'
     assert age.from_object(user) == 22
+
+def test_column_title():
+    col = Column("name")
+    view_col = col.make_viewcolumn()
+    assert view_col.get_title() == "Name"
+
+    title_col = Column(title="Test")
+    title_view_col = title_col.make_viewcolumn()
+    assert title_view_col.get_title() == 'Test'
+

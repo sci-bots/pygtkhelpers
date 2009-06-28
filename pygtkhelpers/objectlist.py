@@ -5,7 +5,8 @@ from pygtkhelpers.utils import gsignal
 
 
 class Column(object):
-    def __init__(self, attr, title=None, type=str, **kw):
+    #XXX: handle cells propperly
+    def __init__(self, attr=None, type=str, title=None, **kw):
         self.attr = attr
         self.type = type
         self.title = title or self.attr.capitalize()
@@ -28,8 +29,7 @@ class Column(object):
         cell.set_property('text', self.format_data(data))
 
     def make_viewcolumn(self):
-        title = self.attr.capitalize()
-        col = gtk.TreeViewColumn(title)
+        col = gtk.TreeViewColumn(self.title)
         #XXX: extend to more types
         cell = gtk.CellRendererText()
         col.pack_start(cell)
