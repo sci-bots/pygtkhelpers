@@ -24,6 +24,7 @@ class Cell(object):
         cell.set_property('text', self.format_data(data))
 
     def make_viewcell(self):
+        #XXX: extend to more types
         return gtk.CellRendererText()
 
 class Column(object):
@@ -41,9 +42,9 @@ class Column(object):
 
     def make_viewcolumn(self):
         col = gtk.TreeViewColumn(self.title)
-        #XXX: extend to more types
         for cell in self.cells:
             view_cell = cell.make_viewcell()
+            #XXX: better controll over packing
             col.pack_start(view_cell)
             col.set_cell_data_func(view_cell, cell._data_func)
         return col
