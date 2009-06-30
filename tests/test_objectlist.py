@@ -1,6 +1,6 @@
 
 from py.test import raises
-from pygtkhelpers.objectlist import ObjectList, Column
+from pygtkhelpers.objectlist import ObjectList, Column, Cell
 
 
 class User(object):
@@ -44,8 +44,8 @@ def test_extend():
     assert len(items)==2
 
 def test_column_getattr():
-    name = Column('name', type=str)
-    age = Column('age', type=str)
+    name = Cell('name', type=str)
+    age = Cell('age', type=str)
     user = User('hans', 22)
 
     assert name.from_object(user) == 'hans'
@@ -56,7 +56,7 @@ def test_column_title():
     view_col = col.make_viewcolumn()
     assert view_col.get_title() == "Name"
 
-    title_col = Column(title="Test")
+    title_col = Column(title="Test", cells=[])
     title_view_col = title_col.make_viewcolumn()
     assert title_view_col.get_title() == 'Test'
 

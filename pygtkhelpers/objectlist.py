@@ -3,14 +3,10 @@ from pygtkhelpers.utils import gsignal
 
 
 
-
-class Column(object):
-    #XXX: handle cells propperly
-    def __init__(self, attr=None, type=str, title=None, **kw):
+class Cell(object):
+    def __init__(self, attr, type=str):
         self.attr = attr
         self.type = type
-        self.title = title or self.attr.capitalize()
-
         self.format = "%s"
 
 
@@ -21,19 +17,35 @@ class Column(object):
     def format_data(self, data):
         return self.format%data
 
-    #XXX: might be missplaced
     def _data_func(self, column, cell, model, iter):
         obj = model.get_value(iter, 0)
         data = self.from_object(obj)
         #XXX: types
         cell.set_property('text', self.format_data(data))
 
+    def make_viewcell(self):
+        return gtk.CellRendererText()
+
+class Column(object):
+    #XXX: handle cells propperly
+    def __init__(self, attr=None, type=str, title=None, **kw):
+
+        #XXX: better error messages
+        assert title or attr, "Columns need a title or an attribute to infer it"
+        assert attr or 'cells' in kw, 'Columns need a attribute or a set of cells'
+
+        self.title = title or attr.capitalize()
+
+        self.cells = [ Cell(attr, type)]
+
+
     def make_viewcolumn(self):
         col = gtk.TreeViewColumn(self.title)
         #XXX: extend to more types
-        cell = gtk.CellRendererText()
-        col.pack_start(cell)
-        col.set_cell_data_func(cell, self._data_func)
+        for cell in self.cells:
+            view_cell = cell.make_viewcell()
+            col.pack_start(view_cell)
+            col.set_cell_data_func(view_cell, cell._data_func)
         return col
 
 class ObjectList(gtk.TreeView):
