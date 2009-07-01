@@ -53,10 +53,22 @@ def test_column_getattr():
 
 def test_column_title():
     col = Column("name")
-    view_col = col.make_viewcolumn()
+    view_col = col.make_viewcolumn(None)
     assert view_col.get_title() == "Name"
 
     title_col = Column(title="Test", cells=[])
-    title_view_col = title_col.make_viewcolumn()
+    title_view_col = title_col.make_viewcolumn(None)
     assert title_view_col.get_title() == 'Test'
+    assert len(title_view_col.get_cells()) == 0
+
+
+def test_make_cells():
+    col = Column(title='Test', cells=[
+        Cell('name', int),
+        Cell('name2', int),
+        ])
+    view_col = col.make_viewcolumn(None)
+
+    assert len(view_col.get_cells()) == 2
+
 

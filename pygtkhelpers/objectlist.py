@@ -4,11 +4,14 @@ from pygtkhelpers.utils import gsignal
 
 
 class Cell(object):
-    def __init__(self, attr, type=str):
+    def __init__(self, attr, type=str, editable=False):
         self.attr = attr
         self.type = type
         self.format = "%s"
+        self.editable = editable
 
+    def __repr__(self):
+        return '<Cell %s %r>'%(self.attr, self.type)
 
     def from_object(self, object):
         #XXX allow a callback?
@@ -23,9 +26,12 @@ class Cell(object):
         #XXX: types
         cell.set_property('text', self.format_data(data))
 
-    def make_viewcell(self):
+    def make_viewcell(self, column, objectlist):
         #XXX: extend to more types
-        return gtk.CellRendererText()
+        cell = gtk.CellRendererText()
+        cell.props.editable = self.editable
+        cell.set_data('pygtkhelpers::cell', self)
+        return cell
 
 class Column(object):
     #XXX: handle cells propperly
@@ -37,13 +43,18 @@ class Column(object):
 
         self.title = title or attr.capitalize()
 
-        self.cells = [ Cell(attr, type)]
+        if 'cells' in kw:
+            self.cells = kw['cells']
+        else:
+            self.cells = [Cell(attr, type)]
 
 
-    def make_viewcolumn(self):
+    def make_viewcolumn(self, objectlist):
         col = gtk.TreeViewColumn(self.title)
+        col.set_data('pygtkhelpers::column', self)
         for cell in self.cells:
-            view_cell = cell.make_viewcell()
+            view_cell = cell.make_viewcell(self, objectlist)
+            view_cell.set_data('pygtkhelpers::column', self)
             #XXX: better controll over packing
             col.pack_start(view_cell)
             col.set_cell_data_func(view_cell, cell._data_func)
@@ -52,6 +63,7 @@ class Column(object):
 class ObjectList(gtk.TreeView):
 
     gsignal('item-activated', object)
+    gsignal('item-changed', object, str, object)
 
     def __init__(self, columns=(), filtering=False, sorting=False):
         gtk.TreeView.__init__(self)
@@ -63,7 +75,7 @@ class ObjectList(gtk.TreeView):
 
         self.columns = tuple(columns)
         for col in columns:
-            self.append_column(col.make_viewcolumn())
+            self.append_column(col.make_viewcolumn(self))
 
         self._id_to_iter = {}
 
