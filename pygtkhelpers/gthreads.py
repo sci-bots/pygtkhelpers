@@ -42,9 +42,8 @@ class AsyncTask(object):
     
     def start(self, *args, **kwargs):
         """
-        Please note that start is not thread safe. It is assumed that this
-        method is called inside gtk's main loop there for the lock is taken
-        care there.
+        * not threadsave
+        * assumed to be called in the gtk mainloop
         """
         args = (self.counter,) + args
         thread = threading.Thread(
@@ -62,6 +61,7 @@ class AsyncTask(object):
     
     def _work_callback(self, counter, *args, **kwargs):
         ret = self.work_callback(*args, **kwargs)
+        #tuple necessary cause idle_add wont allow more args
         gobject.idle_add(self._loop_callback, (counter, ret))
 
     def _loop_callback(self, vargs):
@@ -79,15 +79,17 @@ class AsyncTask(object):
 
 class GeneratorTask(AsyncTask):
     """
-    The diference between this task and AsyncTask is that the 'work_callback'
-    returns a generator. For each value the generator yields the loop_callback
-    is called inside Gtk+'s main loop.
+    The diference between this task and AsyncTask
+    is that the `work` callback returns a generator.
+    For each value the generator yields 
+    the `loop` callback is called inside Gtk+'s main loop.
     
-    @work_callback: callback that returns results
-    @loop_callback: callback inside the gtk thread
-    @priority: gtk priority the loop callback will have
-    @pass_generator: will pass the generator instance as generator_task to the 
-                     worker callback
+    :param work: callback that returns results
+    :param loop: callback inside the gtk thread
+    :keyword priority: gtk priority the loop callback will have
+    :keyword pass_generator:
+        will pass the generator instance 
+        as `generator_task` to the worker callback
 
     A simple example::
 
@@ -117,6 +119,7 @@ class GeneratorTask(AsyncTask):
             kwargs = kwargs.copy()
             kwargs['generator_task'] = self
         for ret in self.work_callback(*args, **kwargs):
+            #XXX: what about checking self.counter?
             if self._stopped:
                 thread.exit()
             gobject.idle_add(self._loop_callback, (counter, ret),
@@ -133,61 +136,6 @@ class GeneratorTask(AsyncTask):
         return self._stopped
 
 
-def locked(lockname): 
-    '''
-    Call this decorator with the name of the lock. The decorated method
-    will be wrapped with an acquire()/lock().
-
-    Example of usage::
-        
-        import threading
-        
-        class Foo(object) :
-            def __init__(self):
-                self.lock = threading.Lock()
-                
-            @locked("lock")
-            def meth1(self):
-                self.critical_value = 1
-
-            @locked("lock")
-            def meth2(self):
-                self.critical_value = 2
-                return self.critical_value
-    
-    Both 'meth1' and 'meth2' will be wrapped with a 'lock.acquire()'
-    and a 'lock.release()'.
-    '''
-
-def locked(lock_name):
-    """This is a factory of decorators. The decorator
-    wraps an acquire() and release() around the decorated
-    method. The lock name is the name of the attribute
-    containing the lock."""
-    
-    if not isinstance(lock_name, basestring):
-        raise TypeError("'lock_name' must be a string")
-    
-    def decorator(func):
-        def wrapper(self, *args, **kwargs):
-            lock = getattr(self, lock_name)
-            lock.acquire()
-
-            # Make sure an exception does not break
-            # the lock
-            try:
-                ret = func(self, *args, **kwargs)
-            except:
-                lock.release()
-                raise
-            
-            lock.release()
-            return ret
-
-        return wrapper
-
-    return decorator
-
 def gcall(func, *args, **kwargs):
     """
     Calls a function, with the given arguments inside Gtk's main loop.
@@ -198,5 +146,31 @@ def gcall(func, *args, **kwargs):
     it inside Gtk's main loop makes it thread safe.
     """
     return gobject.idle_add(lambda: (func(*args, **kwargs) or False))
+
+
+def invoke_in_mainloop(func, *args, **kwargs):
+    """
+    invoke a function in the mainloop, pass the data back
+    """
+    lock = threading.Lock()
+    condition = threading.Condition(lock)
+    result = []
+    def run():
+        try:
+            data = func(*args, **kwargs)
+            result.append(data)
+        except: #XXX: correctly pas it over
+            pass
+        try:
+            condition.notify()
+        except:
+            pass
+        return False
+
+    gobject.idle_add(run)
+    condition.wait()
+    return result and result[0]
+
+
 
 
