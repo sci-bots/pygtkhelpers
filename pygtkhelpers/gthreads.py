@@ -161,10 +161,7 @@ def invoke_in_mainloop(func, *args, **kwargs):
             result.append(data)
         except: #XXX: correctly pas it over
             pass
-        try:
-            condition.notify()
-        except:
-            pass
+        condition.notify()
         return False
 
     gobject.idle_add(run)
