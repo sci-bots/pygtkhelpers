@@ -2,13 +2,16 @@ import gtk
 from pygtkhelpers.utils import gsignal
 
 
+def set_text_renderer(mapper, object, cell):
+    cell.set_property('text', mapper.from_object(object))
 
 class Cell(object):
-    def __init__(self, attr, type=str, editable=False):
+    def __init__(self, attr, type=str, editable=False, renderers=None):
         self.attr = attr
         self.type = type
         self.format = "%s"
         self.editable = editable
+        self.renderers = renderers or [set_text_renderer]
 
     def __repr__(self):
         return '<Cell %s %r>'%(self.attr, self.type)
@@ -20,11 +23,13 @@ class Cell(object):
     def format_data(self, data):
         return self.format%data
 
+    def render(self, object, cell):
+        for renderer in self.renderers:
+            renderer(self, object, cell)
+
     def _data_func(self, column, cell, model, iter):
         obj = model.get_value(iter, 0)
-        data = self.from_object(obj)
-        #XXX: types
-        cell.set_property('text', self.format_data(data))
+        self.render(obj, cell)
 
     def make_viewcell(self, column, objectlist):
         #XXX: extend to more types
@@ -75,7 +80,9 @@ class ObjectList(gtk.TreeView):
 
         self.columns = tuple(columns)
         for col in columns:
-            self.append_column(col.make_viewcolumn(self))
+            view_col = col.make_viewcolumn(self)
+            view_col.set_data('pygtkhelpers::objectlist', self)
+            self.append_column(view_col)
 
         self._id_to_iter = {}
 
