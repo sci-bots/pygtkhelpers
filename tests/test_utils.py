@@ -61,3 +61,4 @@ def test_flags_to_string_button():
     assert flags_to_string(gtk.BUTTON_DRAGS) == 'drags | ignored'
 
     assert flags_to_string(int(gtk.BUTTON_DRAGS), gtk.ButtonAction) == 'drags | ignored'
+    #XXX: test more flag combinations
