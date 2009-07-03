@@ -166,3 +166,61 @@ def run_in_window(target, on_destroy=gtk.main_quit):
     gtk.main()
 
 
+def enum_to_string(value, type=None):
+    """get a string value for an enumeration
+    :param value: the enum value
+    :optional type: the type of the enum
+
+    """
+
+    if type is None:
+        type = value.__class__
+
+    if not issubclass(type, gobject.GEnum):
+        raise TypeError("%r is not an GEnum"%type)
+
+    return type.__enum_values__[value].value_nick
+
+def flags_to_string(flags_value, flags=None, pspec=None):
+    """Convert a flag value (integer) to a string, using the pspec
+    for introspection.
+    It tries fairly hard to return a string as short as possible"""
+    #XXX: insanely complex, simplify
+    def isflag(n):
+        """Helper to find the number of 1 in an integer.
+        We're only interested in numbers with exactly one 1.
+        """
+        ones = sum((n>>i)&1 for i in range(32))
+        return ones == 1
+
+    if flags_value == 0:
+        return ""
+
+    if pspec:
+        flags_class = pspec.flags_class
+    elif flags:
+        flags_class = flags
+    else:
+        flags_class = type(flags_value)
+        assert issubclass(flags_class, gobject.GFlags)
+        #raise AssertionError
+
+    flags_names = []
+    for value, flag in flags_class.__flags_values__.items():
+        if not isflag(value):
+            continue
+
+        if (value & flags_value) == 0:
+            continue
+
+        for nick in flag.value_nicks:
+            if nick in flags_names:
+                continue
+
+            flags_names.append(nick)
+
+    flags_names.sort()
+    retval = ' | '.join(flags_names)
+    return retval
+
+
