@@ -36,6 +36,13 @@ class Cell(object):
         cell = gtk.CellRendererText()
         cell.props.editable = self.editable
         cell.set_data('pygtkhelpers::cell', self)
+        if self.editable:
+            def simple_set(cellrenderer, path, text):
+                object = objectlist[path]
+                value = self.type(text)
+                setattr(object, self.attr, value)
+                objectlist.emit('item-changed', object, self.attr, value)
+            cell.connect('edited', simple_set)
         return cell
 
 class Column(object):
@@ -51,7 +58,8 @@ class Column(object):
         if 'cells' in kw:
             self.cells = kw['cells']
         else:
-            self.cells = [Cell(attr, type)]
+            #XXX: sane arg filter
+            self.cells = [Cell(attr, type, **kw)] 
 
 
     def make_viewcolumn(self, objectlist):
@@ -126,4 +134,10 @@ class ObjectList(gtk.TreeView):
     def update(self, item):
         iter = self._id_to_iter[id(item)]
         self.model.set(iter, 0, item)
+
+
+    def _path_for(self, object):
+        oid = id(object)
+        if oid in self._id_to_iter:
+            return self.model.get_string_from_iter(self._id_to_iter[oid])
 

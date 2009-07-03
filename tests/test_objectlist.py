@@ -1,6 +1,8 @@
 
 from py.test import raises
 from pygtkhelpers.objectlist import ObjectList, Column, Cell
+from pygtkhelpers.utils import refresh_gui
+from pygtkhelpers.test import CheckCalled
 
 
 class User(object):
@@ -12,7 +14,7 @@ class User(object):
         return self.name == other.name and self.age == other.age
 
 user_columns = [
-    Column('name', str),
+    Column('name', str, editable=True),
     Column('age', int),
 ]
 
@@ -70,5 +72,23 @@ def test_make_cells():
     view_col = col.make_viewcolumn(None)
 
     assert len(view_col.get_cells()) == 2
+
+
+
+def test_edit_name():
+
+    items = ObjectList(user_columns)
+    user = User('hans', 10)
+    items.append(user)
+    item_changed = CheckCalled(items, 'item-changed')
+
+    refresh_gui()
+    assert not item_changed.called
+    name_cell = items.get_columns()[0].get_cells()[0]
+    text_path = items._path_for(user)
+    name_cell.emit('edited', text_path, 'peter')
+    refresh_gui()
+    assert user.name=='peter'
+    assert item_changed.called
 
 

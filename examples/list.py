@@ -8,8 +8,8 @@ class User(object):
         self.age = age
 
 listing = ObjectList([
-    Column('name', str),
-    Column('age', int),
+    Column('name', str, editable=True),
+    Column('age', int, editable=True),
     ])
 
 listing.append(
