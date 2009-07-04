@@ -33,6 +33,7 @@ scroll.add(icons)
 
 win = gtk.Window()
 win.add(scroll)
+win.set_size_request(600, 400)
 
 win.show_all()
 win.connect('destroy', gtk.main_quit)
