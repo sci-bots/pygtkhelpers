@@ -5,13 +5,21 @@ from pygtkhelpers.utils import gsignal
 def set_text_renderer(mapper, object, cell):
     cell.set_property('text', mapper.from_object(object))
 
+def set_stock_renderer(mapper, object, cell):
+    cell.set_property('stock-id', mapper.from_object(object))
+
 class Cell(object):
-    def __init__(self, attr, type=str, editable=False, renderers=None):
+    def __init__(self, attr, type=str, editable=False, renderers=None, use_stock=False):
         self.attr = attr
         self.type = type
         self.format = "%s"
         self.editable = editable
-        self.renderers = renderers or [set_text_renderer]
+        self.use_stock = use_stock
+        if use_stock:
+            pass
+            self.renderers = [set_stock_renderer]
+        else:
+            self.renderers = renderers or [set_text_renderer]
 
     def __repr__(self):
         return '<Cell %s %r>'%(self.attr, self.type)
@@ -33,8 +41,11 @@ class Cell(object):
 
     def make_viewcell(self, column, objectlist):
         #XXX: extend to more types
-        cell = gtk.CellRendererText()
-        cell.props.editable = self.editable
+        if self.use_stock:
+            cell = gtk.CellRendererPixbuf()
+        else:
+            cell = gtk.CellRendererText()
+            cell.props.editable = self.editable
         cell.set_data('pygtkhelpers::cell', self)
         if self.editable:
             def simple_set(cellrenderer, path, text):
