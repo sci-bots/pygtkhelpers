@@ -39,7 +39,7 @@ class Cell(object):
         obj = model.get_value(iter, 0)
         self.render(obj, cell)
 
-    def make_viewcell(self, column, objectlist):
+    def create_renderer(self, column, objectlist):
         #XXX: extend to more types
         if self.use_stock:
             cell = gtk.CellRendererPixbuf()
@@ -50,6 +50,7 @@ class Cell(object):
         if self.editable:
             def simple_set(cellrenderer, path, text):
                 object = objectlist[path]
+                #XXX: full converter
                 value = self.type(text)
                 setattr(object, self.attr, value)
                 objectlist.emit('item-changed', object, self.attr, value)
@@ -73,11 +74,11 @@ class Column(object):
             self.cells = [Cell(attr, type, **kw)] 
 
 
-    def make_viewcolumn(self, objectlist):
+    def create_treecolumn(self, objectlist):
         col = gtk.TreeViewColumn(self.title)
         col.set_data('pygtkhelpers::column', self)
         for cell in self.cells:
-            view_cell = cell.make_viewcell(self, objectlist)
+            view_cell = cell.create_renderer(self, objectlist)
             view_cell.set_data('pygtkhelpers::column', self)
             #XXX: better controll over packing
             col.pack_start(view_cell)
@@ -99,7 +100,7 @@ class ObjectList(gtk.TreeView):
 
         self.columns = tuple(columns)
         for col in columns:
-            view_col = col.make_viewcolumn(self)
+            view_col = col.create_treecolumn(self)
             view_col.set_data('pygtkhelpers::objectlist', self)
             self.append_column(view_col)
 
