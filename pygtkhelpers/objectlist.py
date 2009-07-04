@@ -16,7 +16,6 @@ class Cell(object):
         self.editable = editable
         self.use_stock = use_stock
         if use_stock:
-            pass
             self.renderers = [set_stock_renderer]
         else:
             self.renderers = renderers or [set_text_renderer]
