@@ -7,8 +7,10 @@
 
 import os
 import threading, thread
+import Queue as queue
 import subprocess
 import gobject
+import time
 
 class AsyncTask(object):
     """
@@ -152,22 +154,27 @@ def invoke_in_mainloop(func, *args, **kwargs):
     """
     invoke a function in the mainloop, pass the data back
     """
-    lock = threading.Lock()
-    condition = threading.Condition(lock)
-    result = []
+    results = queue.Queue()
+
     def run():
         try:
             data = func(*args, **kwargs)
-            result.append(data)
-        except: #XXX: correctly pas it over
-            pass
-        condition.notify()
-        return False
+            results.put(data)
+            results.put(None)
+        except BaseException, e: #XXX: handle 
+            results.put(None)
+            results.put(e)
+            raise
 
-    gobject.idle_add(run)
-    condition.wait()
-    return result and result[0]
+    gcall(run)
 
+    data = results.get()
+    exception = results.get()
+
+    if exception is None:
+        return data
+    else:
+        raise exception
 
 
 
