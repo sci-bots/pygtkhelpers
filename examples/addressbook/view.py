@@ -19,6 +19,11 @@ class PersonEditor(SlaveView):
     def on_listing__item_activated(self, listing, item):
         self.detail.model = item
 
+    def on_listing__item_changed(self, listing, item, attr, value):
+        if item is self.detail.model:
+            # cause an ui update
+            self.detail.model = item 
+
     def on_detail__model_updated(self, detail, attribute, value):
         self.listing.objects.update(detail.model)
 
