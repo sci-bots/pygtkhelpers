@@ -8,8 +8,11 @@ from pygtkhelpers.objectlist import ObjectList, Cell, Column
 class IconInfo(object):
     def __init__(self, stock_name, name):
         self.stock_name = stock_name
-        self.name = name
+        self._name = name
 
+    @property
+    def name(self):
+        return '<b>%s</b>'%self._name
 
 
 icons = ObjectList([
@@ -17,7 +20,7 @@ icons = ObjectList([
         Cell('stock_name', gtk.Pixmap, use_stock=True),
         Cell('stock_name', str),
         ]),
-    Column('name', str, 'Name'),
+    Column('name', str, 'Name', use_markup=True),
     ])
 
 for id in gtk.stock_list_ids():

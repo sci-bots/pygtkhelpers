@@ -3,17 +3,19 @@ from pygtkhelpers.utils import gsignal
 
 
 def set_text_renderer(mapper, object, cell):
-    cell.set_property('text', mapper.from_object(object))
+    prop = 'markup' if mapper.use_markup else 'text'
+    cell.set_property(prop, mapper.from_object(object))
 
 def set_stock_renderer(mapper, object, cell):
     cell.set_property('stock-id', mapper.from_object(object))
 
 class Cell(object):
-    def __init__(self, attr, type=str, editable=False, renderers=None, use_stock=False):
+    def __init__(self, attr, type=str, editable=False, renderers=None, use_stock=False, use_markup=False):
         self.attr = attr
         self.type = type
         self.format = "%s"
         self.editable = editable
+        self.use_markup = use_markup
         self.use_stock = use_stock
         if use_stock:
             self.renderers = [set_stock_renderer]
