@@ -1,6 +1,6 @@
 
 from py.test import raises
-from pygtkhelpers.objectlist import ObjectList, Column, Cell
+from pygtkhelpers.ui.objectlist import ObjectList, Column, Cell
 from pygtkhelpers.utils import refresh_gui
 from pygtkhelpers.test import CheckCalled
 
