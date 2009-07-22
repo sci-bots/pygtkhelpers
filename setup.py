@@ -7,6 +7,10 @@ setup(
     author='Ali Afshar',
     author_mail='aafshar@gmail.com',
     description='Helper library for PyGTK',
-    packages=['pygtkhelpers'],
+    packages=[
+        'pygtkhelpers',
+        'pygtkhelpers.ui',
+        'pygtkhelpers.debug',
+    ],
 )
 
