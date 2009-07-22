@@ -3,7 +3,7 @@ class CheckCalled(object):
     def __init__(self, object, signal):
         self.called = None
 
-        def call(*k):
-            self.called = k
+        object.connect(signal, self)
 
-        object.connect(signal, call)
+    def __call__(self, *k):
+        self.called = k
