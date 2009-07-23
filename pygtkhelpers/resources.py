@@ -56,7 +56,24 @@ class _PathPackageResource(PathResourceLocation):
 class _LoaderPackageResource(ResourceLocation):
     # the package has a __loader__
     #XXX: todo
-    pass
+    def __init__(self, package):
+        self.package = package
+        self.loader = package.__loader__
+
+        self.get_data = self.loader.get_data
+
+    def join(self, *names):
+        #XXX: messy name
+        return str(self.package) + '/'.join(names)
+
+    def exists(self, *names):
+        return bool(self.read(*names))
+
+    def read(self, *names):
+        return self.get_data('/'.join(names))
+
+    def __eq__(self, other):
+        self.package is other.package
 
 
 class _SubResource(ResourceLocation):
@@ -64,33 +81,34 @@ class _SubResource(ResourceLocation):
         self.parent = parent
         self.subdir = subdir
 
-    def join(self, *names): return self.parent.join(self.subdir, *names)
-    def exists(self, *names): return self.parent.exists(self.subdir, *names)
-    def read(self, *names): return self.parent.read(self.subdir, *names)
+    def join(self, *names):
+        return self.parent.join(self.subdir, *names)
 
-    def __eq__(self, other):
-        return self.parent == other.parent and self.subdir == other.subdir
+    def exists(self, *names):
+        return self.parent.exists(self.subdir, *names)
 
+    def read(self, *names):
+        return self.parent.read(self.subdir, *names)
 
 
 class PackageResourceLocation(_SubResource):
     def __init__(self, package, subdir):
-        print package
         if isinstance(package, str):
-            print "im"
             self.package = package
             package = __import__(package, fromlist=['*'])
         else:
             self.package = package.__name__
         try:
-            print package
-            self._pkgr = _LoaderPackageResource(package.__loader__)
+            self._pkgr = _LoaderPackageResource(package)
         except AttributeError:
             self._pkgr = _PathPackageResource(package)
         _SubResource.__init__(self, self._pkgr, subdir)
 
     def __repr__(self):
         return '<PackageResourceLocation %r/%r'%(self.package, self.subdir)
+
+    def __eq__(self, other):
+        return self.package == other.package
 
 def _make_res_loc(location):
     try:

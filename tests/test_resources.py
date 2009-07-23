@@ -3,11 +3,24 @@ import tests
 from pygtkhelpers.resources import ResourceManager
 
 #XXX: add something with a __loader__
+
+class FakedLoader(object):
+    __name__ = 'tests'
+    def __init__(self):
+        self.__loader__ = self
+
+    def get_data(self, path):
+        return path == 'ui/test_slave.ui'
+
+
 locations = {
     'path': 'tests/ui',
     'package_name': ('tests', 'ui'),
     'package_instance': (tests, 'ui'),
+    'package_loader': (FakedLoader(), 'ui')
 }
+
+
 
 def pytest_generate_tests(metafunc):
     for name, location in locations.items():
