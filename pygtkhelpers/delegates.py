@@ -83,18 +83,13 @@ class BaseDelegate(gobject.GObject):
     def create_default_toplevel(self):
         raise NotImplementedError
 
-    def _calculate_builder_path(self):
-        if self.builder_path:
-            self.builder_path = os.path.abspath(self.builder_path)
-        elif self.builder_file:
-            self.builder_path = resource_manager.get_resource('ui', self.builder_file)
-
     def _load_builder(self):
-        self._calculate_builder_path()
-        if not self.builder_path:
-            return
         builder = gtk.Builder()
-        builder.add_from_file(self.builder_path)
+        if self.builder_path:
+            builder.add_from_file(self.builder_path)
+        elif self.builder_file:
+            builder.add_from_string(resource_manager.read('ui', self.builder_file))
+        else: return
         self._toplevel = self.get_builder_toplevel(builder)
         for obj in builder.get_objects():
             setattr(self, obj.get_name(), obj)
