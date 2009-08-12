@@ -2,10 +2,6 @@
 """
     :copyright: 2005-2008 by The PIDA Project
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
-
-    .. warning:
-
-        this stuff need you to initialize gtk threading!!!
 """
 
 
@@ -38,7 +34,7 @@ class AsyncTask(object):
     """
     def __init__(self, work_callback=None, loop_callback=None, daemon=True):
         self.counter = 0
-        
+        gobject.threads_init() #the glib mainloop doesn't love us else
         self.daemon = daemon
 
         if work_callback is not None:
