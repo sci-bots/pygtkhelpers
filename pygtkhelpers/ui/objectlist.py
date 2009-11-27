@@ -10,13 +10,20 @@ def set_stock_renderer(mapper, object, cell):
     cell.set_property('stock-id', mapper.from_object(object))
 
 class Cell(object):
-    def __init__(self, attr, type=str, editable=False, renderers=None, use_stock=False, use_markup=False):
+    def __init__(self, attr,
+                 type=str,
+                 editable=False,
+                 renderers=None,
+                 use_stock=False,
+                 use_markup=False,
+                 choices=None):
         self.attr = attr
         self.type = type
         self.format = "%s"
         self.editable = editable
         self.use_markup = use_markup
         self.use_stock = use_stock
+        self.choices = choices
         if use_stock:
             self.renderers = [set_stock_renderer]
         else:
@@ -44,11 +51,30 @@ class Cell(object):
         #XXX: extend to more types
         if self.use_stock:
             cell = gtk.CellRendererPixbuf()
+        elif self.choices:
+            model = gtk.ListStore(str) #XXX: hack, propper types
+            for choice in self.choices:
+                model.append([choice])
+            cell = gtk.CellRendererCombo()
+            cell.props.model = model
+            cell.props.editable = True
+            cell.props.text_column = 0
+            def changed(_, path, new_iter):#XXX:
+                object = objectlist[path]
+                #XXX: full converter
+                value = cell.props.model[new_iter][0]
+
+                setattr(object, self.attr, value)
+                objectlist.emit('item-changed', object, self.attr, value)
+            cell.connect('changed', changed)
+
+
+
         else:
             cell = gtk.CellRendererText()
             cell.props.editable = self.editable
         cell.set_data('pygtkhelpers::cell', self)
-        if self.editable:
+        if self.editable and not self.choices:
             def simple_set(cellrenderer, path, text):
                 object = objectlist[path]
                 #XXX: full converter
