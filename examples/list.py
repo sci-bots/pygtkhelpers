@@ -17,7 +17,10 @@ class User(object):
 listing = ObjectList([
     Column('name', str, editable=True),
     Column('age', int, editable=True),
-    Column('sex', str, choices=('m', 'f'))
+    Column('sex', str, choices=[
+        ('m', 'Male'),
+        ('f', 'Female'),
+        ]),
     ])
 
 listing.append(

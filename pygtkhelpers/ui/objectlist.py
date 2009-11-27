@@ -52,13 +52,23 @@ class Cell(object):
         if self.use_stock:
             cell = gtk.CellRendererPixbuf()
         elif self.choices:
-            model = gtk.ListStore(str) #XXX: hack, propper types
+            #XXX: a mapping?
+            if isinstance(self.choices[0], tuple):
+                model = gtk.ListStore(str, str) #XXX: hack, propper types
+                text_col = 1
+            else:
+                model = gtk.ListStore(str) #XXX: hack, propper types
+                text_col = 0
+
+
             for choice in self.choices:
-                model.append([choice])
+                if not isinstance(choice, tuple):
+                    choice = [choice]
+                model.append(choice)
             cell = gtk.CellRendererCombo()
             cell.props.model = model
             cell.props.editable = True
-            cell.props.text_column = 0
+            cell.props.text_column = text_col
             def changed(_, path, new_iter):#XXX:
                 object = objectlist[path]
                 #XXX: full converter
