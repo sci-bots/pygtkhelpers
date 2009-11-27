@@ -8,6 +8,8 @@ from pygtkhelpers.utils import (
         enum_to_string, flags_to_string
         )
 
+from pygtkhelpers.delegates import BaseDelegate
+
 def test_gsignal():
 
     class T1(gobject.GObject):
@@ -25,7 +27,11 @@ def test_gsignal():
 
 def test_gproperty():
 
-    class T2(gobject.GObject):
+    class T2(BaseDelegate):
+
+        def create_default_toplevel(self):
+            return
+
         __gtype_name__ = 'test2'
         gproperty('a', int, default=0)
         assert_raises(TypeError, gproperty, 'b', bool)
