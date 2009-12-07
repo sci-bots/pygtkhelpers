@@ -4,10 +4,7 @@ from nose.tools import *
 import gtk, gobject
 
 from pygtkhelpers.delegates import SlaveView, ToplevelView, BaseDelegate
-from pygtkhelpers.resources import resource_manager
 from pygtkhelpers.utils import refresh_gui, gproperty
-
-resource_manager.add_resource('ui', 'tests/ui')
 
 class _Delegate1(BaseDelegate):
     pass

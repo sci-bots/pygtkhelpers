@@ -11,11 +11,11 @@
 """
 
 
-import os
+import sys
+import pkgutil
 
 import gobject, gtk
 
-from .resources import resource_manager
 from .utils import gsignal
 
 
@@ -54,6 +54,15 @@ class BaseDelegate(gobject.GObject):
     builder_file = None
     builder_path = None
     toplevel_name = 'main'
+    builder_file_patterns = [
+        #this should be the default
+        'ui/%s.ui',
+        'ui/%s',
+        # commonly used in applications like for example pida
+        'glade/%s.glade',
+        'glade/%s',
+    ]
+
 
     #XXX: should those get self.model as extra parameter?
     # they get the delegate, so its there as delegate.model
@@ -84,11 +93,28 @@ class BaseDelegate(gobject.GObject):
         raise NotImplementedError
 
     def _load_builder(self):
+
         builder = gtk.Builder()
         if self.builder_path:
             builder.add_from_file(self.builder_path)
         elif self.builder_file:
-            builder.add_from_string(resource_manager.read('ui', self.builder_file))
+            mod_or_pkg = self.__class__.__module__
+            if mod_or_pkg in sys.modules:
+                pkg = mod_or_pkg
+            else:
+                pkg = '.'.join(mod_or_pkg.split('.')[:-1])
+            for pattern in self.builder_file_patterns:
+                file = pattern % self.builder_file
+                try:
+                    data = pkgutil.get_data(pkg, file)
+                except IOError:
+                    continue
+                if data is not None:
+                    break
+            if not data: #XXX: better debugging of the causes?
+                return 
+
+            builder.add_from_string(data)
         else: return
         self._toplevel = self.get_builder_toplevel(builder)
         for obj in builder.get_objects():
