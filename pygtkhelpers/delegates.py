@@ -103,6 +103,7 @@ class BaseDelegate(gobject.GObject):
                 pkg = mod_or_pkg
             else:
                 pkg = '.'.join(mod_or_pkg.split('.')[:-1])
+            data = None
             for pattern in self.builder_file_patterns:
                 file = pattern % self.builder_file
                 try:
