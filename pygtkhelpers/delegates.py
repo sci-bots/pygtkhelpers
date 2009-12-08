@@ -146,7 +146,6 @@ class BaseDelegate(gobject.GObject):
             if ((name.startswith('on_') or
                     name.startswith('after_')) and
                     '__' in  name):
-                print name
                 yield name
 
     def _get_prop_handler(self, propname, action):
