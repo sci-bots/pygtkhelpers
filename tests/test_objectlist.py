@@ -1,5 +1,5 @@
 
-from py.test import raises
+from py.test import raises, mark
 from pygtkhelpers.ui.objectlist import ObjectList, Column, Cell
 from pygtkhelpers.utils import refresh_gui
 from pygtkhelpers.test import CheckCalled
@@ -53,6 +53,7 @@ def test_column_getattr():
     assert name.from_object(user) == 'hans'
     assert age.from_object(user) == 22
 
+
 def test_column_title():
     col = Column("name")
     view_col = col.create_treecolumn(None)
@@ -73,6 +74,11 @@ def test_make_cells():
 
     assert len(view_col.get_cells()) == 2
 
+@mark.xfail #("not yet implemented")
+def test_cell_expandable():
+    col = Column(title='Test', cells=[
+        Cell('name', int, expand=True),
+        ])
 
 
 def test_edit_name():
