@@ -47,6 +47,14 @@ button_types = {
     ),
 }
 
+def _destroy(obj):
+    #XXX: util?
+    obj.destroy()
+    if not gtk.main_level():
+        from pygtkhelpers.utils import refresh_gui
+        refresh_gui()
+
+
 
 class AlertDialog(gtk.Dialog):
     def __init__(self, parent, flags,
@@ -163,11 +171,7 @@ def _message_dialog(type, short,
         _before_run(dialog)
 
     response = dialog.run()
-    dialog.destroy()
-
-    if not gtk.main_level():
-        from pygtkhelpers.utils import refresh_gui
-        refresh_gui()
+    _destroy(dialog)
     return response
 
 
@@ -185,3 +189,100 @@ warning = partial(simple, gtk.MESSAGE_WARNING)
 yesno = partial(simple, gtk.MESSAGE_WARNING,
                 default=gtk.RESPONSE_YES,
                 buttons=gtk.BUTTONS_YES_NO,)
+
+
+
+def open(title='Open', parent=None, patterns=None,
+         folder=None, filter=None, _before_run=None):
+    """an open dialog
+    :param parent: window or None
+    :param patterns: file match patterns
+    :param folder: initial folder
+    :param filter: file filter
+
+    use of filter and patterns at the same time is invalid
+    """
+
+    assert not (patterns and filter)
+
+    filechooser = gtk.FileChooserDialog(title,
+                                        parent,
+                                        gtk.FILE_CHOOSER_ACTION_OPEN,
+                                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                         gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+    if patterns or filter:
+        if not filter:
+            filter = gtk.FileFilter()
+            for pattern in patterns:
+                filter.add_pattern(pattern)
+        filechooser.set_filter(filter)
+    filechooser.set_default_response(gtk.RESPONSE_OK)
+
+    if folder:
+        filechooser.set_current_folder(folder)
+
+    try:
+        if _before_run is not None:
+            _before_run(filechooser)
+        response = filechooser.run()
+        if response != gtk.RESPONSE_OK:
+            return
+
+        path = filechooser.get_filename()
+        if path and os.access(path, os.R_OK):
+            return path
+
+    finally:
+        _destroy(filechooser)
+
+
+
+def ask_overwrite(filename, parent=None, **kw):
+    submsg1 = 'A file named "%s" already exists' % os.path.abspath(filename)
+    submsg2 = 'Do you wish to replace it with the current one?'
+    text = ('<span weight="bold" size="larger">%s</span>\n'
+            '\n%s\n' % (submsg1, submsg2))
+    result = messagedialog(gtk.MESSAGE_ERROR, text, parent=parent,
+                           buttons=((gtk.STOCK_CANCEL,
+                                     gtk.RESPONSE_CANCEL),
+                                    (_("Replace"),
+                                     gtk.RESPONSE_YES)),
+                                    **kw)
+    return result == gtk.RESPONSE_YES
+
+
+
+def save(title='Save', parent=None, current_name='', folder=None,
+        _before_run=None, _before_overwrite=None):
+    """Displays a save dialog."""
+    filechooser = gtk.FileChooserDialog(title, parent,
+                                        gtk.FILE_CHOOSER_ACTION_SAVE,
+                                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                         gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+    if current_name:
+        filechooser.set_current_name(current_name)
+    filechooser.set_default_response(gtk.RESPONSE_OK)
+
+    if folder:
+        filechooser.set_current_folder(folder)
+
+    path = None
+    while True:
+        if _before_run:
+            _before_run(filechooser)
+            _before_run = None #XXX: find better implications
+        response = filechooser.run()
+        if response != gtk.RESPONSE_OK:
+            path = None
+            break
+
+        path = filechooser.get_filename()
+        if not os.path.exists(path):
+            break
+
+        if ask_overwrite(path, parent, _before_run=_before_overwrite):
+            break
+        _before_overwrite = None #XXX: same
+    _destroy(filechooser)
+    return path
+
