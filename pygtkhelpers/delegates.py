@@ -113,7 +113,7 @@ class BaseDelegate(gobject.GObject):
                 if data is not None:
                     break
             if not data: #XXX: better debugging of the causes?
-                return 
+                return
 
             builder.add_from_string(data)
         else: return

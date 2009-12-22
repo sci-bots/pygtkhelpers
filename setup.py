@@ -13,4 +13,3 @@ setup(
         'pygtkhelpers.debug',
     ],
 )
-

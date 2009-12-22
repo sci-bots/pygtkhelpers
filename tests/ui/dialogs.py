@@ -11,4 +11,3 @@ def with_response(response, starter, *k, **kw):
 
 def test_info():
     with_response(1, info, 'hi')
-

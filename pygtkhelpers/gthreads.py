@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
     :copyright: 2005-2008 by The PIDA Project
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
@@ -20,7 +20,7 @@ class AsyncTask(object):
     it's still working), thus there's no problem when the task takes too long.
     You can either extend this class or pass two callable objects through its
     constructor.
-    
+
     The first on is the 'work_callback' this is where the lengthy
     operation must be performed. This object may return an object or a group
     of objects, these will be passed onto the second callback 'loop_callback'.
@@ -28,7 +28,7 @@ class AsyncTask(object):
     object that is not a tuple then it's passed directly to the loop callback.
     If you return `None` no arguments are supplied. If you return a tuple
     object then these will be the arguments sent to the loop callback.
-    
+
     The loop callback is called inside Gtk+'s main loop and it's where you
     should stick code that affects the UI.
     """
@@ -41,7 +41,7 @@ class AsyncTask(object):
             self.work_callback = work_callback
         if loop_callback is not None:
             self.loop_callback = loop_callback
-    
+
     def start(self, *args, **kwargs):
         """
         * not threadsave
@@ -54,13 +54,13 @@ class AsyncTask(object):
                 )
         thread.setDaemon(self.daemon)
         thread.start()
-    
+
     def work_callback(self):
         pass
-    
+
     def loop_callback(self):
         pass
-    
+
     def _work_callback(self, counter, *args, **kwargs):
         ret = self.work_callback(*args, **kwargs)
         #tuple necessary cause idle_add wont allow more args
@@ -70,12 +70,12 @@ class AsyncTask(object):
         counter, ret = vargs
         if counter != self.counter:
             return
-        
+
         if ret is None:
             ret = ()
         if not isinstance(ret, tuple):
             ret = (ret,)
-            
+
         self.loop_callback(*ret)
 
 
@@ -83,14 +83,14 @@ class GeneratorTask(AsyncTask):
     """
     The diference between this task and AsyncTask
     is that the `work` callback returns a generator.
-    For each value the generator yields 
+    For each value the generator yields
     the `loop` callback is called inside Gtk+'s main loop.
-    
+
     :param work: callback that returns results
     :param loop: callback inside the gtk thread
     :keyword priority: gtk priority the loop callback will have
     :keyword pass_generator:
-        will pass the generator instance 
+        will pass the generator instance
         as `generator_task` to the worker callback
 
     A simple example::
@@ -161,7 +161,7 @@ def invoke_in_mainloop(func, *args, **kwargs):
             data = func(*args, **kwargs)
             results.put(data)
             results.put(None)
-        except BaseException, e: #XXX: handle 
+        except BaseException, e: #XXX: handle
             results.put(None)
             results.put(e)
             raise
@@ -175,6 +175,3 @@ def invoke_in_mainloop(func, *args, **kwargs):
         return data
     else:
         raise exception
-
-
-

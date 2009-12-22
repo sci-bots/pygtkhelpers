@@ -60,7 +60,3 @@ def test_invoke_in_mainloop():
     # timeout needed for asynctask cleanup
     refresh_gui(.2)
     assert data == [1]
-
-
-
-

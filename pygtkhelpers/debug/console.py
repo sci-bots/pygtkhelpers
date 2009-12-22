@@ -176,8 +176,8 @@ class _ReadLine(object):
         end = self.__get_end()
         if iter.compare(self.__get_start()) >= 0 and \
            iter.compare(self.__get_end()) <= 0:
-                buffer.move_mark_by_name("cursor", iter)
-                self.scroll_to_mark(self.cursor, 0.2)
+            buffer.move_mark_by_name("cursor", iter)
+            self.scroll_to_mark(self.cursor, 0.2)
 
     def __insert(self, iter, text):
         self.do_insert = True

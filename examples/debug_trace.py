@@ -22,14 +22,8 @@ def _main():
     b.connect("clicked", _test)
     w.add(b)
     w.show_all()
-    
+
     gtk.main()
 
 if __name__=='__main__':
     _main()
-
-
-
-
-
-

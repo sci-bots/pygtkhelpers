@@ -222,5 +222,3 @@ def flags_to_string(flags_value, flags=None, pspec=None):
     flags_names.sort()
     retval = ' | '.join(flags_names)
     return retval
-
-

@@ -14,14 +14,13 @@ class IconInfo(object):
     def name(self):
         return '<b>%s</b>'%self._name
 
-
 icons = ObjectList([
     Column(title='Stock Data', cells=[
         Cell('stock_name', gtk.Pixmap, use_stock=True),
         Cell('stock_name', str),
-        ]),
+        ], sorted=False),
     Column('name', str, 'Name', use_markup=True),
-    ])
+], sortable=True)
 
 for id in gtk.stock_list_ids():
     lookup = gtk.stock_lookup(id)
@@ -41,4 +40,3 @@ win.set_size_request(600, 400)
 win.show_all()
 win.connect('destroy', gtk.main_quit)
 gtk.main()
-

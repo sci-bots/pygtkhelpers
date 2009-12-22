@@ -96,5 +96,3 @@ def test_edit_name():
     refresh_gui()
     assert user.name=='peter'
     assert item_changed.called
-
-

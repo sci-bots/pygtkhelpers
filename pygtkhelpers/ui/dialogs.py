@@ -119,7 +119,7 @@ class AlertDialog(gtk.Dialog):
         self.expander.show()
 
 
-def _message_dialog(type, short, 
+def _message_dialog(type, short,
                     long=None,
                     parent=None,
                     buttons=gtk.BUTTONS_OK,
@@ -171,7 +171,7 @@ def _message_dialog(type, short,
     return response
 
 
-def simple(type, short, long=None, 
+def simple(type, short, long=None,
            parent=None, buttons=gtk.BUTTONS_OK, default=None, **kw):
     if buttons == gtk.BUTTONS_OK:
         default = gtk.RESPONSE_OK

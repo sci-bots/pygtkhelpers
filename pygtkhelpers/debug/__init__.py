@@ -6,8 +6,7 @@
 """
 
 from .dialogs import (
-        SimpleExceptionDialog, 
-        ExtendedExceptionDialog, 
+        SimpleExceptionDialog,
+        ExtendedExceptionDialog,
         install_hook,
         )
-

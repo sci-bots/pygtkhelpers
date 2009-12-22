@@ -22,7 +22,7 @@ class PersonEditor(SlaveView):
     def on_listing__item_changed(self, listing, item, attr, value):
         if item is self.detail.model:
             # cause an ui update
-            self.detail.model = item 
+            self.detail.model = item
 
     def on_detail__model_updated(self, detail, attribute, value):
         self.listing.objects.update(detail.model)
@@ -35,4 +35,3 @@ if __name__ == '__main__':
     editor.append_item(Person('Ali', 'Afshar', 'aafshar@gmail.com'))
     editor.append_item(Person('Hilda', 'Afshar', 'hafshar@gmail.com'))
     run_in_window(editor)
-

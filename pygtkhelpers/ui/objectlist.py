@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 import gtk
 from pygtkhelpers.utils import gsignal
 
@@ -6,17 +7,15 @@ def set_text_renderer(mapper, object, cell):
     prop = 'markup' if mapper.use_markup else 'text'
     cell.set_property(prop, mapper.from_object(object))
 
+
 def set_stock_renderer(mapper, object, cell):
     cell.set_property('stock-id', mapper.from_object(object))
 
+
 class Cell(object):
-    def __init__(self, attr,
-                 type=str,
-                 editable=False,
-                 renderers=None,
-                 use_stock=False,
-                 use_markup=False,
-                 choices=None):
+
+    def __init__(self, attr, type=str, editable=False, renderers=None,
+                 use_stock=False, use_markup=False, choices=None):
         self.attr = attr
         self.type = type
         self.format = "%s"
@@ -77,9 +76,6 @@ class Cell(object):
                 setattr(object, self.attr, value)
                 objectlist.emit('item-changed', object, self.attr, value)
             cell.connect('changed', changed)
-
-
-
         else:
             cell = gtk.CellRendererText()
             cell.props.editable = self.editable
@@ -94,22 +90,25 @@ class Cell(object):
             cell.connect('edited', simple_set)
         return cell
 
-class Column(object):
+
+class Column(gtk.TreeViewColumn):
     #XXX: handle cells propperly
-    def __init__(self, attr=None, type=str, title=None, **kw):
+
+    def __init__(self, attr=None, type=str, title=None, **kwargs):
 
         #XXX: better error messages
         assert title or attr, "Columns need a title or an attribute to infer it"
-        assert attr or 'cells' in kw, 'Columns need a attribute or a set of cells'
+        assert attr or 'cells' in kwargs, 'Columns need a attribute or a set of cells'
 
         self.title = title or attr.capitalize()
+        self.attr = attr
+        self.sorted = kwargs.pop('sorted', True)
 
-        if 'cells' in kw:
-            self.cells = kw['cells']
+        if 'cells' in kwargs:
+            self.cells = kwargs['cells']
         else:
             #XXX: sane arg filter
-            self.cells = [Cell(attr, type, **kw)] 
-
+            self.cells = [Cell(attr, type, **kwargs)]
 
     def create_treecolumn(self, objectlist):
         col = gtk.TreeViewColumn(self.title)
@@ -122,22 +121,37 @@ class Column(object):
             col.set_cell_data_func(view_cell, cell._data_func)
         return col
 
+
 class ObjectList(gtk.TreeView):
 
     gsignal('item-activated', object)
     gsignal('item-changed', object, str, object)
 
-    def __init__(self, columns=(), filtering=False, sorting=False):
+    def __init__(self, columns=(), **kwargs):
         gtk.TreeView.__init__(self)
 
-        self.treeview = gtk.TreeView()
         #XXX: make replacable
         self.model = gtk.ListStore(object)
         self.set_model(self.model)
 
+        # setup sorting
+        self.sortable = kwargs.pop('sortable', True)
+        sort_func = kwargs.pop('sort_func', self._default_sort_func)
+
         self.columns = tuple(columns)
-        for col in columns:
+        for idx, col in enumerate(columns):
             view_col = col.create_treecolumn(self)
+            view_col.set_reorderable(True)
+            view_col.set_sort_indicator(False)
+            # Hack to make soring work right.  Does not sort.
+            view_col.set_sort_order(gtk.SORT_DESCENDING)
+
+            if self.sortable and col.sorted:
+                self.model.set_sort_func(idx, self._default_sort_func,
+                                         (col, col.attr))
+                view_col.set_sort_column_id(idx)
+                view_col.connect('clicked', self.set_sort_by, idx)
+
             view_col.set_data('pygtkhelpers::objectlist', self)
             self.append_column(view_col)
 
@@ -146,6 +160,26 @@ class ObjectList(gtk.TreeView):
         def on_row_activated(self, path, column, *k):
             self.emit('item-activated', self.model[path][0])
         self.connect('row-activated', on_row_activated)
+
+    def set_sort_by(self, column, idx):
+        current = column.get_sort_order
+        asc, desc = gtk.SORT_ASCENDING, gtk.SORT_DESCENDING
+        order = desc if column.get_sort_order() == asc else asc
+
+        title = column.get_title()
+        for col in self.get_columns():
+            if title == col.get_title():
+                order = desc if column.get_sort_order() == asc else asc
+                col.set_sort_indicator(True)
+                col.set_sort_order(order)
+            else:
+                col.set_sort_indicator(False)
+                col.set_sort_order(gtk.SORT_DESCENDING)
+
+    def _default_sort_func(self, model, iter1, iter2, data=None):
+        idx, order = self.model.get_sort_column_id()
+        get_value = self.model.get_value
+        return cmp(get_value(iter1, 0), get_value(iter2, 0))
 
     def __len__(self):
         return len(self.model)
@@ -189,4 +223,3 @@ class ObjectList(gtk.TreeView):
         oid = id(object)
         if oid in self._id_to_iter:
             return self.model.get_string_from_iter(self._id_to_iter[oid])
-

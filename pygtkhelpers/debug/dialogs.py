@@ -114,8 +114,8 @@ class ExtendedExceptionDialog(SimpleExceptionDialog):
 _hook_installed = False
 
 def install_hook(
-        dialog=SimpleExceptionDialog, 
-        invoke_old_hook=False, 
+        dialog=SimpleExceptionDialog,
+        invoke_old_hook=False,
         **extra):
     """
     install the configured exception hook wrapping the old exception hook
@@ -140,4 +140,3 @@ def install_hook(
     assert not _hook_installed
     sys.excepthook = new_hook
     _hook_installed = True
-

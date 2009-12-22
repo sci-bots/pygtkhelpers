@@ -141,4 +141,3 @@ def test_bind_sinal_error_warning():
 
 def test_find_signal_target_warning():
     raises(LookupError, _TestUIDelegateSignalTargetMissing)
-
