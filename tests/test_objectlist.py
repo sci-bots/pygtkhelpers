@@ -74,11 +74,12 @@ def test_make_cells():
 
     assert len(view_col.get_cells()) == 2
 
-@mark.xfail #("not yet implemented")
-def test_cell_expandable():
-    col = Column(title='Test', cells=[
-        Cell('name', int, expand=True),
-        ])
+def test_column_expandable():
+    col = Column('name', expand=True)
+    
+    treeview_column = col.create_treecolumn(None)
+    assert treeview_column.props.expand
+
 
 
 def test_edit_name():

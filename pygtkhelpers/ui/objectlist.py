@@ -15,7 +15,7 @@ def set_stock_renderer(mapper, object, cell):
 class Cell(object):
 
     def __init__(self, attr, type=str, editable=False, renderers=None,
-                 use_stock=False, use_markup=False, choices=None):
+                     use_stock=False, use_markup=False, choices=None):
         self.attr = attr
         self.type = type
         self.format = "%s"
@@ -103,6 +103,7 @@ class Column(gtk.TreeViewColumn):
         self.title = title or attr.capitalize()
         self.attr = attr
         self.sorted = kwargs.pop('sorted', True)
+        self.expand = kwargs.pop('expand', None)
 
         if 'cells' in kwargs:
             self.cells = kwargs['cells']
@@ -113,6 +114,9 @@ class Column(gtk.TreeViewColumn):
     def create_treecolumn(self, objectlist):
         col = gtk.TreeViewColumn(self.title)
         col.set_data('pygtkhelpers::column', self)
+        if self.expand is not None:
+            col.props.expand = self.expand
+
         for cell in self.cells:
             view_cell = cell.create_renderer(self, objectlist)
             view_cell.set_data('pygtkhelpers::column', self)
