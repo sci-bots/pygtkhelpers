@@ -204,11 +204,14 @@ class ObjectList(gtk.TreeView):
         del self._id_to_iter[id(obj)]
         self.model.remove(iter)
 
-    def append(self, item):
+    def append(self, item, select=False):
         if item in self:
             raise ValueError("item %s allready in list"%item )
         modeliter = self.model.append((item,))
         self._id_to_iter[id(item)] = modeliter
+        if select:
+            self.get_selection().select_iter(modeliter)
+            self.set_cursor(self.model[modeliter].path)
 
     def extend(self, iter):
         for item in iter:
@@ -221,6 +224,14 @@ class ObjectList(gtk.TreeView):
     def update(self, item):
         iter = self._id_to_iter[id(item)]
         self.model.set(iter, 0, item)
+
+    def get_selected(self):
+        '''get the currently selected item #XXX: better name'''
+        selection = self.get_selection()
+        model, selected = selection.get_selected()
+        print model, selected
+        if selected is not None:
+            return model[selected][0]
 
 
     def _path_for(self, object):

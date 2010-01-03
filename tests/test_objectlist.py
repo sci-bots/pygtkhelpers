@@ -36,6 +36,19 @@ def test_append():
     #dont allow the same object twice
     raises(ValueError, items.append, user)
 
+def test_append_selected():
+    items = ObjectList(user_columns)
+    user = User(name="hans", age=10)
+    items.append(user, select=True)
+
+    assert items.get_selected() is user
+
+def test_append_unselected():
+    items = ObjectList(user_columns)
+    user = User(name="hans", age=10)
+    items.append(user, select=False)
+    assert items.get_selected() is None
+
 
 def test_extend():
     items = ObjectList(user_columns)
