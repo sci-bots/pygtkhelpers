@@ -93,7 +93,6 @@ class BaseDelegate(gobject.GObject):
         raise NotImplementedError
 
     def _load_builder(self):
-        print 'builder', self.builder_file, self.builder_path
 
         builder = gtk.Builder()
         if self.builder_path:
@@ -105,7 +104,6 @@ class BaseDelegate(gobject.GObject):
             #XXX: more sensible selection!!
             data = None
             for type in self.__class__.__mro__:
-                print type
                 for pattern in self.builder_file_patterns:
                     file = pattern % self.builder_file
                     try:
