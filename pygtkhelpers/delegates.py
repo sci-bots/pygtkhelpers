@@ -10,7 +10,7 @@
     :license: LGPL2 or later
 """
 
-
+import os
 import sys
 import pkgutil
 
@@ -93,27 +93,30 @@ class BaseDelegate(gobject.GObject):
         raise NotImplementedError
 
     def _load_builder(self):
+        print 'builder', self.builder_file, self.builder_path
 
         builder = gtk.Builder()
         if self.builder_path:
+            if not os.path.exists(self.builder_path):
+                raise LookupError(self.__class__, self.builder_path)
             builder.add_from_file(self.builder_path)
         elif self.builder_file:
-            mod_or_pkg = self.__class__.__module__
-            if mod_or_pkg in sys.modules:
-                pkg = mod_or_pkg
-            else:
-                pkg = '.'.join(mod_or_pkg.split('.')[:-1])
+
+            #XXX: more sensible selection!!
             data = None
-            for pattern in self.builder_file_patterns:
-                file = pattern % self.builder_file
-                try:
-                    data = pkgutil.get_data(pkg, file)
-                except IOError:
-                    continue
-                if data is not None:
+            for type in self.__class__.__mro__:
+                print type
+                for pattern in self.builder_file_patterns:
+                    file = pattern % self.builder_file
+                    try:
+                        data = pkgutil.get_data(type.__module__, file)
+                        break
+                    except (IOError, ImportError):
+                        continue
+                if data:
                     break
             if not data: #XXX: better debugging of the causes?
-                return
+                raise LookupError(self.__class__, self.builder_file)
 
             builder.add_from_string(data)
         else: return

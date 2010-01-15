@@ -1,6 +1,5 @@
 
-from nose.tools import *
-
+from py.test import raises
 import gtk, gobject
 
 from pygtkhelpers.delegates import SlaveView, ToplevelView, BaseDelegate
@@ -82,17 +81,31 @@ class _TestUIDelegateSignalTargetMissing(SlaveView):
     def on_button__clicked(self, button):
         pass
 
+
 def test_delegate1():
-    assert_raises(NotImplementedError, _Delegate1)
+    raises(NotImplementedError, _Delegate1)
 
 def test_delegate2():
     t = _Delegate2()
 
 def test_delegatge3():
-    assert_raises(NotImplementedError, _Delegate3)
+    raises(NotImplementedError, _Delegate3)
 
 def test_no_ui_file():
     d = SlaveView()
+
+class MissingUiDelegate(SlaveView):
+    builder_file = 'missing.ui'
+
+class MissingUiDelegate2(SlaveView):
+    builder_path = 'missing.ui'
+
+def test_missing_uifile():
+    raises(LookupError, MissingUiDelegate)
+
+def test_missing_uipath():
+    raises(LookupError, MissingUiDelegate2)
+
 
 def test_signals_list():
     d = _TestDelegate()
@@ -141,3 +154,14 @@ def test_bind_sinal_error_warning():
 
 def test_find_signal_target_warning():
     raises(LookupError, _TestUIDelegateSignalTargetMissing)
+
+
+class NeedsBaseClassUIFileSearch(_TestUIDelegate):
+    __module__ = 'a.big.lie'
+
+def test_uifile_load_from_base():
+    '''
+    a delegate should search base classes for ui definitions
+    first match goes
+    '''
+    NeedsBaseClassUIFileSearch()
