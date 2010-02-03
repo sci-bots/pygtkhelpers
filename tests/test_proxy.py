@@ -20,7 +20,10 @@ def pytest_funcarg__attr_type(request):
 
 def pytest_funcarg__attr(request):
     widget, proxy = request.param
-    return proxy.prop_name
+    try:
+        return proxy.prop_name
+    except AttributeError:
+        py.test.skip('proxy %s lacks a default attribute name'%proxy.__name__)
 
 def pytest_funcarg__proxy(request):
     widget = request.getfuncargvalue('widget')
