@@ -2,22 +2,32 @@ import py
 import gtk
 from pygtkhelpers.proxy import widget_proxies
 
+
 def pytest_generate_tests(metafunc):
     for widget, proxy in widget_proxies.items():
         metafunc.addcall(id=widget.__name__, param=(widget, proxy))
 
+
 def pytest_funcarg__widget(request):
-    return request.param[0]()
+    widget_type = request.param[0]
+    widget = widget_type()
+    # XXX but I don't know py.test
+    if widget_type in [gtk.SpinButton, gtk.HScale, gtk.VScale]:
+        widget.set_range(0, 999)
+    return widget
+
+
 
 def pytest_funcarg__attr_type(request):
     widget, proxy = request.param
     attr = proxy.prop_name
     return widget
-    
+
 
 def pytest_funcarg__proxy(request):
     widget = request.getfuncargvalue('widget')
     return request.param[1](widget)
+
 
 def pytest_funcarg__value(request):
     try:
@@ -31,6 +41,9 @@ widget_test_values = {
     gtk.CheckButton: True,
     gtk.CheckMenuItem: True,
     gtk.ColorButton: gtk.gdk.color_parse('red'),
+    gtk.SpinButton: 1,
+    gtk.HScale: 100,
+    gtk.VScale: 8.3,
 }
 
 
