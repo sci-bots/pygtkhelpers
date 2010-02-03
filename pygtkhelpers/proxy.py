@@ -52,11 +52,13 @@ class GObjectProxy(gobject.GObject):
         self.set_widget_value(value)
         self.unblock()
 
-    def widget_changed(self):
+    def widget_changed(self, *args):
         """Called to indicate that a widget's value has been changed.
 
         This will usually be called from a proxy implementation on response to
         whichever signal was connected in `connect_widget`
+
+        The *args are there so you can use this as a signal handler.
         """
         self.emit('changed', self.get_widget_value())
 
@@ -93,7 +95,6 @@ class SinglePropertyGObjectProxy(GObjectProxy):
     prop_name = None
 
     def set_widget_value(self, value):
-        print value, 'value'
         return self.widget.set_property(self.prop_name, value)
 
     def get_widget_value(self):
@@ -105,10 +106,7 @@ class GtkEntryProxy(SinglePropertyGObjectProxy):
     prop_name = 'text'
 
     def connect_widget(self):
-        self.widget.connect('changed', self._on_changed)
-
-    def _on_changed(self, entry):
-        self.widget_changed()
+        self.widget.connect('changed', self.widget_changed)
 
 
 class GtkToggleButtonProxy(SinglePropertyGObjectProxy):
@@ -116,10 +114,7 @@ class GtkToggleButtonProxy(SinglePropertyGObjectProxy):
     prop_name = 'active'
 
     def connect_widget(self):
-        self.widget.connect('toggled', self._on_toggled)
-
-    def _on_toggled(self, toggle):
-        self.widget_changed()
+        self.widget.connect('toggled', self.widget_changed)
 
 
 class GtkColorButtonProxy(SinglePropertyGObjectProxy):
@@ -127,10 +122,20 @@ class GtkColorButtonProxy(SinglePropertyGObjectProxy):
     prop_name = 'color'
 
     def connect_widget(self):
-        self.widget.connect('color-set', self._on_color_set)
+        self.widget.connect('color-set', self.widget_changed)
 
-    def _on_color_set(self, colorbutton):
-        self.widget_changed()
+
+class GtkRangeProxy(GObjectProxy):
+
+    def get_widget_value(self):
+        return self.widget.get_value()
+
+    def set_widget_value(self, value):
+        self.widget.set_value(value)
+
+    def connect_widget(self):
+        self.widget.connect('value-changed', self.widget_changed)
+
 
 
 class GtkComboBoxProxy(GObjectProxy):
@@ -145,10 +150,7 @@ class GtkComboBoxProxy(GObjectProxy):
                 self.model.set_active(i)
 
     def connect_widget(self):
-        self.widget.connect('changed', self._on_changed)
-
-    def _on_changed(self, combobox):
-        self.widget_changed()
+        self.widget.connect('changed', self.widget_changed)
 
     @property
     def active_row(self):
@@ -174,5 +176,8 @@ widget_proxies = {
     gtk.CheckMenuItem: GtkToggleButtonProxy,
     gtk.ColorButton: GtkColorButtonProxy,
     gtk.ComboBox: GtkComboBoxProxy,
+    gtk.SpinButton: GtkRangeProxy,
+    gtk.HScale: GtkRangeProxy,
+    gtk.VScale: GtkRangeProxy,
 }
 
