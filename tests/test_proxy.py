@@ -30,6 +30,7 @@ widget_test_values = {
     gtk.ToggleButton: True,
     gtk.CheckButton: True,
     gtk.CheckMenuItem: True,
+    gtk.ColorButton: gtk.gdk.color_parse('red'),
 }
 
 
