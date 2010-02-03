@@ -11,7 +11,6 @@ def pytest_funcarg__widget(request):
 
 def pytest_funcarg__attr_type(request):
     widget, proxy = request.param
-    attr = proxy.prop_name
     return widget
     
 def pytest_funcarg__attr(request):
