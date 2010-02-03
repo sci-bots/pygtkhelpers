@@ -2,11 +2,9 @@ import py
 import gtk
 from pygtkhelpers.proxy import widget_proxies
 
-
 def pytest_generate_tests(metafunc):
     for widget, proxy in widget_proxies.items():
         metafunc.addcall(id=widget.__name__, param=(widget, proxy))
-
 
 def pytest_funcarg__widget(request):
     widget_type = request.param[0]
@@ -16,18 +14,17 @@ def pytest_funcarg__widget(request):
         widget.set_range(0, 999)
     return widget
 
-
-
 def pytest_funcarg__attr_type(request):
     widget, proxy = request.param
-    attr = proxy.prop_name
     return widget
 
+def pytest_funcarg__attr(request):
+    widget, proxy = request.param
+    return proxy.prop_name
 
 def pytest_funcarg__proxy(request):
     widget = request.getfuncargvalue('widget')
     return request.param[1](widget)
-
 
 def pytest_funcarg__value(request):
     try:
@@ -64,9 +61,9 @@ def test_update_emits_changed(proxy, value):
     print data
     assert len(data)==1
 
-#def test_widget_update_then_read(proxy, widget, attr, value):
-#    widget.set_property(attr, value)
-#    assert proxy.read() == value
+def test_widget_update_then_read(proxy, widget, attr, value):
+    widget.set_property(attr, value)
+    assert proxy.read() == value
 
 def test_update_internal_wont_emit_changed(proxy, value):
     data = []
