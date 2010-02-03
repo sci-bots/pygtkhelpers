@@ -172,6 +172,7 @@ widget_proxies = {
     gtk.ToggleButton: GtkToggleButtonProxy,
     gtk.CheckButton: GtkToggleButtonProxy,
     gtk.CheckMenuItem: GtkToggleButtonProxy,
+    gtk.ColorButton: GtkColorButtonProxy,
     gtk.ComboBox: GtkComboBoxProxy,
 }
 
