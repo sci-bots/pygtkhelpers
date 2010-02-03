@@ -93,6 +93,7 @@ class SinglePropertyGObjectProxy(GObjectProxy):
     """
 
     prop_name = None
+    signal_name = None
 
     def set_widget_value(self, value):
         return self.widget.set_property(self.prop_name, value)
@@ -100,29 +101,24 @@ class SinglePropertyGObjectProxy(GObjectProxy):
     def get_widget_value(self):
         return self.widget.get_property(self.prop_name)
 
+    def connect_widget(self):
+        self.widget.connect(self.signal_name, self.widget_changed)
+
 
 class GtkEntryProxy(SinglePropertyGObjectProxy):
-
     prop_name = 'text'
-
-    def connect_widget(self):
-        self.widget.connect('changed', self.widget_changed)
+    signal_name = 'changed'
 
 
 class GtkToggleButtonProxy(SinglePropertyGObjectProxy):
-
     prop_name = 'active'
-
-    def connect_widget(self):
-        self.widget.connect('toggled', self.widget_changed)
+    signal_name = 'toggled'
 
 
 class GtkColorButtonProxy(SinglePropertyGObjectProxy):
 
     prop_name = 'color'
-
-    def connect_widget(self):
-        self.widget.connect('color-set', self.widget_changed)
+    signal_name = 'color-set'
 
 
 class GtkRangeProxy(GObjectProxy):
