@@ -1,3 +1,4 @@
+import py
 import gtk
 from pygtkhelpers.proxy import widget_proxies
 
@@ -19,7 +20,10 @@ def pytest_funcarg__proxy(request):
     return request.param[1](widget)
 
 def pytest_funcarg__value(request):
-    return widget_test_values[request.param[0]]
+    try:
+        return widget_test_values[request.param[0]]
+    except KeyError:
+        py.test.skip('missing defaults for class %s'%request.param[0])
 
 widget_test_values = {
     gtk.Entry: 'test',
