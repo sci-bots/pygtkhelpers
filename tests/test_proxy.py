@@ -14,6 +14,10 @@ def pytest_funcarg__attr_type(request):
     attr = proxy.prop_name
     return widget
     
+def pytest_funcarg__attr(request):
+    widget, proxy = request.param
+    return proxy.prop_name
+    
 
 def pytest_funcarg__proxy(request):
     widget = request.getfuncargvalue('widget')
@@ -44,4 +48,20 @@ def test_update_and_read(proxy, value):
     assert data == value
 
 
+def test_update_emits_changed(proxy, value):
+    data = []
+    proxy.connect('changed', lambda p, d: data.append(d))
+    proxy.update(value)
+    print data
+    assert len(data)==1
 
+def test_widget_update_then_read(proxy, widget, attr, value):
+    widget.set_property(attr, value)
+    assert proxy.read() == value
+
+def test_update_internal_wont_emit_changed(proxy, value):
+    data = []
+    proxy.connect('changed', lambda p, d: data.append(d))
+    proxy.update_internal(value)
+    print data
+    assert len(data)==0
