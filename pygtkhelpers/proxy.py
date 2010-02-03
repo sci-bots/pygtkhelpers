@@ -93,6 +93,7 @@ class SinglePropertyGObjectProxy(GObjectProxy):
     prop_name = None
 
     def set_widget_value(self, value):
+        print value, 'value'
         return self.widget.set_property(self.prop_name, value)
 
     def get_widget_value(self):
@@ -132,10 +133,45 @@ class GtkColorButtonProxy(SinglePropertyGObjectProxy):
         self.widget_changed()
 
 
+class GtkComboBoxProxy(GObjectProxy):
+
+    def get_widget_value(self):
+        return self.get_row_value(self.active_row)
+
+    def set_widget_value(self, value):
+        # what a pain in the arse
+        for i, row in enumerate(self.model):
+            if self.get_row_value(row) == value:
+                self.model.set_active(i)
+
+    def connect_widget(self):
+        self.widget.connect('changed', self._on_changed)
+
+    def _on_changed(self, combobox):
+        self.widget_changed()
+
+    @property
+    def active_row(self):
+        return self.model[self.widget.get_active()]
+
+    @property
+    def model(self):
+        return self.widget.get_model()
+
+    def get_row_value(self, row):
+        value = row[1:]
+        if not value:
+            value = row[0]
+        elif len(value) == 1:
+            value = value[0]
+        return value
+
+
 widget_proxies = {
     gtk.Entry: GtkEntryProxy,
     gtk.ToggleButton: GtkToggleButtonProxy,
     gtk.CheckButton: GtkToggleButtonProxy,
     gtk.CheckMenuItem: GtkToggleButtonProxy,
+    gtk.ComboBox: GtkComboBoxProxy,
 }
 
