@@ -1,7 +1,7 @@
 
 # proxying
 
-import gobject
+import gobject, gtk
 
 from pygtkhelpers.utils import gsignal
 
@@ -121,9 +121,17 @@ class GtkToggleButtonProxy(SinglePropertyGObjectProxy):
         self.widget_changed()
 
 
+class GtkColorButtonProxy(SinglePropertyGObjectProxy):
+
+    prop_name = 'color'
+
+    
+
+
 widget_proxies = {
     gtk.Entry: GtkEntryProxy,
     gtk.ToggleButton: GtkToggleButtonProxy,
     gtk.CheckButton: GtkToggleButtonProxy,
+    gtk.CheckMenuItem: GtkToggleButtonProxy,
 }
 
