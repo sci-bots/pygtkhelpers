@@ -28,12 +28,12 @@ class GObjectProxy(gobject.GObject):
         """Update the widget's value
         """
         self.update_internal(value)
-        self.emit('changed', self.get_value())
+        self.emit('changed', self.get_widget_value())
 
     def read(self):
         """Get the widget's value
         """
-        return self.get_value()
+        return self.get_widget_value()
 
     # implementor API
 
