@@ -58,7 +58,7 @@ class GObjectProxy(gobject.GObject):
         This will usually be called from a proxy implementation on response to
         whichever signal was connected in `connect_widget`
         """
-        self.emit('changed', self.get_value())
+        self.emit('changed', self.get_widget_value())
 
     def set_widget_value(self, value):
         """Set the value of the widget.
@@ -125,7 +125,11 @@ class GtkColorButtonProxy(SinglePropertyGObjectProxy):
 
     prop_name = 'color'
 
-    
+    def connect_widget(self):
+        self.widget.connect('color-set', self._on_color_set)
+
+    def _on_color_set(self, colorbutton):
+        self.widget_changed()
 
 
 widget_proxies = {
