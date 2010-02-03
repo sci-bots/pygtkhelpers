@@ -110,7 +110,20 @@ class GtkEntryProxy(SinglePropertyGObjectProxy):
         self.widget_changed()
 
 
+class GtkToggleButtonProxy(SinglePropertyGObjectProxy):
+
+    prop_name = 'active'
+
+    def connect_widget(self):
+        self.widget.connect('toggled', self._on_toggled)
+
+    def _on_toggled(self, toggle):
+        self.widget_changed()
+
+
 widget_proxies = {
-    gtk.Entry: GtkEntryProxy
+    gtk.Entry: GtkEntryProxy,
+    gtk.ToggleButton: GtkToggleButtonProxy,
+    gtk.CheckButton: GtkToggleButtonProxy,
 }
 
