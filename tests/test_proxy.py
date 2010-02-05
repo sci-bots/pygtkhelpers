@@ -1,6 +1,6 @@
 import py
 import gtk
-from pygtkhelpers.proxy import widget_proxies
+from pygtkhelpers.proxy import widget_proxies, StringList
 
 def pytest_generate_tests(metafunc):
     for widget, proxy in widget_proxies.items():
@@ -44,6 +44,7 @@ widget_test_values = {
     gtk.SpinButton: 1,
     gtk.HScale: 100,
     gtk.VScale: 8.3,
+    StringList: ['hans', 'peter'],
 }
 
 

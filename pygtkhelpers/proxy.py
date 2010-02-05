@@ -4,6 +4,7 @@
 import gobject, gtk
 
 from pygtkhelpers.utils import gsignal
+from pygtkhelpers.ui.widgets import StringList
 
 
 class GObjectProxy(gobject.GObject):
@@ -16,6 +17,8 @@ class GObjectProxy(gobject.GObject):
     __gtype_name__ = 'PyGTKHelperGObjectProxy'
 
     gsignal('changed', object)
+
+    signal_name = None
 
     def __init__(self, widget):
         gobject.GObject.__init__(self)
@@ -83,9 +86,10 @@ class GObjectProxy(gobject.GObject):
     def connect_widget(self):
         """Perform the initial connection of the widget
 
-        This method should be overridden in subclasses to perform the initial
-        connection for the proxied widget.
+        the default implementation will connect to the widgets signal
+        based on self.signal_name
         """
+        self.widget.connect(self.signal_name, self.widget_changed)
 
 
 class SinglePropertyGObjectProxy(GObjectProxy):
@@ -93,16 +97,12 @@ class SinglePropertyGObjectProxy(GObjectProxy):
     """
 
     prop_name = None
-    signal_name = None
 
     def set_widget_value(self, value):
         return self.widget.set_property(self.prop_name, value)
 
     def get_widget_value(self):
         return self.widget.get_property(self.prop_name)
-
-    def connect_widget(self):
-        self.widget.connect(self.signal_name, self.widget_changed)
 
 
 class GtkEntryProxy(SinglePropertyGObjectProxy):
@@ -120,8 +120,17 @@ class GtkColorButtonProxy(SinglePropertyGObjectProxy):
     prop_name = 'color'
     signal_name = 'color-set'
 
+class StringListProxy(GObjectProxy):
+    signal_name = 'content-changed'
+
+    def get_widget_value(self):
+        return self.widget.value
+
+    def set_widget_value(self, value):
+        self.widget.value = value
 
 class GtkRangeProxy(GObjectProxy):
+    signal_name = 'value-changed'
 
     def get_widget_value(self):
         return self.widget.get_value()
@@ -129,12 +138,9 @@ class GtkRangeProxy(GObjectProxy):
     def set_widget_value(self, value):
         self.widget.set_value(value)
 
-    def connect_widget(self):
-        self.widget.connect('value-changed', self.widget_changed)
-
-
 
 class GtkComboBoxProxy(GObjectProxy):
+    signal_name = 'changed'
 
     def get_widget_value(self):
         return self.get_row_value(self.active_row)
@@ -175,5 +181,6 @@ widget_proxies = {
     gtk.SpinButton: GtkRangeProxy,
     gtk.HScale: GtkRangeProxy,
     gtk.VScale: GtkRangeProxy,
+    StringList: StringListProxy
 }
 
