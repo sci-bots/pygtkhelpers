@@ -4,7 +4,7 @@ def pytest_funcarg__pl(request):
     return StringList()
 
 def test_proxy_stringlist_create():
-    pl = ProxyStringList()
+    pl = StringList()
     assert not pl.view.get_headers_visible()
 
 
