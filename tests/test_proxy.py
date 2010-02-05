@@ -4,14 +4,25 @@ from pygtkhelpers.proxy import widget_proxies, StringList
 
 def pytest_generate_tests(metafunc):
     for widget, proxy in widget_proxies.items():
+        if 'attr' in metafunc.funcargnames:
+            if not getattr(proxy, 'prop_name', None):
+                continue
         metafunc.addcall(id=widget.__name__, param=(widget, proxy))
 
 def pytest_funcarg__widget(request):
     widget_type = request.param[0]
+    setup_func = 'setup_'+widget_type.__name__
     widget = widget_type()
-    # XXX but I don't know py.test
+    
+    #XXX: generalize widget configuration
     if widget_type in [gtk.SpinButton, gtk.HScale, gtk.VScale]:
         widget.set_range(0, 999)
+
+    if widget_type is gtk.ComboBox:
+        model = gtk.ListStore(str, str)
+        for name in ['foo', 'test']:
+            model.append([name, name])
+        widget.set_model(model)
     return widget
 
 def pytest_funcarg__attr_type(request):
@@ -20,10 +31,7 @@ def pytest_funcarg__attr_type(request):
 
 def pytest_funcarg__attr(request):
     widget, proxy = request.param
-    try:
-        return proxy.prop_name
-    except AttributeError:
-        py.test.skip('proxy %s lacks a default attribute name'%proxy.__name__)
+    return proxy.prop_name
 
 def pytest_funcarg__proxy(request):
     widget = request.getfuncargvalue('widget')
@@ -45,6 +53,7 @@ widget_test_values = {
     gtk.HScale: 100,
     gtk.VScale: 8.3,
     StringList: ['hans', 'peter'],
+    gtk.ComboBox: 'test',
 }
 
 

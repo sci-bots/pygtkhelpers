@@ -149,7 +149,7 @@ class GtkComboBoxProxy(GObjectProxy):
         # what a pain in the arse
         for i, row in enumerate(self.model):
             if self.get_row_value(row) == value:
-                self.model.set_active(i)
+                self.widget.set_active(i)
 
     def connect_widget(self):
         self.widget.connect('changed', self.widget_changed)
@@ -163,6 +163,7 @@ class GtkComboBoxProxy(GObjectProxy):
         return self.widget.get_model()
 
     def get_row_value(self, row):
+        row = list(row) #XXX: that sucks
         value = row[1:]
         if not value:
             value = row[0]
