@@ -15,7 +15,7 @@ def test_async_task():
         data.extend(k)
 
     GeneratorTask(do, done).start()
-    refresh_gui()
+    refresh_gui(.1)
     assert data == [1, 2, 3]
 
 
@@ -33,7 +33,7 @@ def test_generator_task():
         data.extend(data)
 
     GeneratorTask(do, work, done).start()
-    refresh_gui()
+    refresh_gui(.1)
 
     assert data == range(10)*2
 
@@ -45,7 +45,7 @@ def test_gcall():
         gcall(data.append, 1)
 
     AsyncTask(doit).start()
-    refresh_gui()
+    refresh_gui(.1)
     assert data == [1]
 
 
@@ -58,5 +58,5 @@ def test_invoke_in_mainloop():
 
     AsyncTask(doit).start()
     # timeout needed for asynctask cleanup
-    refresh_gui(.2)
+    refresh_gui(.1)
     assert data == [1]

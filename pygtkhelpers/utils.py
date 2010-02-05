@@ -137,9 +137,9 @@ def gproperty(name, ptype, default=None, nick='', blurb='',
     dict[name] = (ptype, nick, blurb) + default + (flags,)
 
 def refresh_gui(delay=0):
+    time.sleep(delay)
     while gtk.events_pending():
         gtk.main_iteration_do(block=False)
-    time.sleep(delay)
 
 
 
