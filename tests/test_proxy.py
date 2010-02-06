@@ -1,6 +1,7 @@
 import py
 import gtk
 from pygtkhelpers.proxy import widget_proxies, StringList
+from pygtkhelpers.utils import refresh_gui
 
 def pytest_generate_tests(metafunc):
     for widget, proxy in widget_proxies.items():
@@ -12,8 +13,12 @@ def pytest_generate_tests(metafunc):
 def pytest_funcarg__widget(request):
     widget_type = request.param[0]
     setup_func = 'setup_'+widget_type.__name__
-    widget = widget_type()
-    
+
+    if widget_type is gtk.FileChooserButton:
+        widget = widget_type('Title')
+    else:
+        widget = widget_type()
+
     #XXX: generalize widget configuration
     if widget_type in [gtk.SpinButton, gtk.HScale, gtk.VScale]:
         widget.set_range(0, 999)
@@ -23,6 +28,7 @@ def pytest_funcarg__widget(request):
         for name in ['foo', 'test']:
             model.append([name, name])
         widget.set_model(model)
+
     return widget
 
 def pytest_funcarg__attr_type(request):
@@ -54,6 +60,8 @@ widget_test_values = {
     gtk.VScale: 8.3,
     StringList: ['hans', 'peter'],
     gtk.ComboBox: 'test',
+    gtk.FileChooserButton: __file__,
+    gtk.FileChooserWidget: __file__,
 }
 
 
@@ -63,6 +71,7 @@ def test_update(proxy, value):
 
 def test_update_and_read(proxy, value):
     proxy.update(value)
+    refresh_gui(0.1, 0.01)
     data = proxy.read()
     assert data == value
 

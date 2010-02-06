@@ -155,7 +155,7 @@ class GtkFileChooserButtonProxy(GObjectProxy):
             for filename in value:
                 self.widget.select_file(filename)
         else:
-            self.widget.set_filename(value)
+            print self.widget.set_filename(value)
 
 
 
@@ -202,6 +202,8 @@ widget_proxies = {
     gtk.SpinButton: GtkRangeProxy,
     gtk.HScale: GtkRangeProxy,
     gtk.VScale: GtkRangeProxy,
-    StringList: StringListProxy
+    gtk.FileChooserButton: GtkFileChooserButtonProxy,
+    gtk.FileChooserWidget: GtkFileChooserButtonProxy,
+    StringList: StringListProxy,
 }
 
