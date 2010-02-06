@@ -58,6 +58,7 @@ widget_test_values = {
     gtk.ToggleButton: True,
     gtk.CheckButton: True,
     gtk.CheckMenuItem: True,
+    gtk.RadioButton: True,
     gtk.ColorButton: gtk.gdk.color_parse('red'),
     gtk.SpinButton: 1,
     gtk.HScale: 100,
