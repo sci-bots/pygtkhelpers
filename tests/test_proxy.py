@@ -62,6 +62,7 @@ widget_test_values = {
     gtk.ComboBox: 'test',
     gtk.FileChooserButton: __file__,
     gtk.FileChooserWidget: __file__,
+    gtk.FontButton: 'Monospace 10',
 }
 
 

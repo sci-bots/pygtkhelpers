@@ -158,8 +158,9 @@ class GtkFileChooserProxy(GObjectProxy):
             self.widget.set_filename(value)
 
 
-
-
+class GtkFontButtonProxy(SinglePropertyGObjectProxy):
+    signal_name = 'font-set'
+    prop_name = 'font-name'
 
 
 class GtkComboBoxProxy(GObjectProxy):
@@ -207,6 +208,7 @@ widget_proxies = {
     gtk.VScale: GtkRangeProxy,
     gtk.FileChooserButton: GtkFileChooserProxy,
     gtk.FileChooserWidget: GtkFileChooserProxy,
+    gtk.FontButton: GtkFontButtonProxy,
     StringList: StringListProxy,
 }
 
