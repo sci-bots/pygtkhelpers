@@ -206,6 +206,10 @@ class GtkImageProxy(SinglePropertyGObjectProxy):
     prop_name = 'file'
 
 
+class GtkLinkButtonProxy(SinglePropertyGObjectProxy):
+    prop_name = 'uri'
+
+
 widget_proxies = {
     gtk.Entry: GtkEntryProxy,
     gtk.ToggleButton: GtkToggleButtonProxy,
@@ -221,6 +225,7 @@ widget_proxies = {
     gtk.FontButton: GtkFontButtonProxy,
     gtk.Label: GtkLabelProxy,
     gtk.Image: GtkImageProxy,
+    gtk.LinkButton: GtkLinkButtonProxy,
     StringList: StringListProxy,
 }
 

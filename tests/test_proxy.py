@@ -18,6 +18,8 @@ def pytest_funcarg__widget(request):
 
     if widget_type is gtk.FileChooserButton:
         widget = widget_type('Title')
+    elif widget_type is gtk.LinkButton:
+        widget = widget_type('')
     else:
         widget = widget_type()
 
@@ -67,6 +69,7 @@ widget_test_values = {
     gtk.FontButton: 'Monospace 10',
     gtk.Label: 'Hello',
     gtk.Image: os.path.join(os.path.dirname(__file__),'data', 'black.png'),
+    gtk.LinkButton: 'http://pida.co.uk/',
 }
 
 
