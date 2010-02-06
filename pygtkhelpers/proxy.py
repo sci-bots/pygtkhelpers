@@ -89,7 +89,9 @@ class GObjectProxy(gobject.GObject):
         the default implementation will connect to the widgets signal
         based on self.signal_name
         """
-        self.widget.connect(self.signal_name, self.widget_changed)
+        if self.signal_name is not None:
+            # None for read only widgets
+            self.widget.connect(self.signal_name, self.widget_changed)
 
 
 class SinglePropertyGObjectProxy(GObjectProxy):
@@ -196,6 +198,14 @@ class GtkComboBoxProxy(GObjectProxy):
         return value
 
 
+class GtkLabelProxy(SinglePropertyGObjectProxy):
+    prop_name = 'label'
+
+
+class GtkImageProxy(SinglePropertyGObjectProxy):
+    prop_name = 'file'
+
+
 widget_proxies = {
     gtk.Entry: GtkEntryProxy,
     gtk.ToggleButton: GtkToggleButtonProxy,
@@ -209,6 +219,7 @@ widget_proxies = {
     gtk.FileChooserButton: GtkFileChooserProxy,
     gtk.FileChooserWidget: GtkFileChooserProxy,
     gtk.FontButton: GtkFontButtonProxy,
+    gtk.Label: GtkLabelProxy,
     StringList: StringListProxy,
 }
 

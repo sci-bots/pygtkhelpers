@@ -63,6 +63,7 @@ widget_test_values = {
     gtk.FileChooserButton: __file__,
     gtk.FileChooserWidget: __file__,
     gtk.FontButton: 'Monospace 10',
+    gtk.Label: 'Hello',
 }
 
 
