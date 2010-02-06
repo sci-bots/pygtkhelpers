@@ -15,7 +15,7 @@ def test_async_task():
         data.extend(k)
 
     GeneratorTask(do, done).start()
-    refresh_gui(.1)
+    refresh_gui()
     assert data == [1, 2, 3]
 
 
@@ -33,7 +33,7 @@ def test_generator_task():
         data.extend(data)
 
     GeneratorTask(do, work, done).start()
-    refresh_gui(.1)
+    refresh_gui()
 
     assert data == range(10)*2
 
