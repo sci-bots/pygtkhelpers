@@ -210,6 +210,11 @@ class GtkLinkButtonProxy(SinglePropertyGObjectProxy):
     prop_name = 'uri'
 
 
+class GtkProgressBarProxy(SinglePropertyGObjectProxy):
+    prop_name = 'fraction'
+
+
+
 widget_proxies = {
     gtk.Entry: GtkEntryProxy,
     gtk.ToggleButton: GtkToggleButtonProxy,
@@ -226,6 +231,7 @@ widget_proxies = {
     gtk.Label: GtkLabelProxy,
     gtk.Image: GtkImageProxy,
     gtk.LinkButton: GtkLinkButtonProxy,
+    gtk.ProgressBar: GtkProgressBarProxy,
     StringList: StringListProxy,
 }
 

@@ -70,6 +70,7 @@ widget_test_values = {
     gtk.Label: 'Hello',
     gtk.Image: os.path.join(os.path.dirname(__file__),'data', 'black.png'),
     gtk.LinkButton: 'http://pida.co.uk/',
+    gtk.ProgressBar: 0.4,
 }
 
 
