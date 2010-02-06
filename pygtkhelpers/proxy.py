@@ -220,6 +220,7 @@ widget_proxies = {
     gtk.FileChooserWidget: GtkFileChooserProxy,
     gtk.FontButton: GtkFontButtonProxy,
     gtk.Label: GtkLabelProxy,
+    gtk.Image: GtkImageProxy,
     StringList: StringListProxy,
 }
 

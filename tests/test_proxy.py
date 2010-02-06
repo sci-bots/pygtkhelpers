@@ -1,3 +1,5 @@
+
+import os
 import py
 import gtk
 from pygtkhelpers.proxy import widget_proxies, StringList
@@ -64,6 +66,7 @@ widget_test_values = {
     gtk.FileChooserWidget: __file__,
     gtk.FontButton: 'Monospace 10',
     gtk.Label: 'Hello',
+    gtk.Image: os.path.join(os.path.dirname(__file__),'data', 'black.png'),
 }
 
 
