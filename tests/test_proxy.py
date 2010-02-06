@@ -24,7 +24,8 @@ def pytest_funcarg__widget(request):
         widget = widget_type()
 
     #XXX: generalize widget configuration
-    if widget_type in [gtk.SpinButton, gtk.HScale, gtk.VScale]:
+    if widget_type in [gtk.SpinButton, gtk.HScale, gtk.VScale, gtk.HScrollbar,
+                       gtk.VScrollbar]:
         widget.set_range(0, 999)
 
     if widget_type is gtk.ComboBox:
@@ -63,6 +64,8 @@ widget_test_values = {
     gtk.SpinButton: 1,
     gtk.HScale: 100,
     gtk.VScale: 8.3,
+    gtk.HScrollbar: 8.3,
+    gtk.VScrollbar: 8.3,
     StringList: ['hans', 'peter'],
     gtk.ComboBox: 'test',
     gtk.FileChooserButton: __file__,

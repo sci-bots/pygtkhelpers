@@ -226,6 +226,8 @@ widget_proxies = {
     gtk.SpinButton: GtkRangeProxy,
     gtk.HScale: GtkRangeProxy,
     gtk.VScale: GtkRangeProxy,
+    gtk.VScrollbar: GtkRangeProxy,
+    gtk.HScrollbar: GtkRangeProxy,
     gtk.FileChooserButton: GtkFileChooserProxy,
     gtk.FileChooserWidget: GtkFileChooserProxy,
     gtk.FontButton: GtkFontButtonProxy,
