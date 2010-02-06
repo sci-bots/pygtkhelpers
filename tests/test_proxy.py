@@ -8,7 +8,8 @@ from pygtkhelpers.utils import refresh_gui
 def pytest_generate_tests(metafunc):
     for widget, proxy in widget_proxies.items():
         if 'attr' in metafunc.funcargnames:
-            if not getattr(proxy, 'prop_name', None):
+            if (not getattr(proxy, 'prop_name', None) or
+                getattr(proxy, 'dprop_name', None)):
                 continue
         metafunc.addcall(id=widget.__name__, param=(widget, proxy))
 
@@ -56,6 +57,7 @@ def pytest_funcarg__value(request):
 
 widget_test_values = {
     gtk.Entry: 'test',
+    gtk.TextView: 'test',
     gtk.ToggleButton: True,
     gtk.CheckButton: True,
     gtk.CheckMenuItem: True,

@@ -106,6 +106,25 @@ class SinglePropertyGObjectProxy(GObjectProxy):
     def get_widget_value(self):
         return self.widget.get_property(self.prop_name)
 
+class SingleDelegatedPropertyGObjectProxy(GObjectProxy):
+
+    prop_name = None
+    dprop_name = None
+
+    def set_widget_value(self, value):
+        return self.widget.get_property(self.dprop_name
+            ).set_property(self.prop_name, value)
+
+    def get_widget_value(self):
+        return self.widget.get_property(self.dprop_name
+            ).get_property(self.prop_name)
+
+    def connect_widget(self):
+        if self.signal_name is not None:
+            # None for read only widgets
+            self.widget.get_property(self.dprop_name
+                ).connect(self.signal_name, self.widget_changed)
+
 
 class GtkEntryProxy(SinglePropertyGObjectProxy):
     prop_name = 'text'
@@ -198,6 +217,13 @@ class GtkComboBoxProxy(GObjectProxy):
         return value
 
 
+class GtkTextViewProxy(SingleDelegatedPropertyGObjectProxy):
+
+    signal_name = 'changed'
+    prop_name = 'text'
+    dprop_name = 'buffer'
+
+
 class GtkLabelProxy(SinglePropertyGObjectProxy):
     prop_name = 'label'
 
@@ -235,6 +261,7 @@ widget_proxies = {
     gtk.Image: GtkImageProxy,
     gtk.LinkButton: GtkLinkButtonProxy,
     gtk.ProgressBar: GtkProgressBarProxy,
+    gtk.TextView: GtkTextViewProxy,
     StringList: StringListProxy,
 }
 
