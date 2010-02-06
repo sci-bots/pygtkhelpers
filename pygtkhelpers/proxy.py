@@ -129,6 +129,7 @@ class StringListProxy(GObjectProxy):
     def set_widget_value(self, value):
         self.widget.value = value
 
+
 class GtkRangeProxy(GObjectProxy):
     signal_name = 'value-changed'
 
@@ -137,6 +138,25 @@ class GtkRangeProxy(GObjectProxy):
 
     def set_widget_value(self, value):
         self.widget.set_value(value)
+
+
+class GtkFileChooserButtonProxy(GObjectProxy):
+    signal_name = 'selection-changed'
+
+    def get_widget_value(self):
+        if self.widget.get_select_multiple():
+            return self.widget.get_filenames()
+        else:
+            return self.widget.get_filename()
+
+    def set_widget_value(self, value):
+        if self.widget.get_select_multiple():
+            self.widget.unselect_all()
+            for filename in value:
+                self.widget.select_file(filename)
+        else:
+            self.widget.set_filename(value)
+
 
 
 class GtkComboBoxProxy(GObjectProxy):
