@@ -191,6 +191,7 @@ class BaseDelegate(gobject.GObject):
 
 
 class SlaveView(BaseDelegate):
+    """A View that is a slave"""
 
     def get_builder_toplevel(self, builder):
         """Get the toplevel widget from a gtk.Builder file.
@@ -211,6 +212,7 @@ class SlaveView(BaseDelegate):
         return gtk.VBox()
 
 class ToplevelView(BaseDelegate):
+    """A View that is a toplevel widget"""
 
     def get_builder_toplevel(self, builder):
         """Get the toplevel widget from a gtk.Builder file.
@@ -232,6 +234,7 @@ class ToplevelView(BaseDelegate):
 
 
 class WindowView(ToplevelView):
-    """A window"""
+    """A View that is a Window"""
     def set_title(self, title):
         self.get_toplevel().set_title(title)
+
