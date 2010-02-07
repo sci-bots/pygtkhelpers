@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
+
 """
-    :copyright: 2005-2008 by The PIDA Project
+    pygtkhelpers.gthreads
+    ~~~~~~~~~~~~~~~~~~~~~
+
+    Helpers for integration of aysnchronous behaviour in PyGTK.
+
+    :copyright: 2005-2010 by pygtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
@@ -12,14 +18,20 @@ import subprocess
 import gobject
 import time
 
+
 class AsyncTask(object):
-    """
-    AsyncTask is used to help you perform lengthy tasks without delaying
-    the UI loop cycle, causing the app to look frozen. It is also assumed
-    that each action that the async worker performs cancels the old one (if
-    it's still working), thus there's no problem when the task takes too long.
-    You can either extend this class or pass two callable objects through its
-    constructor.
+    """Perform lengthy tasks without delaying the UI loop cycle.
+
+    AsyncTasks removes the boilerplate of deferring a task to a thread and
+    receiving intermittent feedback from the thread. It Handles creating and
+    starting a thread for the task, and forcing any user interface calls to be
+    pushed to the GTK main loop from the thread, thus ensuring against
+    insanity which invariably ensues if this precaustion is not taken.
+
+    It is also assumed that each action that the async worker performs cancels
+    the old one (if it's still working), thus there's no problem when the task
+    takes too long.  You can either extend this class or pass two callable
+    objects through its constructor.
 
     The first on is the 'work_callback' this is where the lengthy
     operation must be performed. This object may return an object or a group
@@ -43,9 +55,11 @@ class AsyncTask(object):
             self.loop_callback = loop_callback
 
     def start(self, *args, **kwargs):
-        """
-        * not threadsave
-        * assumed to be called in the gtk mainloop
+        """Start the task
+
+        This is:
+            * not threadsave
+            * assumed to be called in the gtk mainloop
         """
         args = (self.counter,) + args
         thread = threading.Thread(

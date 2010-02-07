@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+
+"""
+    pygtkhelpers.utils
+    ~~~~~~~~~~~~~~~~~~
+
+    Utilities for handling some of the wonders of PyGTK.
+
+    :copyright: 2005-2008 by pygtkhelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
 
 import sys, struct, time
 
@@ -5,16 +16,18 @@ import gobject, gtk
 
 
 def gsignal(name, *args, **kwargs):
-    """
-    Add a GObject signal to the current object.
+    """Add a GObject signal to the current object.
+
     It current supports the following types:
         - str, int, float, long, object, enum
-    @param name: name of the signal
-    @type name: string
-    @param args: types for signal parameters,
+
+    :param name: name of the signal
+    :param args: types for signal parameters,
         if the first one is a string 'override', the signal will be
         overridden and must therefor exists in the parent GObject.
-    @note: flags: A combination of;
+
+    .. note:: flags: A combination of;
+
       - gobject.SIGNAL_RUN_FIRST
       - gobject.SIGNAL_RUN_LAST
       - gobject.SIGNAL_RUN_CLEANUP
@@ -22,7 +35,7 @@ def gsignal(name, *args, **kwargs):
       - gobject.SIGNAL_DETAILED
       - gobject.SIGNAL_ACTION
       - gobject.SIGNAL_NO_HOOKS
-    @note: retval: return value in signal callback
+
     """
 
     frame = sys._getframe(1)
@@ -61,25 +74,25 @@ _DEFAULT_VALUES = {str : '', float : 0.0, int : 0, long : 0L}
 
 def gproperty(name, ptype, default=None, nick='', blurb='',
               flags=gobject.PARAM_READWRITE, **kwargs):
-    """
-    Add a GObject property to the current object.
-    @param name:   name of property
-    @type name:    string
-    @param ptype:   type of property
-    @type ptype:    type
-    @param default:  default value
-    @param nick:     short description
-    @param blurb:    long description
-    @param flags:    parameter flags, a combination of:
+    """Add a GObject property to the current object.
+
+    :param name:   name of property
+    :param ptype:   type of property
+    :param default:  default value
+    :param nick:     short description
+    :param blurb:    long description
+    :param flags:    parameter flags, a combination of:
       - PARAM_READABLE
       - PARAM_READWRITE
       - PARAM_WRITABLE
       - PARAM_CONSTRUCT
       - PARAM_CONSTRUCT_ONLY
       - PARAM_LAX_VALIDATION
+
     Optional, only for int, float, long types:
-    @note: minimum: minimum allowed value
-    @note: maximum: maximum allowed value
+
+    :param minimum: minimum allowed value
+    :param: maximum: maximum allowed value
     """
 
     # General type checking
@@ -168,7 +181,8 @@ def run_in_window(target, on_destroy=gtk.main_quit):
 
 
 def enum_to_string(value, type=None):
-    """get a string value for an enumeration
+    """Get a string value for an enumeration
+
     :param value: the enum value
     :optional type: the type of the enum
 

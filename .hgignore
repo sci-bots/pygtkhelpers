@@ -1,7 +1,7 @@
 .+\.pyc
 \..+\.swp
 MANIFEST
-dist
-build
+dist/
+build/
 .coverage
 pygtkhelpers.egg-info

@@ -1,4 +1,14 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+
+"""
+    pygtkhelpers.ui.objectlist
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ListViews that are object orientated, and mimic Pythonic lists
+
+    :copyright: 2005-2008 by pygtkhelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
 import gtk
 from pygtkhelpers.utils import gsignal
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 """
     pygtkhelpers.delegates
@@ -6,7 +7,7 @@
     Delegates, which combine some UI, some signals, some signal handlers, and
     some properties,
 
-    :copyright: 2009 by Ali Afshar <aafshar@gmail.com>
+    :copyright: 2009-2010 by pygtkhelpers Authors
     :license: LGPL2 or later
 """
 

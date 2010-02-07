@@ -1,8 +1,8 @@
 """
-    gexcept
-    ~~~~~~~
+    pygtkhelpers.debug.dialogs
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    an exception handler for pygtk with nice ui
+    An exception handler for pygtk with nice ui
 
     :copyright: 2009 by Ronny Pfannschmidt <Ronny.Pfannschmidt@gmx.de>
     :license: LGPL2 or later
@@ -140,3 +140,4 @@ def install_hook(
     assert not _hook_installed
     sys.excepthook = new_hook
     _hook_installed = True
+

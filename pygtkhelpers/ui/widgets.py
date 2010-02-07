@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+
+"""
+    pygtkhelpers.ui.widgets
+    ~~~~~~~~~~~~~~~~~~~~~~~
+
+    Miscellaneous additional custom widgets
+
+    :copyright: 2005-2010 by pygtkhelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
 import gtk
 from pygtkhelpers.utils import gsignal
 

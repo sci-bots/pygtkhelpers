@@ -1,0 +1,15 @@
+
+options()
+
+depends(
+    docs ['docs_build' 'docs_upload']
+)
+
+targets(
+    docs_build [
+        $ rm -f docs/build/doctrees/environment.pickle
+        $ export PYTHONPATH=`pwd` && cd docs && make html && cd -
+    ]
+    docs_upload
+        $ echo "Ronny said he would upload to pypi"
+)

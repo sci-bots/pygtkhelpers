@@ -1,5 +1,15 @@
+# -*- coding: utf-8 -*-
 
-# proxying
+"""
+    pygtkhelpers.proxy
+    ~~~~~~~~~~~~~~~~~~
+
+    Controllers for managing data display widgets.
+
+    :copyright: 2005-2008 by pygtkhelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
+
 
 import gobject, gtk
 
@@ -61,7 +71,7 @@ class GObjectProxy(gobject.GObject):
         This will usually be called from a proxy implementation on response to
         whichever signal was connected in `connect_widget`
 
-        The *args are there so you can use this as a signal handler.
+        The `*args` are there so you can use this as a signal handler.
         """
         self.emit('changed', self.get_widget_value())
 

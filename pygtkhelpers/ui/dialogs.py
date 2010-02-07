@@ -1,10 +1,15 @@
+# -*- coding: utf-8 -*-
+
 """
     pygtkhelpers.ui.dialogs
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
-    simple dialog helpers
+    Dialog helpers
 
     largely inspired by kiwi.ui.dialogs
+
+    :copyright: 2009-2010 by pygtkhelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
 #XXX: i18n
