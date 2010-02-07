@@ -14,6 +14,7 @@ def pytest_generate_tests(metafunc):
         metafunc.addcall(id=widget.__name__, param=(widget, proxy))
 
 def pytest_funcarg__widget(request):
+    'the gtk widget the proxy should use'
     widget_type = request.param[0]
     setup_func = 'setup_'+widget_type.__name__
 
@@ -37,19 +38,18 @@ def pytest_funcarg__widget(request):
 
     return widget
 
-def pytest_funcarg__attr_type(request):
-    widget, proxy = request.param
-    return widget
-
 def pytest_funcarg__attr(request):
+    'the property name the proxy will access on the wrapped widget'
     widget, proxy = request.param
     return proxy.prop_name
 
 def pytest_funcarg__proxy(request):
+    'the proxy object that wraps the widget'
     widget = request.getfuncargvalue('widget')
     return request.param[1](widget)
 
 def pytest_funcarg__value(request):
+    'the value the test should assign via the proxy'
     try:
         return widget_test_values[request.param[0]]
     except KeyError:
