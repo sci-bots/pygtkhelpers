@@ -117,6 +117,15 @@ class BaseDelegate(gobject.GObject):
         self.slaves.append(slave)
         return slave
 
+    def show(self):
+        """Call show_all on the toplevel widget"""
+        self.widget.show_all()
+
+    def show_and_run(self):
+        """Show the main widget and run the gtk loop"""
+        self.show()
+        gtk.main()
+
     def _load_builder(self):
         builder = gtk.Builder()
         if self.builder_path:
