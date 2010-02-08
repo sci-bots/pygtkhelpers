@@ -76,6 +76,7 @@ class BaseDelegate(gobject.GObject):
         gobject.GObject.__init__(self)
         self._props = {}
         self._toplevel = None
+        self.slaves = []
         self._load_builder()
         if self._toplevel is None:
             self._toplevel = self.create_default_toplevel()
@@ -105,6 +106,16 @@ class BaseDelegate(gobject.GObject):
     def model_set(self):
         """This method is called when the model is changed
         """
+    def add_slave(self, slave, container_name):
+        """Add a slave delegate
+        """
+        cont = getattr(self, container_name, None)
+        if cont is None:
+            raise AttributeError(
+                'Container name must be a member of the delegate')
+        cont.add(slave.widget)
+        self.slaves.append(slave)
+        return slave
 
     def _load_builder(self):
         builder = gtk.Builder()
