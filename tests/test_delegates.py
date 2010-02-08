@@ -186,4 +186,7 @@ def test_addslave_delegate():
     w = W()
     assert len(w.slaves)
 
+def test_slavewidget_added():
+    w = W()
+    assert w.widget.get_child()
 
