@@ -1,5 +1,6 @@
 
 from py.test import raises, mark
+import gtk
 from pygtkhelpers.ui.objectlist import ObjectList, Column, Cell
 from pygtkhelpers.utils import refresh_gui
 from pygtkhelpers.test import CheckCalled
@@ -93,6 +94,18 @@ def test_column_expandable():
     treeview_column = col.create_treecolumn(None)
     assert treeview_column.props.expand
 
+def test_build_simple():
+    uidef = '''
+        <interface>
+          <object class="PyGTKHelpersObjectList" id="test">
+          </object>
+        </interface>
+    '''
+    b = gtk.Builder()
+    b.add_from_string(uidef)
+    objectlist = b.get_object('test')
+    print objectlist
+    assert isinstance(objectlist, ObjectList)
 
 
 def test_edit_name():

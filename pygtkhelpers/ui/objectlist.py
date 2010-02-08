@@ -137,7 +137,7 @@ class Column(gtk.TreeViewColumn):
 
 
 class ObjectList(gtk.TreeView):
-
+    __gtype_name__ = "PyGTKHelpersObjectList"
     gsignal('item-activated', object)
     gsignal('item-changed', object, str, object)
 
