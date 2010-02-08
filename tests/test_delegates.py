@@ -2,7 +2,8 @@
 from py.test import raises
 import gtk, gobject
 
-from pygtkhelpers.delegates import SlaveView, ToplevelView, BaseDelegate
+from pygtkhelpers.delegates import SlaveView, ToplevelView, BaseDelegate, \
+    WindowView
 from pygtkhelpers.utils import refresh_gui, gproperty
 
 class _Delegate1(BaseDelegate):
@@ -123,6 +124,10 @@ def test_ui_delegatge3():
     d = _TestUIMainDelegate()
     assert hasattr(d, 'label1')
 
+
+
+
+
 def test_ui_main_delegate_bad_toplevel():
     d = _Delegate6()
     assert gobject.type_is_a(d._toplevel, gtk.Window)
@@ -165,3 +170,20 @@ def test_uifile_load_from_base():
     first match goes
     '''
     NeedsBaseClassUIFileSearch()
+
+# slave and master
+class S(SlaveView):
+    def create_ui(self):
+        self.entry = gtk.Entry()
+        self.widget.add(self.entry)
+
+class W(WindowView):
+    def create_ui(self):
+        self.slave = self.add_slave(S(), 'widget')
+
+
+def test_addslave_delegate():
+    w = W()
+    assert len(w.slaves)
+
+
