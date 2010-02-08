@@ -93,8 +93,20 @@ class BaseDelegate(gobject.GObject):
     def create_default_toplevel(self):
         raise NotImplementedError
 
-    def _load_builder(self):
+    def create_ui(self):
+        """Create any UI by hand.
 
+        Override to create additional UI here.
+
+        This can contain any instance initialization, so for example mutation of
+        the gtk.Builder generated UI, or creating the UI in its entirety.
+        """
+
+    def model_set(self):
+        """This method is called when the model is changed
+        """
+
+    def _load_builder(self):
         builder = gtk.Builder()
         if self.builder_path:
             if not os.path.exists(self.builder_path):
@@ -155,7 +167,7 @@ class BaseDelegate(gobject.GObject):
 
     def set_model(self, model):
         self._model = model
-        self.on_model_set()
+        self.model_set()
         self.emit('model-set')
 
     def get_model(self):
@@ -163,8 +175,6 @@ class BaseDelegate(gobject.GObject):
 
     model = property(get_model, set_model)
 
-    def on_model_set(self):
-        """Override me for when models are set"""
 
     # Private glib API for simple property handling
     def do_get_property(self, prop):
@@ -180,15 +190,6 @@ class BaseDelegate(gobject.GObject):
             call(value)
         else:
             self._props[prop.name] = value
-
-    def create_ui(self):
-        """Create any UI by hand.
-
-        Override to create additional UI here.
-
-        This can contain any instance initialization, so for example mutation of
-        the gtk.Builder generated UI, or creating the UI in its entirety.
-        """
 
 
 class SlaveView(BaseDelegate):
