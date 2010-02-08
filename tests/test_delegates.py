@@ -190,3 +190,7 @@ def test_slavewidget_added():
     w = W()
     assert w.widget.get_child()
 
+def test_missing_container():
+    w = WindowView()
+    raises(AttributeError, w.add_slave, S(), 'banana')
+
