@@ -31,14 +31,14 @@ inside other widgets. The available delegate types are
 :class:`~pygtkhelpers.delegates.SlaveView` and
 `~pygtkhelpers.delegates.WindowView`:
 
-.. literalinclude:: ../../examples/manual/d1.py
+.. literalinclude:: ../examples/manual/d1.py
 
 I just shows a toplevel Window, with no widgets inside. We are going to leave
 that like that, and create a component to go inside. Remember *reusable
 components*, there is no point putting UI straight into the Window, although
 you could do that, and pygtkhelpers won't stop you:
 
-.. literalinclude:: ../../examples/manual/d2.py
+.. literalinclude:: ../examples/manual/d2.py
 
 This just adds an entry to the widget, which you can see as you run it.
 
@@ -56,5 +56,5 @@ main view. Adding slaves is achieved with the
 :meth:`~pygtkhelpers.delegates.SlaveView.add_slave` method, and is shown in
 the following example:
 
-.. literalinclude:: ../../examples/manual/d3.py
+.. literalinclude:: ../examples/manual/d3.py
 
