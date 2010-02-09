@@ -1,6 +1,5 @@
 
-from nose.tools import *
-
+from py.test import raises as assert_raises
 import gobject, gtk
 
 from pygtkhelpers.utils import (
