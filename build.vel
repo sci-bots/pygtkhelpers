@@ -7,8 +7,8 @@ depends(
 
 targets(
     docs_build [
-        $ rm -f docs/build/doctrees/environment.pickle
-        $ export PYTHONPATH=`pwd` && cd docs && make html && cd -
+        $ rm -rf build/sphinx
+        $ python setup.py build_sphinx
     ]
     docs_upload
         $ echo "Ronny said he would upload to pypi"
