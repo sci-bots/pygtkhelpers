@@ -123,3 +123,10 @@ def test_edit_name():
     refresh_gui()
     assert user.name=='peter'
     assert item_changed.called
+
+
+
+def test_cell_format_func():
+
+    cell = Cell('test', format_func=str)
+    assert cell.format_data(1) == '1'

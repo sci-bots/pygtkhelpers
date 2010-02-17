@@ -25,7 +25,8 @@ def set_stock_renderer(mapper, object, cell):
 class Cell(object):
 
     def __init__(self, attr, type=str, editable=False, renderers=None,
-                     use_stock=False, use_markup=False, choices=None):
+                     use_stock=False, use_markup=False, choices=None,
+                     format_func=None):
         self.attr = attr
         self.type = type
         self.format = "%s"
@@ -37,6 +38,8 @@ class Cell(object):
             self.renderers = [set_stock_renderer]
         else:
             self.renderers = renderers or [set_text_renderer]
+        if format_func is not None:
+            self.format_data = format_func
 
     def __repr__(self):
         return '<Cell %s %r>'%(self.attr, self.type)
