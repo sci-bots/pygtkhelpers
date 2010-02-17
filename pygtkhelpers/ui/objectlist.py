@@ -154,7 +154,13 @@ class ObjectList(gtk.TreeView):
         # setup sorting
         self.sortable = kwargs.pop('sortable', True)
         sort_func = kwargs.pop('sort_func', self._default_sort_func)
+        self.columns = None
+        self.set_columns(columns)
 
+
+
+    def set_columns(self, columns):
+        assert not self.columns
         self.columns = tuple(columns)
         for idx, col in enumerate(columns):
             view_col = col.create_treecolumn(self)
