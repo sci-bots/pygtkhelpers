@@ -1,6 +1,6 @@
 
 from py.test import raises, mark
-import gtk
+import gtk, gtk.gdk
 from pygtkhelpers.ui.objectlist import ObjectList, Column, Cell
 from pygtkhelpers.utils import refresh_gui
 from pygtkhelpers.test import CheckCalled
@@ -138,3 +138,49 @@ def test_cell_ellipsize():
     renderer = cell.create_renderer(None, None)
     el = renderer.get_property('ellipsize')
     assert el == pango.ELLIPSIZE_END
+
+
+def test_left_click_event():
+    items = ObjectList(user_columns)
+    user = User('hans', 10)
+    items.append(user, select=True)
+    e = gtk.gdk.Event(gtk.gdk.BUTTON_PRESS)
+    e.button = 1
+    item_clicked = CheckCalled(items, 'item-left-clicked')
+    items._on_button_press_event(items, e)
+    refresh_gui()
+    assert item_clicked.called
+
+def test_right_click_event():
+    items = ObjectList(user_columns)
+    user = User('hans', 10)
+    items.append(user, select=True)
+    e = gtk.gdk.Event(gtk.gdk.BUTTON_PRESS)
+    e.button = 3
+    item_clicked = CheckCalled(items, 'item-right-clicked')
+    items._on_button_press_event(items, e)
+    refresh_gui()
+    assert item_clicked.called
+
+def test_middle_click_event():
+    items = ObjectList(user_columns)
+    user = User('hans', 10)
+    items.append(user, select=True)
+    e = gtk.gdk.Event(gtk.gdk.BUTTON_PRESS)
+    e.button = 2
+    item_clicked = CheckCalled(items, 'item-middle-clicked')
+    items._on_button_press_event(items, e)
+    refresh_gui()
+    assert item_clicked.called
+
+def test_double_click_event():
+    items = ObjectList(user_columns)
+    user = User('hans', 10)
+    items.append(user, select=True)
+    e = gtk.gdk.Event(gtk.gdk._2BUTTON_PRESS)
+    e.button = 1
+    item_clicked = CheckCalled(items, 'item-double-clicked')
+    items._on_button_press_event(items, e)
+    refresh_gui()
+    assert item_clicked.called
+

@@ -9,7 +9,8 @@
     :copyright: 2005-2008 by pygtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
-import gtk
+import gtk, gobject
+
 from pygtkhelpers.utils import gsignal
 
 
@@ -148,6 +149,10 @@ class ObjectList(gtk.TreeView):
     __gtype_name__ = "PyGTKHelpersObjectList"
     gsignal('item-activated', object)
     gsignal('item-changed', object, str, object)
+    gsignal('item-left-clicked', object, gtk.gdk.Event)
+    gsignal('item-right-clicked', object, gtk.gdk.Event)
+    gsignal('item-middle-clicked', object, gtk.gdk.Event)
+    gsignal('item-double-clicked', object, gtk.gdk.Event)
 
     def __init__(self, columns=(), **kwargs):
         gtk.TreeView.__init__(self)
@@ -161,6 +166,10 @@ class ObjectList(gtk.TreeView):
         sort_func = kwargs.pop('sort_func', self._default_sort_func)
         self.columns = None
         self.set_columns(columns)
+
+        # connect internal signals
+        self.connect('button-press-event', self._on_button_press_event)
+
 
 
 
@@ -253,12 +262,32 @@ class ObjectList(gtk.TreeView):
         '''get the currently selected item #XXX: better name'''
         selection = self.get_selection()
         model, selected = selection.get_selected()
-        print model, selected
         if selected is not None:
             return model[selected][0]
-
 
     def _path_for(self, object):
         oid = id(object)
         if oid in self._id_to_iter:
             return self.model.get_string_from_iter(self._id_to_iter[oid])
+
+    def _emit_button_press_signal(self, signal_name, event):
+        item = self.get_selected()
+        if item is not None:
+            self.emit(signal_name, item, event.copy())
+
+    def _on_button_press_event(self, treeview, event):
+        # Right and Middle click
+        if event.type == gtk.gdk.BUTTON_PRESS:
+            signal_map = {
+                3: 'item-right-clicked',
+                2: 'item-middle-clicked',
+                1: 'item-left-clicked',
+            }
+            signal_name = signal_map.get(event.button)
+            gobject.idle_add(self._emit_button_press_signal,
+                             signal_name, event)
+        # Double left click
+        elif event.type == gtk.gdk._2BUTTON_PRESS and event.button == 1:
+            self._emit_button_press_signal('item-double-clicked', event)
+
+
