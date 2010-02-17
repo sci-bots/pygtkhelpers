@@ -79,7 +79,7 @@ def test_column_title():
     assert len(title_view_col.get_cells()) == 0
 
 
-def test_make_cells():
+def test_make_cells(): 
     col = Column(title='Test', cells=[
         Cell('name', int),
         Cell('name2', int),
@@ -130,3 +130,11 @@ def test_cell_format_func():
 
     cell = Cell('test', format_func=str)
     assert cell.format_data(1) == '1'
+
+
+def test_cell_ellipsize():
+    import pango
+    cell = Cell('test', ellipsize=pango.ELLIPSIZE_END)
+    renderer = cell.create_renderer(None, None)
+    el = renderer.get_property('ellipsize')
+    assert el == pango.ELLIPSIZE_END

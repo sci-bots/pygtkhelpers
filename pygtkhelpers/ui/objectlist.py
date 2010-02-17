@@ -26,7 +26,8 @@ class Cell(object):
 
     def __init__(self, attr, type=str, editable=False, renderers=None,
                      use_stock=False, use_markup=False, choices=None,
-                     format_func=None):
+                     format_func=None,
+                     ellipsize=None):
         self.attr = attr
         self.type = type
         self.format = "%s"
@@ -34,6 +35,7 @@ class Cell(object):
         self.use_markup = use_markup
         self.use_stock = use_stock
         self.choices = choices
+        self.ellipsize = ellipsize
         if use_stock:
             self.renderers = [set_stock_renderer]
         else:
@@ -92,6 +94,9 @@ class Cell(object):
         else:
             cell = gtk.CellRendererText()
             cell.props.editable = self.editable
+            if self.ellipsize is not None:
+                cell.props.ellipsize = self.ellipsize
+
         cell.set_data('pygtkhelpers::cell', self)
         if self.editable and not self.choices:
             def simple_set(cellrenderer, path, text):
