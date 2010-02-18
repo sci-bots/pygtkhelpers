@@ -2,7 +2,7 @@
 import os
 import py
 import gtk
-from pygtkhelpers.proxy import widget_proxies, StringList
+from pygtkhelpers.proxy import widget_proxies, StringList, SimpleComboBox
 from pygtkhelpers.utils import refresh_gui
 
 def pytest_generate_tests(metafunc):
@@ -56,6 +56,7 @@ def add_range(widget):
 widget_initargs = {
     gtk.FileChooserButton: ('Title',),
     gtk.LinkButton: ('',),
+    SimpleComboBox: ( [('name', 'Name'), ('test', "Der Test")],  ),
 }
 
 widget_setups = {
@@ -81,6 +82,7 @@ widget_test_values = {
     gtk.VScrollbar: 8.3,
     StringList: ['hans', 'peter'],
     gtk.ComboBox: 'test',
+    SimpleComboBox: 'test',
     gtk.FileChooserButton: __file__,
     gtk.FileChooserWidget: __file__,
     gtk.FontButton: 'Monospace 10',

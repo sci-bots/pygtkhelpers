@@ -14,7 +14,7 @@
 import gobject, gtk
 
 from pygtkhelpers.utils import gsignal
-from pygtkhelpers.ui.widgets import StringList
+from pygtkhelpers.ui.widgets import StringList, SimpleComboBox
 
 
 class GObjectProxy(gobject.GObject):
@@ -273,5 +273,6 @@ widget_proxies = {
     gtk.ProgressBar: GtkProgressBarProxy,
     gtk.TextView: GtkTextViewProxy,
     StringList: StringListProxy,
+    SimpleComboBox: GtkComboBoxProxy,
 }
 

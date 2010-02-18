@@ -100,3 +100,20 @@ class StringList(gtk.VBox):
 
     value = property(read, update)
 
+
+
+class SimpleComboBox(gtk.ComboBox):
+    '''a simple combobox that maps descriptions to keys'''
+    def __init__(self, choices=None):
+        gtk.ComboBox.__init__(self)
+        self.store = gtk.ListStore(str, str)
+        self.set_model(self.store)
+        if choices is not None:
+            self.set_choices(choices)
+
+    def set_choices(self, choices):
+        self.store.clear()
+        for item in choices:
+            self.store.append((item[1], item[0]))
+
+
