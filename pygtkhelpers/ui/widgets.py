@@ -126,3 +126,48 @@ class SimpleComboBox(gtk.ComboBox):
 
 
 
+
+class AttrSortCombo(gtk.HBox):
+    """
+    A evil utility class that hijacks a objectlist and forces ordering onto its model
+    """
+    def __init__(self, objectlist, attribute_list, default):
+        gtk.HBox.__init__(self, spacing=3)
+        self.set_border_width(3)
+        from pygtkhelpers.ui.widgets import SimpleComboBox
+        from pygtkhelpers.proxy import GtkComboBoxProxy
+
+        self._objectlist = objectlist
+
+        self._combo = SimpleComboBox(attribute_list, default)
+        self._proxy = GtkComboBoxProxy(self._combo)
+        self._proxy.connect('changed', self._on_configuration_changed)
+        self._order_button = gtk.ToggleToolButton(
+            stock_id=gtk.STOCK_SORT_DESCENDING)
+        self._order_button.connect('toggled', self._on_configuration_changed)
+        self._label = gtk.Label('Sort')
+        self.pack_start(self._label, expand=False)
+        self.pack_start(self._combo)
+        self.pack_start(self._order_button, expand=False)
+        self._on_configuration_changed()
+        self.show_all()
+
+    def _on_configuration_changed(self, *k):
+        order_descending = self._order_button.get_active()
+        if order_descending:
+            order = gtk.SORT_DESCENDING
+        else:
+            order = gtk.SORT_ASCENDING
+        attribute = self._proxy.read()
+
+        model = self._objectlist.get_model()
+        model.set_default_sort_func(_attr_sort_func, attribute)
+        model.set_sort_column_id(-1, order)
+
+
+def _attr_sort_func(model, iter1, iter2 , attribute):
+    """internal heloer"""
+    attr1 = getattr(model[iter1][0], attribute, None)
+    attr2 = getattr(model[iter2][0], attribute, None)
+    return cmp(attr1, attr2)
+

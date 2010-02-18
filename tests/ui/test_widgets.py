@@ -1,4 +1,7 @@
-from pygtkhelpers.ui.widgets import StringList
+from py.test import importorskip
+import gtk
+from pygtkhelpers.utils import refresh_gui
+from pygtkhelpers.ui.widgets import StringList, AttrSortCombo
 
 def pytest_funcarg__pl(request):
     return StringList()
@@ -41,3 +44,32 @@ def test_pl_edit(pl):
     pl.add_button.clicked()
     pl.value_entry.set_text('test')
     assert pl.value == ['test']
+
+
+def test_attrsortcombo():
+    mock = importorskip('mock')
+
+    ol = mock.Mock()
+    model = ol.get_model()
+
+    sort = AttrSortCombo(ol, [
+        ('name', 'Der name'),
+        ('age', 'Das Alter'),
+        ], 'name')
+
+    sort_func = model.set_default_sort_func
+    (func, name), kw = sort_func.call_args
+    assert name == 'name'
+
+    sort._proxy.update('age')
+    (func, name), kw = sort_func.call_args
+    assert name == 'age'
+
+    col = model.set_sort_column_id
+    assert col.call_args[0] == (-1, gtk.SORT_ASCENDING)
+
+    sort._order_button.set_active(True)
+    assert col.call_args[0] == (-1, gtk.SORT_DESCENDING)
+
+
+
