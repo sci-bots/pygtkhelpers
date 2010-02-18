@@ -123,6 +123,7 @@ class Column(gtk.TreeViewColumn):
         self.attr = attr
         self.sorted = kwargs.pop('sorted', True)
         self.expand = kwargs.pop('expand', None)
+        self.visible = kwargs.pop('visible', True)
 
         if 'cells' in kwargs:
             self.cells = kwargs['cells']
@@ -133,16 +134,16 @@ class Column(gtk.TreeViewColumn):
     def create_treecolumn(self, objectlist):
         col = gtk.TreeViewColumn(self.title)
         col.set_data('pygtkhelpers::column', self)
+        col.props.visible = self.visible
         if self.expand is not None:
             col.props.expand = self.expand
-
         for cell in self.cells:
             view_cell = cell.create_renderer(self, objectlist)
             view_cell.set_data('pygtkhelpers::column', self)
             #XXX: better controll over packing
             col.pack_start(view_cell)
             col.set_cell_data_func(view_cell, cell._data_func)
-        return col
+        return col 
 
 
 class ObjectList(gtk.TreeView):

@@ -91,6 +91,15 @@ def test_column_title():
     assert title_view_col.get_title() == 'Test'
     assert len(title_view_col.get_cells()) == 0
 
+def test_column_visiblility():
+    col = Column('test')
+    view_col = col.create_treecolumn(None)
+    assert view_col.get_visible()
+
+def test_column_invisiblility():
+    col = Column('test', visible=False)
+    view_col = col.create_treecolumn(None)
+    assert not view_col.get_visible()
 
 def test_make_cells(): 
     col = Column(title='Test', cells=[
