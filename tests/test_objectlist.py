@@ -169,6 +169,9 @@ def test_cell_format_func():
     cell = Cell('test', format_func=str)
     assert cell.format_data(1) == '1'
 
+def test_pixbuf_type():
+    cell = Cell('test', type=gtk.gdk.Pixbuf)
+    assert cell.renderers[0].__name__ == 'set_pixbuf_renderer'
 
 def test_cell_ellipsize():
     import pango

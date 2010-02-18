@@ -22,6 +22,8 @@ def set_text_renderer(mapper, object, cell):
 def set_stock_renderer(mapper, object, cell):
     cell.set_property('stock-id', mapper.from_object(object))
 
+def set_pixbuf_renderer(mapper, object, cell):
+    cell.set_property('pixbuf', mapper.from_object(object))
 
 class Cell(object):
 
@@ -39,6 +41,8 @@ class Cell(object):
         self.ellipsize = ellipsize
         if use_stock:
             self.renderers = [set_stock_renderer]
+        elif type==gtk.gdk.Pixbuf:
+            self.renderers = [set_pixbuf_renderer]
         else:
             self.renderers = renderers or [set_text_renderer]
         if format_func is not None:
@@ -64,7 +68,7 @@ class Cell(object):
 
     def create_renderer(self, column, objectlist):
         #XXX: extend to more types
-        if self.use_stock:
+        if self.use_stock or self.type == gtk.gdk.Pixbuf:
             cell = gtk.CellRendererPixbuf()
         elif self.choices:
             #XXX: a mapping?
