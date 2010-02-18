@@ -2,6 +2,7 @@ from py.test import importorskip
 import gtk
 from pygtkhelpers.utils import refresh_gui
 from pygtkhelpers.ui.widgets import StringList, AttrSortCombo
+from pygtkhelpers.ui.objectlist import ObjectList
 
 def pytest_funcarg__pl(request):
     return StringList()
@@ -49,8 +50,8 @@ def test_pl_edit(pl):
 def test_attrsortcombo():
     mock = importorskip('mock')
 
-    ol = mock.Mock()
-    model = ol.get_model()
+    ol = mock.Mock(spec=ObjectList)
+    model = ol.get_model.return_value = mock.Mock(spec=gtk.TreeSortable)
 
     sort = AttrSortCombo(ol, [
         ('name', 'Der name'),
