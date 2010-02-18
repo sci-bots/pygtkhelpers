@@ -101,6 +101,14 @@ def test_column_invisiblility():
     view_col = col.create_treecolumn(None)
     assert not view_col.get_visible()
 
+
+def test_column_width():
+    col = Column('test', width=30)
+    view_col = col.create_treecolumn(None)
+    refresh_gui()
+    assert view_col.get_sizing() == gtk.TREE_VIEW_COLUMN_FIXED
+    assert view_col.get_fixed_width() == 30
+
 def test_make_cells(): 
     col = Column(title='Test', cells=[
         Cell('name', int),

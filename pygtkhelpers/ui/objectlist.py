@@ -124,6 +124,7 @@ class Column(gtk.TreeViewColumn):
         self.sorted = kwargs.pop('sorted', True)
         self.expand = kwargs.pop('expand', None)
         self.visible = kwargs.pop('visible', True)
+        self.width = kwargs.pop('width', None)
 
         if 'cells' in kwargs:
             self.cells = kwargs['cells']
@@ -137,6 +138,9 @@ class Column(gtk.TreeViewColumn):
         col.props.visible = self.visible
         if self.expand is not None:
             col.props.expand = self.expand
+        if self.width is not None:
+            col.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
+            col.set_fixed_width(self.width)
         for cell in self.cells:
             view_cell = cell.create_renderer(self, objectlist)
             view_cell.set_data('pygtkhelpers::column', self)
