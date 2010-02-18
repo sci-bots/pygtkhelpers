@@ -243,8 +243,21 @@ class ObjectList(gtk.TreeView):
         modeliter = self.model.append((item,))
         self._id_to_iter[id(item)] = modeliter
         if select:
-            self.get_selection().select_iter(modeliter)
-            self.set_cursor(self.model[modeliter].path)
+            self.selected_item = item
+
+    @property
+    def selected_item(self):
+        '''the currently selected item'''
+        selection = self.get_selection()
+        model, selected = selection.get_selected()
+        if selected is not None:
+            return model[selected][0]
+
+    @selected_item.setter
+    def selected_item(self, item):
+        modeliter = self._id_to_iter[id(item)]
+        self.get_selection().select_iter(modeliter)
+        self.set_cursor(self.model[modeliter].path)
 
     def extend(self, iter):
         for item in iter:
@@ -258,12 +271,6 @@ class ObjectList(gtk.TreeView):
         iter = self._id_to_iter[id(item)]
         self.model.set(iter, 0, item)
 
-    def get_selected(self):
-        '''get the currently selected item #XXX: better name'''
-        selection = self.get_selection()
-        model, selected = selection.get_selected()
-        if selected is not None:
-            return model[selected][0]
 
     def _path_for(self, object):
         oid = id(object)

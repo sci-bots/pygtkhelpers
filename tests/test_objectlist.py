@@ -42,13 +42,13 @@ def test_append_selected():
     user = User(name="hans", age=10)
     items.append(user, select=True)
 
-    assert items.get_selected() is user
+    assert items.selected_item is user
 
 def test_append_unselected():
     items = ObjectList(user_columns)
     user = User(name="hans", age=10)
     items.append(user, select=False)
-    assert items.get_selected() is None
+    assert items.selected_item is None
 
 
 def test_extend():
