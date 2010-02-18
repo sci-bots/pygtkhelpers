@@ -14,63 +14,83 @@ import gtk, gobject
 from pygtkhelpers.utils import gsignal
 
 
-class SetPropertyRenderer(object):
+class PropertyMapper(object):
 
     def __init__(self, prop, attr=None):
         self.prop = prop
         self.attr = attr
 
-    def __call__(self, mapper, object, cell):
+    def __call__(self, cell, obj, renderer):
         # attr is None implementation uses the cell
-        cell.set_property(self.prop, mapper.from_object(object, self.attr))
+        value = getattr(obj, self.attr or cell.attr)
+        renderer.set_property(self.prop, value)
 
 
-text_renderer = SetPropertyRenderer('text')
-markup_renderer = SetPropertyRenderer('markup')
-pixbuf_renderer = SetPropertyRenderer('pixbuf')
-stockid_renderer = SetPropertyRenderer('stock-id')
+class CellMapper(object):
+
+    def __init__(self, map_spec):
+        self.mappers = []
+        for prop, attr in map_spec.items():
+            self.mappers.append(PropertyMapper(prop, attr))
+
+    def __call__(self, cell, obj, renderer):
+        for mapper in self.mappers:
+            mapper(cell, obj, renderer)
 
 
 class Cell(object):
 
-    def __init__(self, attr, type=str, editable=False, renderers=None,
-                     use_stock=False, use_markup=False, choices=None,
-                     format_func=None,
-                     ellipsize=None):
+    def __init__(self, attr, type=str, **kw):
+        # attribute and type
         self.attr = attr
         self.type = type
-        self.format = "%s"
-        self.editable = editable
-        self.use_markup = use_markup
-        self.use_stock = use_stock
-        self.choices = choices
-        self.ellipsize = ellipsize
-        if use_stock:
-            self.renderers = [stockid_renderer]
-        elif type==gtk.gdk.Pixbuf:
-            self.renderers = [pixbuf_renderer]
-        elif use_markup:
-            self.renderers = [markup_renderer]
-        else:
-            self.renderers = renderers or [text_renderer]
-        if format_func is not None:
-            self.format_data = format_func
+
+        # behaviour
+        self.editable = kw.get('editable', False)
+        self.choices = kw.get('choices', [])
+
+        # display
+        self.use_markup = kw.get('use_markup', False)
+        self.use_stock = kw.get('use_stock', False)
+        self.ellipsize = kw.get('ellipsize', None)
+
+        # attribute/property mapping
+        self.mappers = kw.get('mappers')
+        self.mapped = kw.get('mapped')
+
+        if not self.mappers:
+            map_spec = {self._calculate_primary_prop(): None}
+            if self.mapped:
+                map_spec.update(self.mapped)
+            self.mappers = [CellMapper(map_spec)]
+
+        # formatting
+        self.format = kw.get('format', '%s')
+        self.format_data = kw.get('format_func') or self.format_data
+
+    @property
+    def primary_mapper(self):
+        return self.mappers[0]
 
     def __repr__(self):
         return '<Cell %s %r>'%(self.attr, self.type)
 
-    def from_object(self, object, attr=None):
-        #XXX allow a callback?
-        if attr is None:
-            attr = self.attr
-        return getattr(object, attr)
+    def _calculate_primary_prop(self):
+        primary_prop = 'text'
+        if self.use_stock:
+            primary_prop = 'stock-id'
+        elif self.type==gtk.gdk.Pixbuf:
+            primary_prop = 'pixbuf'
+        elif self.use_markup:
+            primary_prop = 'markup'
+        return primary_prop
 
     def format_data(self, data):
-        return self.format%data
+        return self.format % data
 
     def render(self, object, cell):
-        for renderer in self.renderers:
-            renderer(self, object, cell)
+        for mapper in self.mappers:
+            mapper(self, object, cell)
 
     def _data_func(self, column, cell, model, iter):
         obj = model.get_value(iter, 0)

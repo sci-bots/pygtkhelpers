@@ -72,15 +72,6 @@ def test_extend():
         ])
     assert len(items)==2
 
-def test_column_getattr():
-    name = Cell('name', type=str)
-    age = Cell('age', type=str)
-    user = User('hans', 22)
-
-    assert name.from_object(user) == 'hans'
-    assert age.from_object(user) == 22
-
-
 def test_column_title():
     col = Column("name")
     view_col = col.create_treecolumn(None)
@@ -169,19 +160,27 @@ def test_cell_format_func():
 
 def test_default_type():
     cell = Cell('test')
-    assert cell.renderers[0].prop == 'text'
+    assert cell.mappers[0].mappers[0].prop == 'text'
 
 def test_pixbuf_type():
     cell = Cell('test', type=gtk.gdk.Pixbuf)
-    assert cell.renderers[0].prop == 'pixbuf'
+    assert cell.mappers[0].mappers[0].prop == 'pixbuf'
 
 def test_markup():
     cell = Cell('test', use_markup=True)
-    assert cell.renderers[0].prop == 'markup'
+    assert cell.mappers[0].mappers[0].prop == 'markup'
 
 def test_stock_type():
     cell = Cell('test', use_stock=True)
-    assert cell.renderers[0].prop == 'stock-id'
+    assert cell.mappers[0].mappers[0].prop == 'stock-id'
+
+def test_secondary_mappers():
+    cell = Cell('test', mapped={'markup': 'markup_attr'})
+    m = cell.mappers[0]
+    assert m.mappers[0].prop == 'text'
+    assert m.mappers[0].attr == None
+    assert m.mappers[1].prop == 'markup'
+    assert m.mappers[1].attr == 'markup_attr'
 
 def test_cell_ellipsize():
     import pango
@@ -189,6 +188,7 @@ def test_cell_ellipsize():
     renderer = cell.create_renderer(None, None)
     el = renderer.get_property('ellipsize')
     assert el == pango.ELLIPSIZE_END
+
 
 
 def test_left_click_event():
