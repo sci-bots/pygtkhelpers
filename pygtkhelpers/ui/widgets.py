@@ -104,16 +104,25 @@ class StringList(gtk.VBox):
 
 class SimpleComboBox(gtk.ComboBox):
     '''a simple combobox that maps descriptions to keys'''
-    def __init__(self, choices=None):
+    def __init__(self, choices=None, default=None):
         gtk.ComboBox.__init__(self)
+        if choices and not default:
+            raise ValueError('default choice necessary')
         self.store = gtk.ListStore(str, str)
         self.set_model(self.store)
         if choices is not None:
-            self.set_choices(choices)
+            self.set_choices(choices, default)
 
-    def set_choices(self, choices):
+        self.renderer = gtk.CellRendererText()
+        self.pack_start(self.renderer, True)
+        self.add_attribute(self.renderer, 'text', 0)
+
+    def set_choices(self, choices, default):
         self.store.clear()
         for item in choices:
-            self.store.append((item[1], item[0]))
+            iter = self.store.append((item[1], item[0]))
+            if item[0] == default:
+                self.set_active_iter(iter)
+
 
 

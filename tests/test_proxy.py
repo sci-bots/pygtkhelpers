@@ -56,7 +56,7 @@ def add_range(widget):
 widget_initargs = {
     gtk.FileChooserButton: ('Title',),
     gtk.LinkButton: ('',),
-    SimpleComboBox: ( [('name', 'Name'), ('test', "Der Test")],  ),
+    SimpleComboBox: ( [('name', 'Name'), ('test', "Der Test")], 'name', ),
 }
 
 widget_setups = {
