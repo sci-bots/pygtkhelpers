@@ -66,6 +66,10 @@ def test_attrsortcombo():
     (func, name), kw = sort_func.call_args
     assert name == 'age'
 
+    sort._combo.set_active(0) # the combo is connected
+    (func, name), kw = sort_func.call_args
+    assert name == 'name'
+
     col = model.set_sort_column_id
     assert col.call_args[0] == (-1, gtk.SORT_ASCENDING)
 

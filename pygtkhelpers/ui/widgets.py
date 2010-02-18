@@ -141,6 +141,7 @@ class AttrSortCombo(gtk.HBox):
 
         self._combo = SimpleComboBox(attribute_list, default)
         self._proxy = GtkComboBoxProxy(self._combo)
+        self._proxy.connect_widget()
         self._proxy.connect('changed', self._on_configuration_changed)
         self._order_button = gtk.ToggleToolButton(
             stock_id=gtk.STOCK_SORT_DESCENDING)
