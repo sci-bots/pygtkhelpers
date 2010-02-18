@@ -138,6 +138,14 @@ def test_edit_name():
     assert item_changed.called
 
 
+def test_selection_changed_signal():
+    items = ObjectList(user_columns)
+    user = User('hans', 10)
+    items.append(user)
+    selection_changed = CheckCalled(items, 'selection-changed')
+    items.selected_item = user
+    assert selection_changed.called
+
 
 def test_cell_format_func():
 

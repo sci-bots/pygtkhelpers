@@ -149,6 +149,7 @@ class ObjectList(gtk.TreeView):
     __gtype_name__ = "PyGTKHelpersObjectList"
     gsignal('item-activated', object)
     gsignal('item-changed', object, str, object)
+    gsignal('selection-changed')
     gsignal('item-left-clicked', object, gtk.gdk.Event)
     gsignal('item-right-clicked', object, gtk.gdk.Event)
     gsignal('item-middle-clicked', object, gtk.gdk.Event)
@@ -169,6 +170,9 @@ class ObjectList(gtk.TreeView):
 
         # connect internal signals
         self.connect('button-press-event', self._on_button_press_event)
+        self.get_selection().connect('changed',
+                    lambda sel, ol: ol.emit('selection-changed'),
+                    self)
 
 
 
