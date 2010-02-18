@@ -13,6 +13,8 @@ import gtk, gobject
 
 from pygtkhelpers.utils import gsignal
 
+def set_pixbuf_renderer(mapper, object, cell):
+    cell.set_property('pixbuf', mapper.from_object(object))
 
 def set_text_renderer(mapper, object, cell):
     prop = 'markup' if mapper.use_markup else 'text'
@@ -22,8 +24,6 @@ def set_text_renderer(mapper, object, cell):
 def set_stock_renderer(mapper, object, cell):
     cell.set_property('stock-id', mapper.from_object(object))
 
-def set_pixbuf_renderer(mapper, object, cell):
-    cell.set_property('pixbuf', mapper.from_object(object))
 
 class Cell(object):
 
@@ -130,6 +130,7 @@ class Column(gtk.TreeViewColumn):
         self.visible = kwargs.pop('visible', True)
         self.width = kwargs.pop('width', None)
 
+
         if 'cells' in kwargs:
             self.cells = kwargs['cells']
         else:
@@ -145,13 +146,14 @@ class Column(gtk.TreeViewColumn):
         if self.width is not None:
             col.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
             col.set_fixed_width(self.width)
+
         for cell in self.cells:
             view_cell = cell.create_renderer(self, objectlist)
             view_cell.set_data('pygtkhelpers::column', self)
             #XXX: better controll over packing
             col.pack_start(view_cell)
             col.set_cell_data_func(view_cell, cell._data_func)
-        return col 
+        return col
 
 
 class ObjectList(gtk.TreeView):
@@ -179,12 +181,7 @@ class ObjectList(gtk.TreeView):
 
         # connect internal signals
         self.connect('button-press-event', self._on_button_press_event)
-        self.get_selection().connect('changed',
-                    lambda sel, ol: ol.emit('selection-changed'),
-                    self)
-
-
-
+        self.get_selection().connect('changed', self._on_selection_changed)
 
     def set_columns(self, columns):
         assert not self.columns
@@ -243,10 +240,11 @@ class ObjectList(gtk.TreeView):
             yield row[0]
 
     def __getitem__(self, index):
-        return self.model[index][0]
+        # index can be an integer or an iter
+        return self._object_at_iter(index)
 
     def __delitem__(self, iter): #XXX
-        obj = self.model[iter][0]
+        obj = self._object_at_iter(iter)
         del self._id_to_iter[id(obj)]
         self.model.remove(iter)
 
@@ -260,27 +258,26 @@ class ObjectList(gtk.TreeView):
 
     @property
     def selected_item(self):
-        '''the currently selected item'''
+        """The currently selected item"""
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
         model, selected = selection.get_selected()
         if selected is not None:
-            return model[selected][0]
+            return self._object_at_iter(selected)
 
     @selected_item.setter
     def selected_item(self, item):
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
-        modeliter = self._id_to_iter[id(item)]
-        selection.select_iter(modeliter)
-        self.set_cursor(self.model[modeliter].path)
+        giter = self._iter_for(item)
+        selection.select_iter(giter)
+        self.set_cursor(self.model[giter].path)
 
     @property
     def selected_items(self):
-        '''list of currently selected items'''
-
+        """List of currently selected items"""
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_MULTIPLE:
             raise AttributeError('selected_items only valid for select_multiple')
@@ -297,10 +294,7 @@ class ObjectList(gtk.TreeView):
             raise AttributeError('selected_items only valid for select_multiple')
 
         for item in new_selection:
-            iter = self._id_to_iter[id(item)]
-            selection.select_iter(iter)
-
-
+            selection.select_iter(self._iter_for(item))
 
     def extend(self, iter):
         for item in iter:
@@ -311,20 +305,19 @@ class ObjectList(gtk.TreeView):
         self._id_to_iter.clear()
 
     def update(self, item):
-        iter = self._id_to_iter[id(item)]
-        self.model.set(iter, 0, item)
+        self.model.set(self._iter_for(item), 0, item)
 
+    def _iter_for(self, obj):
+        return self._id_to_iter[id(obj)]
 
-    def _path_for(self, object): 
-        oid = id(object)
-        if oid in self._id_to_iter: 
-            return self.model.get_string_from_iter(self._id_to_iter[oid])
- 
-    def _object_at_path(self, path):
-        return self._object_at_iter(self.model.get_iter(path))
+    def _path_for(self, obj):
+        return self.model.get_string_from_iter(self._iter_for(obj))
 
     def _object_at_iter(self, iter):
         return self.model[iter][0]
+
+    def _object_at_path(self, path):
+        return self._object_at_iter(self.model.get_iter(path))
 
     def _emit_for_path(self, path, event):
         item = self._object_at_path(path)
@@ -344,5 +337,8 @@ class ObjectList(gtk.TreeView):
             # clicked on an actual cell
             path, col, rx, ry = item_spec
             self._emit_for_path(path, event)
+
+    def _on_selection_changed(self, selection):
+        self.emit('selection-changed')
 
 
