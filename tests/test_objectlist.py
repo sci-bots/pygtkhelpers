@@ -1,5 +1,5 @@
 
-from py.test import raises, mark
+import py
 import gtk, gtk.gdk
 from pygtkhelpers.ui.objectlist import ObjectList, Column, Cell
 from pygtkhelpers.utils import refresh_gui
@@ -35,7 +35,7 @@ def test_append():
     assert User(name="hans", age=10) not in items
 
     #dont allow the same object twice
-    raises(ValueError, items.append, user)
+    py.test.raises(ValueError, items.append, user)
 
 def test_append_selected():
     items = ObjectList(user_columns)
@@ -49,6 +49,19 @@ def test_append_unselected():
     user = User(name="hans", age=10)
     items.append(user, select=False)
     assert items.selected_item is None
+
+def test_select_single_fails_when_select_multiple_is_set():
+    items = ObjectList(user_columns)
+    user = User(name="hans", age=10)
+    items.append(user)
+    items.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
+    py.test.raises(AttributeError, setattr, items, 'selected_item', user)
+    py.test.raises(AttributeError, 'items.selected_item')
+    items.selected_items = [user]
+    print items.selected_items
+    refresh_gui()
+    assert items.selected_items == [user]
+
 
 
 def test_extend():

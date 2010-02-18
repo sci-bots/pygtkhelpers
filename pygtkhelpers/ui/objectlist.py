@@ -249,15 +249,45 @@ class ObjectList(gtk.TreeView):
     def selected_item(self):
         '''the currently selected item'''
         selection = self.get_selection()
+        if selection.get_mode() != gtk.SELECTION_SINGLE:
+            raise AttributeError('selected_item not valid for select_multiple')
         model, selected = selection.get_selected()
         if selected is not None:
             return model[selected][0]
 
     @selected_item.setter
     def selected_item(self, item):
+        selection = self.get_selection()
+        if selection.get_mode() != gtk.SELECTION_SINGLE:
+            raise AttributeError('selected_item not valid for select_multiple')
         modeliter = self._id_to_iter[id(item)]
-        self.get_selection().select_iter(modeliter)
+        selection.select_iter(modeliter)
         self.set_cursor(self.model[modeliter].path)
+
+    @property
+    def selected_items(self):
+        '''list of currently selected items'''
+
+        selection = self.get_selection()
+        if selection.get_mode() != gtk.SELECTION_MULTIPLE:
+            raise AttributeError('selected_items only valid for select_multiple')
+        model, selected_paths = selection.get_selected_rows()
+        result = []
+        for path in selected_paths:
+            result.append(model[path][0])
+        return result
+
+    @selected_items.setter
+    def selected_items(self, new_selection):
+        selection = self.get_selection()
+        if selection.get_mode() != gtk.SELECTION_MULTIPLE:
+            raise AttributeError('selected_items only valid for select_multiple')
+
+        for item in new_selection:
+            iter = self._id_to_iter[id(item)]
+            selection.select_iter(iter)
+
+
 
     def extend(self, iter):
         for item in iter:
@@ -272,11 +302,11 @@ class ObjectList(gtk.TreeView):
         self.model.set(iter, 0, item)
 
 
-    def _path_for(self, object):
+    def _path_for(self, object): 
         oid = id(object)
-        if oid in self._id_to_iter:
+        if oid in self._id_to_iter: 
             return self.model.get_string_from_iter(self._id_to_iter[oid])
-
+ 
     def _object_at_path(self, path):
         return self._object_at_iter(self.model.get_iter(path))
 
