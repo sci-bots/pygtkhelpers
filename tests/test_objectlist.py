@@ -163,15 +163,25 @@ def test_selection_changed_signal():
     items.selected_item = user
     assert selection_changed.called
 
-
 def test_cell_format_func():
-
     cell = Cell('test', format_func=str)
     assert cell.format_data(1) == '1'
 
+def test_default_type():
+    cell = Cell('test')
+    assert cell.renderers[0].prop == 'text'
+
 def test_pixbuf_type():
     cell = Cell('test', type=gtk.gdk.Pixbuf)
-    assert cell.renderers[0].__name__ == 'set_pixbuf_renderer'
+    assert cell.renderers[0].prop == 'pixbuf'
+
+def test_markup():
+    cell = Cell('test', use_markup=True)
+    assert cell.renderers[0].prop == 'markup'
+
+def test_stock_type():
+    cell = Cell('test', use_stock=True)
+    assert cell.renderers[0].prop == 'stock-id'
 
 def test_cell_ellipsize():
     import pango

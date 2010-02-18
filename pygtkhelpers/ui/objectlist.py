@@ -13,16 +13,22 @@ import gtk, gobject
 
 from pygtkhelpers.utils import gsignal
 
-def set_pixbuf_renderer(mapper, object, cell):
-    cell.set_property('pixbuf', mapper.from_object(object))
 
-def set_text_renderer(mapper, object, cell):
-    prop = 'markup' if mapper.use_markup else 'text'
-    cell.set_property(prop, mapper.from_object(object))
+class SetPropertyRenderer(object):
+
+    def __init__(self, prop, attr=None):
+        self.prop = prop
+        self.attr = attr
+
+    def __call__(self, mapper, object, cell):
+        # attr is None implementation uses the cell
+        cell.set_property(self.prop, mapper.from_object(object, self.attr))
 
 
-def set_stock_renderer(mapper, object, cell):
-    cell.set_property('stock-id', mapper.from_object(object))
+text_renderer = SetPropertyRenderer('text')
+markup_renderer = SetPropertyRenderer('markup')
+pixbuf_renderer = SetPropertyRenderer('pixbuf')
+stockid_renderer = SetPropertyRenderer('stock-id')
 
 
 class Cell(object):
@@ -40,20 +46,24 @@ class Cell(object):
         self.choices = choices
         self.ellipsize = ellipsize
         if use_stock:
-            self.renderers = [set_stock_renderer]
+            self.renderers = [stockid_renderer]
         elif type==gtk.gdk.Pixbuf:
-            self.renderers = [set_pixbuf_renderer]
+            self.renderers = [pixbuf_renderer]
+        elif use_markup:
+            self.renderers = [markup_renderer]
         else:
-            self.renderers = renderers or [set_text_renderer]
+            self.renderers = renderers or [text_renderer]
         if format_func is not None:
             self.format_data = format_func
 
     def __repr__(self):
         return '<Cell %s %r>'%(self.attr, self.type)
 
-    def from_object(self, object):
+    def from_object(self, object, attr=None):
         #XXX allow a callback?
-        return getattr(object, self.attr)
+        if attr is None:
+            attr = self.attr
+        return getattr(object, attr)
 
     def format_data(self, data):
         return self.format%data
