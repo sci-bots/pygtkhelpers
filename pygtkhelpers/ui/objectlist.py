@@ -270,24 +270,29 @@ class ObjectList(gtk.TreeView):
         if oid in self._id_to_iter:
             return self.model.get_string_from_iter(self._id_to_iter[oid])
 
-    def _emit_button_press_signal(self, signal_name, event):
-        item = self.get_selected()
-        if item is not None:
+    def _object_at_path(self, path):
+        return self._object_at_iter(self.model.get_iter(path))
+
+    def _object_at_iter(self, iter):
+        return self.model[iter][0]
+
+    def _emit_for_path(self, path, event):
+        item = self._object_at_path(path)
+        signal_map = {
+            (1, gtk.gdk.BUTTON_PRESS): 'item-left-clicked',
+            (3, gtk.gdk.BUTTON_PRESS): 'item-right-clicked',
+            (2, gtk.gdk.BUTTON_PRESS): 'item-middle-clicked',
+            (1, gtk.gdk._2BUTTON_PRESS): 'item-double-clicked',
+        }
+        signal_name = signal_map.get((event.button, event.type))
+        if signal_name is not None:
             self.emit(signal_name, item, event.copy())
 
     def _on_button_press_event(self, treeview, event):
-        # Right and Middle click
-        if event.type == gtk.gdk.BUTTON_PRESS:
-            signal_map = {
-                3: 'item-right-clicked',
-                2: 'item-middle-clicked',
-                1: 'item-left-clicked',
-            }
-            signal_name = signal_map.get(event.button)
-            gobject.idle_add(self._emit_button_press_signal,
-                             signal_name, event)
-        # Double left click
-        elif event.type == gtk.gdk._2BUTTON_PRESS and event.button == 1:
-            self._emit_button_press_signal('item-double-clicked', event)
+        item_spec = self.get_path_at_pos(int(event.x), int(event.y))
+        if item_spec is not None:
+            # clicked on an actual cell
+            path, col, rx, ry = item_spec
+            self._emit_for_path(path, event)
 
 

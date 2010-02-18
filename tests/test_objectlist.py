@@ -146,8 +146,9 @@ def test_left_click_event():
     items.append(user, select=True)
     e = gtk.gdk.Event(gtk.gdk.BUTTON_PRESS)
     e.button = 1
+    e.x, e.y = 10.0, 10.0
     item_clicked = CheckCalled(items, 'item-left-clicked')
-    items._on_button_press_event(items, e)
+    items._emit_for_path((0,), e)
     refresh_gui()
     assert item_clicked.called
 
@@ -158,7 +159,7 @@ def test_right_click_event():
     e = gtk.gdk.Event(gtk.gdk.BUTTON_PRESS)
     e.button = 3
     item_clicked = CheckCalled(items, 'item-right-clicked')
-    items._on_button_press_event(items, e)
+    items._emit_for_path((0,), e)
     refresh_gui()
     assert item_clicked.called
 
@@ -169,7 +170,7 @@ def test_middle_click_event():
     e = gtk.gdk.Event(gtk.gdk.BUTTON_PRESS)
     e.button = 2
     item_clicked = CheckCalled(items, 'item-middle-clicked')
-    items._on_button_press_event(items, e)
+    items._emit_for_path((0,), e)
     refresh_gui()
     assert item_clicked.called
 
@@ -180,7 +181,7 @@ def test_double_click_event():
     e = gtk.gdk.Event(gtk.gdk._2BUTTON_PRESS)
     e.button = 1
     item_clicked = CheckCalled(items, 'item-double-clicked')
-    items._on_button_press_event(items, e)
+    items._emit_for_path((0,), e)
     refresh_gui()
     assert item_clicked.called
 
