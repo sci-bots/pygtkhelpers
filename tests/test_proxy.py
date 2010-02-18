@@ -16,26 +16,12 @@ def pytest_generate_tests(metafunc):
 def pytest_funcarg__widget(request):
     'the gtk widget the proxy should use'
     widget_type = request.param[0]
-    setup_func = 'setup_'+widget_type.__name__
+    init_args = widget_initargs.get(widget_type, ())
 
-    if widget_type is gtk.FileChooserButton:
-        widget = widget_type('Title')
-    elif widget_type is gtk.LinkButton:
-        widget = widget_type('')
-    else:
-        widget = widget_type()
-
-    #XXX: generalize widget configuration
-    if widget_type in [gtk.SpinButton, gtk.HScale, gtk.VScale, gtk.HScrollbar,
-                       gtk.VScrollbar]:
-        widget.set_range(0, 999)
-
-    if widget_type is gtk.ComboBox:
-        model = gtk.ListStore(str, str)
-        for name in ['foo', 'test']:
-            model.append([name, name])
-        widget.set_model(model)
-
+    widget = widget_type(*init_args)
+    setup = widget_setups.get(widget_type)
+    if setup is not None:
+        setup(widget)
     return widget
 
 def pytest_funcarg__attr(request):
@@ -55,6 +41,31 @@ def pytest_funcarg__value(request):
     except KeyError:
         py.test.skip('missing defaults for class %s'%request.param[0])
 
+
+def add_simple_model(widget):
+    model = gtk.ListStore(str, str)
+    for name in ['foo', 'test']:
+        model.append([name, name])
+    widget.set_model(model)
+    return widget
+
+def add_range(widget):
+    widget.set_range(0, 999)
+    return widget
+
+widget_initargs = {
+    gtk.FileChooserButton: ('Title',),
+    gtk.LinkButton: ('',),
+}
+
+widget_setups = {
+    gtk.ComboBox: add_simple_model,
+    gtk.SpinButton: add_range,
+    gtk.HScale: add_range,
+    gtk.VScale: add_range,
+    gtk.HScrollbar: add_range,
+    gtk.VScrollbar: add_range
+}
 widget_test_values = {
     gtk.Entry: 'test',
     gtk.TextView: 'test',
