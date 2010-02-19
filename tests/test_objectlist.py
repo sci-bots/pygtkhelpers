@@ -278,3 +278,15 @@ def test_collapse_item(items, user, user2):
     refresh_gui()
     assert item_collapsed.called
 
+
+@py.test.mark.tree_only
+def test_item_expanded(items, user, user2):
+    items.append(user)
+    items.append(user2, user)
+    items.expand_item(user)
+    refresh_gui()
+    assert items.item_expanded(user)
+    items.collapse_item(user)
+    refresh_gui()
+    assert not items.item_expanded(user)
+

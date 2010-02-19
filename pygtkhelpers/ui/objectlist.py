@@ -450,11 +450,14 @@ class ObjectTree(ObjectTreeViewBase):
         for item in iter:
             self.append(item, parent)
 
-    def expand_item(self, obj, open_all=True):
-        self.expand_row(self._path_for(obj), open_all)
+    def expand_item(self, item, open_all=True):
+        self.expand_row(self._path_for(item), open_all)
 
-    def collapse_item(self, obj):
-        self.collapse_row(self._path_for(obj))
+    def collapse_item(self, item):
+        self.collapse_row(self._path_for(item))
+
+    def item_expanded(self, item):
+        return self.row_expanded(self._path_for(item))
 
     def _on_row_expanded(self, objecttree, giter, path):
         self.emit('item-expanded', self._object_at_iter(giter))
