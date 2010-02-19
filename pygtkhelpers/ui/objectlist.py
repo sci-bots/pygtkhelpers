@@ -14,7 +14,6 @@ import gtk, gobject
 from pygtkhelpers.utils import gsignal
 
 
-
 class PropertyMapper(object):
 
     def __init__(self, prop, attr=None):
@@ -22,7 +21,6 @@ class PropertyMapper(object):
         self.attr = attr
 
     def __call__(self, cell, obj, renderer):
-        # attr is None implementation uses the cell
         value = getattr(obj, self.attr or cell.attr)
         renderer.set_property(self.prop, value)
 
@@ -37,61 +35,6 @@ class CellMapper(object):
     def __call__(self, cell, obj, renderer):
         for mapper in self.mappers:
             mapper(cell, obj, renderer)
-
-
-class EditableCellRendererMixin(object):
-
-    copy_properties = []
-
-    def __init__(self, cell, objectlist):
-        self.cell = cell
-        self.objectlist = objectlist
-        self.props.editable = cell.editable
-        for prop in self.copy_properties:
-            value = getattr(cell, prop)
-            if value is not None:
-                self.set_property(prop, getattr(cell, prop))
-        if cell.editable:
-            self.connect('edited', self._on_edited)
-
-    def _on_edited(self, cellrenderer, path, text):
-        obj = self.objectlist[path]
-        #XXX: full converter
-        value = self.cell.type(text)
-        setattr(obj, self.cell.attr, value)
-        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
-
-
-class CellRendererText(EditableCellRendererMixin, gtk.CellRendererText):
-
-    copy_properties = ['ellipsize']
-
-    def __init__(self, cell, objectlist):
-        gtk.CellRendererText.__init__(self)
-        EditableCellRendererMixin.__init__(self, cell, objectlist)
-
-
-
-class CellRendererCombo(gtk.CellRendererCombo):
-
-    def __init__(self, cell, objectlist, choices):
-        gtk.CellRendererCombo.__init__(self)
-        self.cell = cell
-        self.objectlist = objectlist
-        self.props.model = gtk.ListStore(object, str)
-        self.props.text_column = 1
-        for choice in choices:
-            if not isinstance(choice, tuple):
-                choice = (choice, choice)
-            self.props.model.append(choice)
-        self.props.editable = True
-        self.connect('changed', self._on_changed)
-
-    def _on_changed(self, _, path, new_iter):#XXX:
-        obj = self.objectlist[path]
-        value = self.props.model[new_iter][0]
-        setattr(obj, self.cell.attr, value)
-        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
 
 class Cell(object):
@@ -509,6 +452,61 @@ class ObjectTree(ObjectTreeViewBase):
 
     def _on_row_collapsed(self, objecttree, giter, path):
         self.emit('item-collapsed', self._object_at_iter(giter))
+
+
+class EditableCellRendererMixin(object):
+
+    copy_properties = []
+
+    def __init__(self, cell, objectlist):
+        self.cell = cell
+        self.objectlist = objectlist
+        self.props.editable = cell.editable
+        for prop in self.copy_properties:
+            value = getattr(cell, prop)
+            if value is not None:
+                self.set_property(prop, getattr(cell, prop))
+        if cell.editable:
+            self.connect('edited', self._on_edited)
+
+    def _on_edited(self, cellrenderer, path, text):
+        obj = self.objectlist[path]
+        #XXX: full converter
+        value = self.cell.type(text)
+        setattr(obj, self.cell.attr, value)
+        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
+
+
+class CellRendererText(EditableCellRendererMixin, gtk.CellRendererText):
+
+    copy_properties = ['ellipsize']
+
+    def __init__(self, cell, objectlist):
+        gtk.CellRendererText.__init__(self)
+        EditableCellRendererMixin.__init__(self, cell, objectlist)
+
+
+
+class CellRendererCombo(gtk.CellRendererCombo):
+
+    def __init__(self, cell, objectlist, choices):
+        gtk.CellRendererCombo.__init__(self)
+        self.cell = cell
+        self.objectlist = objectlist
+        self.props.model = gtk.ListStore(object, str)
+        self.props.text_column = 1
+        for choice in choices:
+            if not isinstance(choice, tuple):
+                choice = (choice, choice)
+            self.props.model.append(choice)
+        self.props.editable = True
+        self.connect('changed', self._on_changed)
+
+    def _on_changed(self, _, path, new_iter):#XXX:
+        obj = self.objectlist[path]
+        value = self.props.model[new_iter][0]
+        setattr(obj, self.cell.attr, value)
+        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
 
 TOOLTIP_TEXT = 'text'
