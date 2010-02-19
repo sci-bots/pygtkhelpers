@@ -205,13 +205,17 @@ def test_cell_radio():
     renderer = cell.create_renderer(None, None)
     assert renderer.get_property('radio') == True
 
-def test_cell_both():
+def test_cell_radio_checkbox_both():
     # radio and checkbox, checkbox should win
     cell = Cell('test', use_checkbox=True, use_radio=True)
     renderer = cell.create_renderer(None, None)
     assert renderer.get_property('radio') == False
 
-
+def test_cell_props():
+    cell = Cell('test', cell_props={'size': 100})
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('size') == 100
+    
 
 
 def test_left_click_event(items, user):

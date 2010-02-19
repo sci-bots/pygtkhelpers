@@ -66,9 +66,12 @@ class Cell(object):
         self.format = kw.get('format')
         self.format_func = kw.get('format_func')
 
+        self.cell_props = kw.get('cell_props', {})
+
         # attribute/property mapping
         self.mappers = kw.get('mappers')
         self.mapped = kw.get('mapped')
+
 
         if not self.mappers:
             self.mappers = []
@@ -111,6 +114,8 @@ class Cell(object):
         else:
             cell = CellRendererText(self, objectlist)
         cell.set_data('pygtkhelpers::cell', self)
+        for prop, value in self.cell_props.items():
+            cell.set_property(prop, value)
         return cell
 
     def _calculate_primary_prop(self):
