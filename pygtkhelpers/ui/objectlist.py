@@ -14,6 +14,7 @@ import gtk, gobject
 from pygtkhelpers.utils import gsignal
 
 
+
 class PropertyMapper(object):
 
     def __init__(self, prop, attr=None):
@@ -193,6 +194,9 @@ class Column(object):
             #XXX: sane arg filter
             self.cells = [Cell(attr, type, **kwargs)]
 
+        # tooltips are per column, not per cell
+        self._init_tooltips(**kwargs)
+
     def create_treecolumn(self, objectlist):
         col = gtk.TreeViewColumn(self.title)
         col.set_data('pygtkhelpers::column', self)
@@ -210,6 +214,31 @@ class Column(object):
             col.pack_start(view_cell)
             col.set_cell_data_func(view_cell, cell.cell_data_func)
         return col
+
+
+    def _init_tooltips(self, **kw):
+        self.tooltip_attr = kw.get('tooltip_attr')
+        self.tooltip_type = kw.get('tooltip_type', TOOLTIP_TEXT)
+        if self.tooltip_type not in TOOLTIP_TYPES:
+            raise ValueError('Tooltip types must be in %r.' % TOOLTIP_TYPES)
+        self.tooltip_value = kw.get('tooltip_value')
+        self.tooltip_image_size = kw.get('tooltip_image_size',
+                                         gtk.ICON_SIZE_DIALOG)
+
+
+    def render_tooltip(self, tooltip, obj):
+        if self.tooltip_attr:
+            val = getattr(obj, self.tooltip_attr)
+        elif self.tooltip_value:
+            val = self.tooltip_value
+        else:
+            return False
+        setter = getattr(tooltip, TOOLTIP_SETTERS.get(self.tooltip_type))
+        if self.tooltip_type in TOOLTIP_SIZED_TYPES:
+            setter(val, self.tooltip_image_size)
+        else:
+            setter(val)
+        return True
 
 
 
@@ -236,6 +265,10 @@ class ObjectTreeViewBase(gtk.TreeView):
         sort_func = kwargs.pop('sort_func', self._default_sort_func)
         self.columns = None
         self.set_columns(columns)
+
+        # misc initial setup
+        self.set_property('has-tooltip', kwargs.pop('show_tooltips', True))
+
         self._connect_internal()
 
     def create_model(self):
@@ -373,6 +406,7 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _connect_internal(self):
         # connect internal signals
         self.connect('button-press-event', self._on_button_press_event)
+        self.connect('query-tooltip', self._on_query_tooltip)
         self.get_selection().connect('changed', self._on_selection_changed)
 
     def _emit_for_path(self, path, event):
@@ -396,6 +430,17 @@ class ObjectTreeViewBase(gtk.TreeView):
 
     def _on_selection_changed(self, selection):
         self.emit('selection-changed')
+        self.connect('query-tooltip', self._on_query_tooltip)
+
+    def _on_query_tooltip(self, objectlist, x, y, ktip, tooltip):
+        if not self.get_tooltip_context(x, y, ktip):
+            return False
+        else:
+            tx, ty = self.convert_widget_to_tree_coords(x, y)
+            path, column, rx, ry = self.get_path_at_pos(tx, ty)
+            obj = self._object_at_path(path)
+            pcol = column.get_data('pygtkhelpers::column')
+            return pcol.render_tooltip(tooltip, obj)
 
 
 
@@ -466,3 +511,25 @@ class ObjectTree(ObjectTreeViewBase):
         self.emit('item-collapsed', self._object_at_iter(giter))
 
 
+TOOLTIP_TEXT = 'text'
+TOOLTIP_MARKUP = 'markup'
+TOOLTIP_PIXBUF = 'pixbuf'
+TOOLTIP_STOCK = 'stock'
+TOOLTIP_ICONNAME = 'iconname'
+TOOLTIP_CUSTOM = 'custom'
+
+
+TOOLTIP_SETTERS = {
+    TOOLTIP_TEXT: 'set_text',
+    TOOLTIP_MARKUP: 'set_markup',
+    TOOLTIP_PIXBUF: 'set_icon',
+    TOOLTIP_ICONNAME: 'set_icon_from_icon_name',
+    TOOLTIP_STOCK: 'set_icon_from_stock',
+    TOOLTIP_CUSTOM: 'set_custom',
+}
+
+TOOLTIP_TYPES = set(TOOLTIP_SETTERS)
+
+TOOLTIP_SIZED_TYPES = set([
+    TOOLTIP_STOCK, TOOLTIP_ICONNAME
+])

@@ -26,7 +26,9 @@ listing = ObjectTree([
         ('m', 'Male'),
         ('f', 'Female'),
         ]),
-    Column('hair', str, choices=['brown', 'blonde']),
+    Column('hair', str, choices=['brown', 'blonde'],
+                tooltip_value=gtk.Entry(),
+                tooltip_type='custom'),
     ])
 
 def _on_left_clicked(ol, item, event):
