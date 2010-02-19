@@ -1,7 +1,7 @@
 
 import py
 import gtk, gtk.gdk
-from pygtkhelpers.ui.objectlist import ObjectList, Column, Cell
+from pygtkhelpers.ui.objectlist import ObjectList, ObjectTree, Column, Cell
 from pygtkhelpers.utils import refresh_gui
 from pygtkhelpers.test import CheckCalled
 
@@ -19,16 +19,22 @@ user_columns = [
     Column('age', int),
 ]
 
-def test_append():
-    items = ObjectList(user_columns)
+def pytest_generate_tests(metafunc):
+    if 'items' in metafunc.funcargnames:
+        metafunc.addcall(id='list', param=ObjectList)
+        metafunc.addcall(id='tree', param=ObjectTree)
+
+def pytest_funcarg__items(request):
+    return request.param(user_columns)
+
+def pytest_funcarg__user(request):
+    return User(name='Hans', age=10)
+
+def test_append(items, user):
     assert len(items) == 0
-
-    user = User(name="hans", age=10)
     items.append(user)
-
     assert len(items) == 1
     assert items[0] is user
-
     assert user in items
 
     #containment is identity based
@@ -37,25 +43,20 @@ def test_append():
     #dont allow the same object twice
     py.test.raises(ValueError, items.append, user)
 
-def test_append_selected():
-    items = ObjectList(user_columns)
-    user = User(name="hans", age=10)
+def test_append_selected(items, user):
     items.append(user, select=True)
 
     assert items.selected_item is user
 
-def test_append_unselected():
-    items = ObjectList(user_columns)
-    user = User(name="hans", age=10)
+def test_append_unselected(items, user):
     items.append(user, select=False)
     assert items.selected_item is None
 
-def test_select_single_fails_when_select_multiple_is_set():
-    items = ObjectList(user_columns)
-    user = User(name="hans", age=10)
+def test_select_single_fails_when_select_multiple_is_set(items, user):
     items.append(user)
     items.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
-    py.test.raises(AttributeError, setattr, items, 'selected_item', user)
+
+    py.test.raises(AttributeError, 'items.selected_item = user')
     py.test.raises(AttributeError, 'items.selected_item')
     items.selected_items = [user]
     print items.selected_items
@@ -64,8 +65,7 @@ def test_select_single_fails_when_select_multiple_is_set():
 
 
 
-def test_extend():
-    items = ObjectList(user_columns)
+def test_extend(items):
     items.extend([
         User('hans', 22),
         User('peter', 22),
@@ -129,10 +129,8 @@ def test_build_simple():
     assert isinstance(objectlist, ObjectList)
 
 
-def test_edit_name():
+def test_edit_name(items, user):
 
-    items = ObjectList(user_columns)
-    user = User('hans', 10)
     items.append(user)
     item_changed = CheckCalled(items, 'item-changed')
 
@@ -146,9 +144,7 @@ def test_edit_name():
     assert item_changed.called
 
 
-def test_selection_changed_signal():
-    items = ObjectList(user_columns)
-    user = User('hans', 10)
+def test_selection_changed_signal(items, user):
     items.append(user)
     selection_changed = CheckCalled(items, 'selection-changed')
     items.selected_item = user
@@ -191,9 +187,7 @@ def test_cell_ellipsize():
 
 
 
-def test_left_click_event():
-    items = ObjectList(user_columns)
-    user = User('hans', 10)
+def test_left_click_event(items, user):
     items.append(user, select=True)
     e = gtk.gdk.Event(gtk.gdk.BUTTON_PRESS)
     e.button = 1
@@ -203,9 +197,7 @@ def test_left_click_event():
     refresh_gui()
     assert item_clicked.called
 
-def test_right_click_event():
-    items = ObjectList(user_columns)
-    user = User('hans', 10)
+def test_right_click_event(items, user):
     items.append(user, select=True)
     e = gtk.gdk.Event(gtk.gdk.BUTTON_PRESS)
     e.button = 3
@@ -214,9 +206,7 @@ def test_right_click_event():
     refresh_gui()
     assert item_clicked.called
 
-def test_middle_click_event():
-    items = ObjectList(user_columns)
-    user = User('hans', 10)
+def test_middle_click_event(items, user):
     items.append(user, select=True)
     e = gtk.gdk.Event(gtk.gdk.BUTTON_PRESS)
     e.button = 2
@@ -225,9 +215,7 @@ def test_middle_click_event():
     refresh_gui()
     assert item_clicked.called
 
-def test_double_click_event():
-    items = ObjectList(user_columns)
-    user = User('hans', 10)
+def test_double_click_event(items, user):
     items.append(user, select=True)
     e = gtk.gdk.Event(gtk.gdk._2BUTTON_PRESS)
     e.button = 1
