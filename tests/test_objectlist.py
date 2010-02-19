@@ -69,8 +69,6 @@ def test_select_single_fails_when_select_multiple_is_set(items, user):
     refresh_gui()
     assert items.selected_items == [user]
 
-
-
 def test_extend(items):
     items.extend([
         User('hans', 22),
@@ -98,7 +96,6 @@ def test_column_invisiblility():
     view_col = col.create_treecolumn(None)
     assert not view_col.get_visible()
 
-
 def test_column_width():
     col = Column('test', width=30)
     view_col = col.create_treecolumn(None)
@@ -117,7 +114,6 @@ def test_make_cells():
 
 def test_column_expandable():
     col = Column('name', expand=True)
-    
     treeview_column = col.create_treecolumn(None)
     assert treeview_column.props.expand
 
@@ -134,9 +130,7 @@ def test_build_simple():
     print objectlist
     assert isinstance(objectlist, ObjectList)
 
-
 def test_edit_name(items, user):
-
     items.append(user)
     item_changed = CheckCalled(items, 'item-changed')
 
@@ -148,7 +142,6 @@ def test_edit_name(items, user):
     refresh_gui()
     assert user.name=='peter'
     assert item_changed.called
-
 
 def test_selection_changed_signal(items, user):
     items.append(user)
@@ -261,8 +254,6 @@ def test_cell_props():
     renderer = cell.create_renderer(None, None)
     assert renderer.get_property('size') == 100
 
-
-
 def test_left_click_event(items, user):
     items.append(user, select=True)
     e = gtk.gdk.Event(gtk.gdk.BUTTON_PRESS)
@@ -348,7 +339,6 @@ def test_collapse_item(items, user, user2):
     refresh_gui()
     assert item_collapsed.called
 
-
 @py.test.mark.tree_only
 def test_item_expanded(items, user, user2):
     items.append(user)
@@ -360,10 +350,7 @@ def test_item_expanded(items, user, user2):
     refresh_gui()
     assert not items.item_expanded(user)
 
-
-
 class MockTooltip(object):
-
     def set_text(self, text):
         self.text = text
 
@@ -384,9 +371,7 @@ class MockTooltip(object):
         self.iconname = iconname
         self.size = size
 
-
 class Fruit(object):
-
     attr = 'value'
 
 def test_tooltip_type_text_value():
