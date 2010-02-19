@@ -12,6 +12,7 @@ class User(object):
         assert sex in ('m','f')
         self.sex = sex
         self.hair = hair
+        self.clever = False
 
     def __str__(self):
         return '<User: name=%r age=%r sex=%r hair=%r>' % (self.name, self.age,
@@ -28,6 +29,7 @@ listing = ObjectTree([
         ]),
     Column('hair', str, choices=['brown', 'blonde'],
                 tooltip_attr='name'),
+    Column('clever', bool, use_radio=True, editable=True),
     ])
 
 def _on_left_clicked(ol, item, event):

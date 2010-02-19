@@ -195,6 +195,23 @@ def test_cell_ellipsize():
     el = renderer.get_property('ellipsize')
     assert el == pango.ELLIPSIZE_END
 
+def test_cell_toggle():
+    cell = Cell('test', use_toggle=True)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('radio') == False
+
+def test_cell_radio():
+    cell = Cell('test', use_radio=True)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('radio') == True
+
+def test_cell_both():
+    # radio and toggle, radio should win
+    cell = Cell('test', use_radio=True, use_toggle=True)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('radio') == True
+
+
 
 
 def test_left_click_event(items, user):
@@ -293,6 +310,7 @@ def test_item_expanded(items, user, user2):
     items.collapse_item(user)
     refresh_gui()
     assert not items.item_expanded(user)
+
 
 
 class MockTooltip(object):

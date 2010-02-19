@@ -58,7 +58,9 @@ class Cell(object):
         # display
         self.use_markup = kw.get('use_markup', False)
         self.use_stock = kw.get('use_stock', False)
-        self.ellipsize = kw.get('ellipsize', None)
+        self.use_toggle = kw.get('use_toggle', False)
+        self.use_radio = kw.get('use_radio', False)
+        self.ellipsize = kw.get('ellipsize')
 
         # formatting
         self.format = kw.get('format')
@@ -101,6 +103,9 @@ class Cell(object):
         #XXX: extend to more types
         if self.use_stock or self.type == gtk.gdk.Pixbuf:
             cell = gtk.CellRendererPixbuf()
+        elif self.use_toggle or self.use_radio:
+            cell = gtk.CellRendererToggle()
+            cell.set_property('radio', self.use_radio)
         elif self.choices:
             #XXX: a mapping?
             cell = CellRendererCombo(self, objectlist, self.choices)
@@ -114,6 +119,8 @@ class Cell(object):
             primary_prop = 'stock-id'
         elif self.type==gtk.gdk.Pixbuf:
             primary_prop = 'pixbuf'
+        elif self.use_toggle or self.use_radio:
+            primary_prop = 'active'
         elif self.use_markup:
             primary_prop = 'markup'
         else:
@@ -527,7 +534,6 @@ TOOLTIP_STOCK = 'stock'
 TOOLTIP_ICONNAME = 'iconname'
 TOOLTIP_CUSTOM = 'custom'
 
-
 TOOLTIP_SETTERS = {
     TOOLTIP_TEXT: 'set_text',
     TOOLTIP_MARKUP: 'set_markup',
@@ -542,3 +548,4 @@ TOOLTIP_TYPES = set(TOOLTIP_SETTERS)
 TOOLTIP_SIZED_TYPES = set([
     TOOLTIP_STOCK, TOOLTIP_ICONNAME
 ])
+
