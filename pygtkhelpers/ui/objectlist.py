@@ -58,7 +58,7 @@ class Cell(object):
         # display
         self.use_markup = kw.get('use_markup', False)
         self.use_stock = kw.get('use_stock', False)
-        self.use_toggle = kw.get('use_toggle', False)
+        self.use_checkbox = kw.get('use_checkbox', False)
         self.use_radio = kw.get('use_radio', False)
         self.ellipsize = kw.get('ellipsize')
 
@@ -103,9 +103,8 @@ class Cell(object):
         #XXX: extend to more types
         if self.use_stock or self.type == gtk.gdk.Pixbuf:
             cell = gtk.CellRendererPixbuf()
-        elif self.use_toggle or self.use_radio:
-            cell = gtk.CellRendererToggle()
-            cell.set_property('radio', self.use_radio)
+        elif self.use_checkbox or self.use_radio:
+            cell = CellRendererToggle(self, objectlist)
         elif self.choices:
             #XXX: a mapping?
             cell = CellRendererCombo(self, objectlist, self.choices)
@@ -119,7 +118,7 @@ class Cell(object):
             primary_prop = 'stock-id'
         elif self.type==gtk.gdk.Pixbuf:
             primary_prop = 'pixbuf'
-        elif self.use_toggle or self.use_radio:
+        elif self.use_checkbox or self.use_radio:
             primary_prop = 'active'
         elif self.use_markup:
             primary_prop = 'markup'
@@ -472,18 +471,15 @@ class ObjectTree(ObjectTreeViewBase):
         self.emit('item-collapsed', self._object_at_iter(giter))
 
 
-class EditableCellRendererMixin(object):
-
-    copy_properties = []
+class CellRendererText(gtk.CellRendererText):
 
     def __init__(self, cell, objectlist):
+        gtk.CellRendererText.__init__(self)
         self.cell = cell
         self.objectlist = objectlist
         self.props.editable = cell.editable
-        for prop in self.copy_properties:
-            value = getattr(cell, prop)
-            if value is not None:
-                self.set_property(prop, getattr(cell, prop))
+        if cell.ellipsize is not None:
+            self.set_property('ellipsize', cell.ellipsize)
         if cell.editable:
             self.connect('edited', self._on_edited)
 
@@ -495,14 +491,22 @@ class EditableCellRendererMixin(object):
         self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
 
-class CellRendererText(EditableCellRendererMixin, gtk.CellRendererText):
-
-    copy_properties = ['ellipsize']
+class CellRendererToggle(gtk.CellRendererToggle):
 
     def __init__(self, cell, objectlist):
-        gtk.CellRendererText.__init__(self)
-        EditableCellRendererMixin.__init__(self, cell, objectlist)
+        gtk.CellRendererToggle.__init__(self)
+        self.cell = cell
+        self.objectlist = objectlist
+        self.set_property('radio', not cell.use_checkbox)
+        self.set_property('activatable', cell.editable)
+        if cell.editable:
+            self.connect('toggled', self._on_toggled)
 
+    def _on_toggled(self, cellrenderer, path):
+        obj = self.objectlist._object_at_path(path)
+        value = not getattr(obj, self.cell.attr)
+        setattr(obj, self.cell.attr, value)
+        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
 
 class CellRendererCombo(gtk.CellRendererCombo):

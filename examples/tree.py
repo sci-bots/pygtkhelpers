@@ -6,17 +6,19 @@ from pygtkhelpers.ui.objectlist import Column, ObjectTree
 
 
 class User(object):
-    def __init__(self, name, age, sex, hair='brown'):
+    def __init__(self, name, age, sex, hair='brown', clever=False):
         self.name = name
         self.age = age
         assert sex in ('m','f')
         self.sex = sex
         self.hair = hair
-        self.clever = False
+        self.clever = clever
 
     def __str__(self):
-        return '<User: name=%r age=%r sex=%r hair=%r>' % (self.name, self.age,
-                                                  self.sex, self.hair)
+        return '<User: name=%r age=%r sex=%r hair=%r clever=%r>' % (
+                                                  self.name, self.age,
+                                                  self.sex, self.hair,
+                                                  self.clever)
 
 
 
@@ -29,7 +31,7 @@ listing = ObjectTree([
         ]),
     Column('hair', str, choices=['brown', 'blonde'],
                 tooltip_attr='name'),
-    Column('clever', bool, use_toggle=True, editable=True),
+    Column('clever', bool, use_checkbox=True, editable=True),
     ])
 
 def _on_left_clicked(ol, item, event):
@@ -54,8 +56,8 @@ listing.connect('item-double-clicked', _on_double_clicked)
 listing.connect('item-expanded', _on_expanded, 'Expanded')
 listing.connect('item-collapsed', _on_expanded, 'Collapsed')
 
-u1 = User("test", 12, 'm')
-u2 = User('hans', 34, 'm')
+u1 = User("test", 12, 'm', clever=True)
+u2 = User('hans', 34, 'm', clever=True)
 u3 = User('Zok', 60, 'm')
 u4 = User('Mic', 63, 'f')
 

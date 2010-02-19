@@ -106,7 +106,7 @@ def test_column_width():
     assert view_col.get_sizing() == gtk.TREE_VIEW_COLUMN_FIXED
     assert view_col.get_fixed_width() == 30
 
-def test_make_cells(): 
+def test_make_cells():
     col = Column(title='Test', cells=[
         Cell('name', int),
         Cell('name2', int),
@@ -196,7 +196,7 @@ def test_cell_ellipsize():
     assert el == pango.ELLIPSIZE_END
 
 def test_cell_toggle():
-    cell = Cell('test', use_toggle=True)
+    cell = Cell('test', use_checkbox=True)
     renderer = cell.create_renderer(None, None)
     assert renderer.get_property('radio') == False
 
@@ -206,10 +206,10 @@ def test_cell_radio():
     assert renderer.get_property('radio') == True
 
 def test_cell_both():
-    # radio and toggle, radio should win
-    cell = Cell('test', use_radio=True, use_toggle=True)
+    # radio and checkbox, checkbox should win
+    cell = Cell('test', use_checkbox=True, use_radio=True)
     renderer = cell.create_renderer(None, None)
-    assert renderer.get_property('radio') == True
+    assert renderer.get_property('radio') == False
 
 
 
