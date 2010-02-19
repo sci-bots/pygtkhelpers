@@ -39,10 +39,15 @@ def _on_middle_clicked(ol, item, event):
 def _on_double_clicked(ol, item, event):
     print 'Double clicked', item
 
+def _on_expanded(ol, item, msg):
+    print msg, item
+
 listing.connect('item-left-clicked', _on_left_clicked)
 listing.connect('item-right-clicked', _on_right_clicked)
 listing.connect('item-middle-clicked', _on_middle_clicked)
 listing.connect('item-double-clicked', _on_double_clicked)
+listing.connect('item-expanded', _on_expanded, 'Expanded')
+listing.connect('item-collapsed', _on_expanded, 'Collapsed')
 
 u1 = User("test", 12, 'm')
 u2 = User('hans', 34, 'm')

@@ -244,10 +244,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         sort_func = kwargs.pop('sort_func', self._default_sort_func)
         self.columns = None
         self.set_columns(columns)
-
-        # connect internal signals
-        self.connect('button-press-event', self._on_button_press_event)
-        self.get_selection().connect('changed', self._on_selection_changed)
+        self._connect_internal()
 
     def create_model(self):
         raise NotImplementedError
@@ -381,6 +378,11 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _object_at_path(self, path):
         return self._object_at_iter(self.model.get_iter(path))
 
+    def _connect_internal(self):
+        # connect internal signals
+        self.connect('button-press-event', self._on_button_press_event)
+        self.get_selection().connect('changed', self._on_selection_changed)
+
     def _emit_for_path(self, path, event):
         item = self._object_at_path(path)
         signal_map = {
@@ -429,6 +431,14 @@ class ObjectTree(ObjectTreeViewBase):
 
     __gtype_name__ = "PyGTKHelpersObjectTree"
 
+    gsignal('item-expanded', object)
+    gsignal('item-collapsed', object)
+
+    def _connect_internal(self):
+        ObjectTreeViewBase._connect_internal(self)
+        self.connect('row-expanded', self._on_row_expanded)
+        self.connect('row-collapsed', self._on_row_collapsed)
+
     def create_model(self):
         return gtk.TreeStore(object)
 
@@ -447,5 +457,11 @@ class ObjectTree(ObjectTreeViewBase):
     def extend(self, iter, parent=None):
         for item in iter:
             self.append(item, parent)
+
+    def _on_row_expanded(self, objecttree, giter, path):
+        self.emit('item-expanded', self._object_at_iter(giter))
+
+    def _on_row_collapsed(self, objecttree, giter, path):
+        self.emit('item-collapsed', self._object_at_iter(giter))
 
 
