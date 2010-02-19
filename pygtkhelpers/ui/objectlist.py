@@ -154,7 +154,7 @@ class Cell(object):
             cell = CellRendererCombo(self, objectlist, self.choices)
         else:
             cell = CellRendererText(self, objectlist)
-        #cell.set_data('pygtkhelpers::cell', self)
+        cell.set_data('pygtkhelpers::cell', self)
         return cell
 
     def _calculate_primary_prop(self):
@@ -172,7 +172,7 @@ class Cell(object):
 
 
 
-class Column(gtk.TreeViewColumn):
+class Column(object):
     #XXX: handle cells propperly
 
     def __init__(self, attr=None, type=str, title=None, **kwargs):
@@ -187,6 +187,7 @@ class Column(gtk.TreeViewColumn):
         self.expand = kwargs.pop('expand', None)
         self.visible = kwargs.pop('visible', True)
         self.width = kwargs.pop('width', None)
+        self.expander = kwargs.pop('expander', None)
 
 
         if 'cells' in kwargs:
@@ -214,8 +215,10 @@ class Column(gtk.TreeViewColumn):
         return col
 
 
-class ObjectList(gtk.TreeView):
-    __gtype_name__ = "PyGTKHelpersObjectList"
+
+
+class ObjectTreeViewBase(gtk.TreeView):
+
     gsignal('item-activated', object)
     gsignal('item-changed', object, str, object)
     gsignal('selection-changed')
@@ -228,7 +231,7 @@ class ObjectList(gtk.TreeView):
         gtk.TreeView.__init__(self)
 
         #XXX: make replacable
-        self.model = gtk.ListStore(object)
+        self.model = self.create_model()
         self.set_model(self.model)
 
         # setup sorting
@@ -240,6 +243,9 @@ class ObjectList(gtk.TreeView):
         # connect internal signals
         self.connect('button-press-event', self._on_button_press_event)
         self.get_selection().connect('changed', self._on_selection_changed)
+
+    def create_model(self):
+        raise NotImplementedError
 
     def set_columns(self, columns):
         assert not self.columns
@@ -259,6 +265,10 @@ class ObjectList(gtk.TreeView):
 
             view_col.set_data('pygtkhelpers::objectlist', self)
             self.append_column(view_col)
+
+            # needs to be done after adding the column
+            if col.expander:
+                self.set_expander_column(view_col)
 
         self._id_to_iter = {}
 
@@ -306,13 +316,6 @@ class ObjectList(gtk.TreeView):
         del self._id_to_iter[id(obj)]
         self.model.remove(iter)
 
-    def append(self, item, select=False):
-        if item in self:
-            raise ValueError("item %s allready in list"%item )
-        modeliter = self.model.append((item,))
-        self._id_to_iter[id(item)] = modeliter
-        if select:
-            self.selected_item = item
 
     @property
     def selected_item(self):
@@ -354,10 +357,6 @@ class ObjectList(gtk.TreeView):
         for item in new_selection:
             selection.select_iter(self._iter_for(item))
 
-    def extend(self, iter):
-        for item in iter:
-            self.append(item)
-
     def clear(self):
         self.model.clear()
         self._id_to_iter.clear()
@@ -398,5 +397,50 @@ class ObjectList(gtk.TreeView):
 
     def _on_selection_changed(self, selection):
         self.emit('selection-changed')
+
+
+
+class ObjectList(ObjectTreeViewBase):
+
+    __gtype_name__ = "PyGTKHelpersObjectList"
+
+    def create_model(self):
+        return gtk.ListStore(object)
+
+    def append(self, item, select=False):
+        if item in self:
+            raise ValueError("item %s allready in list"%item )
+        modeliter = self.model.append((item,))
+        self._id_to_iter[id(item)] = modeliter
+        if select:
+            self.selected_item = item
+
+    def extend(self, iter):
+        for item in iter:
+            self.append(item)
+
+
+class ObjectTree(ObjectTreeViewBase):
+
+    __gtype_name__ = "PyGTKHelpersObjectTree"
+
+    def create_model(self):
+        return gtk.TreeStore(object)
+
+    def append(self, item, parent=None, select=False):
+        if item in self:
+            raise ValueError("item %s allready in list"%item )
+        if parent is not None:
+            giter = self._iter_for(parent)
+        else:
+            giter = None
+        modeliter = self.model.append(giter, (item,))
+        self._id_to_iter[id(item)] = modeliter
+        if select:
+            self.selected_item = item
+
+    def extend(self, iter, parent=None):
+        for item in iter:
+            self.append(item, parent)
 
 
