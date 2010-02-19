@@ -6,15 +6,16 @@ from pygtkhelpers.ui.objectlist import Column, ObjectTree
 
 
 class User(object):
-    def __init__(self, name, age, sex):
+    def __init__(self, name, age, sex, hair='brown'):
         self.name = name
         self.age = age
         assert sex in ('m','f')
         self.sex = sex
+        self.hair = hair
 
     def __str__(self):
-        return '<User: name=%r age=%r sex=%r>' % (self.name, self.age,
-                                                  self.sex)
+        return '<User: name=%r age=%r sex=%r hair=%r>' % (self.name, self.age,
+                                                  self.sex, self.hair)
 
 
 
@@ -25,6 +26,7 @@ listing = ObjectTree([
         ('m', 'Male'),
         ('f', 'Female'),
         ]),
+    Column('hair', str, choices=['brown', 'blonde']),
     ])
 
 def _on_left_clicked(ol, item, event):

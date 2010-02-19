@@ -77,24 +77,17 @@ class CellRendererCombo(gtk.CellRendererCombo):
         gtk.CellRendererCombo.__init__(self)
         self.cell = cell
         self.objectlist = objectlist
-        if isinstance(choices[0], tuple):
-            model = gtk.ListStore(str, str) #XXX: hack, propper types
-            text_col = 1
-        else:
-            model = gtk.ListStore(str) #XXX: hack, propper types
-            text_col = 0
+        self.props.model = gtk.ListStore(object, str)
+        self.props.text_column = 1
         for choice in choices:
             if not isinstance(choice, tuple):
-                choice = [choice]
-            model.append(choice)
-        self.props.model = model
+                choice = (choice, choice)
+            self.props.model.append(choice)
         self.props.editable = True
-        self.props.text_column = text_col
         self.connect('changed', self._on_changed)
 
     def _on_changed(self, _, path, new_iter):#XXX:
         obj = self.objectlist[path]
-        #XXX: full converter
         value = self.props.model[new_iter][0]
         setattr(obj, self.cell.attr, value)
         self.objectlist.emit('item-changed', obj, self.cell.attr, value)
@@ -194,7 +187,6 @@ class Column(object):
         self.width = kwargs.pop('width', None)
         self.expander = kwargs.pop('expander', None)
 
-
         if 'cells' in kwargs:
             self.cells = kwargs['cells']
         else:
@@ -214,7 +206,7 @@ class Column(object):
         for cell in self.cells:
             view_cell = cell.create_renderer(self, objectlist)
             view_cell.set_data('pygtkhelpers::column', self)
-            #XXX: better controll over packing
+            #XXX: better control over packing
             col.pack_start(view_cell)
             col.set_cell_data_func(view_cell, cell.cell_data_func)
         return col
