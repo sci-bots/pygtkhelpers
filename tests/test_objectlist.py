@@ -17,18 +17,24 @@ class User(object):
 user_columns = [
     Column('name', str, editable=True),
     Column('age', int),
+    Column('expander', expander=True),
 ]
 
 def pytest_generate_tests(metafunc):
     if 'items' in metafunc.funcargnames:
-        metafunc.addcall(id='list', param=ObjectList)
-        metafunc.addcall(id='tree', param=ObjectTree)
+        if not hasattr(metafunc.function, 'tree_only'):
+            metafunc.addcall(id='list', param=ObjectList)
+        if not hasattr(metafunc.function, 'list_only'):
+            metafunc.addcall(id='tree', param=ObjectTree)
 
 def pytest_funcarg__items(request):
     return request.param(user_columns)
 
 def pytest_funcarg__user(request):
     return User(name='Hans', age=10)
+
+def pytest_funcarg__user2(request):
+    return User(name='Gretel', age=11)
 
 def test_append(items, user):
     assert len(items) == 0
@@ -223,4 +229,52 @@ def test_double_click_event(items, user):
     items._emit_for_path((0,), e)
     refresh_gui()
     assert item_clicked.called
+
+@py.test.mark.tree_only
+def test_expander_column(items):
+    assert items.get_expander_column() is items.get_columns()[-1]
+
+@py.test.mark.list_only
+def test_expander_column(items):
+    assert items.get_expander_column() is None
+
+@py.test.mark.tree_only
+def test_expanded_signal(items, user, user2):
+    items.append(user)
+    items.append(user2, user)
+    item_expanded = CheckCalled(items, 'item-expanded')
+    items.expand_row(items._path_for(user), True)
+    refresh_gui()
+    assert item_expanded.called
+
+@py.test.mark.tree_only
+def test_expand_item(items, user, user2):
+    items.append(user)
+    items.append(user2, user)
+    item_expanded = CheckCalled(items, 'item-expanded')
+    items.expand_item(user)
+    refresh_gui()
+    assert item_expanded.called
+
+@py.test.mark.tree_only
+def test_collapse_item(items, user, user2):
+    items.append(user)
+    items.append(user2, user)
+    item_collapsed = CheckCalled(items, 'item-collapsed')
+    items.expand_item(user)
+    refresh_gui()
+    items.collapse_row(items._path_for(user))
+    refresh_gui()
+    assert item_collapsed.called
+
+@py.test.mark.tree_only
+def test_collapse_item(items, user, user2):
+    items.append(user)
+    items.append(user2, user)
+    item_collapsed = CheckCalled(items, 'item-collapsed')
+    items.expand_item(user)
+    refresh_gui()
+    items.collapse_item(user)
+    refresh_gui()
+    assert item_collapsed.called
 
