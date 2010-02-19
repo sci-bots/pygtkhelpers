@@ -246,11 +246,21 @@ def test_cell_spin_step():
     renderer = cell.create_renderer(None, None)
     assert renderer.get_property('adjustment').get_property('step-increment') == 5
 
+def test_cell_progress():
+    cell = Cell('test', type=int, use_progress=True)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('pulse') < 1
+
+def test_cell_progress_text():
+    cell = Cell('test', type=int, use_progress=True, progress_text='hello')
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('text') == 'hello'
+
 def test_cell_props():
     cell = Cell('test', cell_props={'size': 100})
     renderer = cell.create_renderer(None, None)
     assert renderer.get_property('size') == 100
-    
+
 
 
 def test_left_click_event(items, user):

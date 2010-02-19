@@ -65,6 +65,7 @@ class Cell(object):
         self.use_checkbox = kw.get('use_checkbox', False)
         self.use_radio = kw.get('use_radio', False)
         self.use_spin = kw.get('use_spin', False)
+        self.use_progress = kw.get('use_progress', False)
 
         # formatting
         self.format = kw.get('format')
@@ -112,6 +113,8 @@ class Cell(object):
             cell = gtk.CellRendererPixbuf()
         elif self.use_checkbox or self.use_radio:
             cell = CellRendererToggle(self, objectlist)
+        elif self.use_progress:
+            cell = CellRendererProgress(self, objectlist)
         elif self.use_spin:
             cell = CellRendererSpin(self, objectlist)
         elif self.choices:
@@ -131,6 +134,8 @@ class Cell(object):
             primary_prop = 'pixbuf'
         elif self.use_checkbox or self.use_radio:
             primary_prop = 'active'
+        elif self.use_progress:
+            primary_prop = 'value'
         elif self.use_markup:
             primary_prop = 'markup'
         else:
@@ -556,6 +561,15 @@ class CellRendererToggle(gtk.CellRendererToggle):
         setattr(obj, self.cell.attr, value)
         self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
+class CellRendererProgress(gtk.CellRendererProgress):
+
+    def __init__(self, cell, objectlist):
+        gtk.CellRendererProgress.__init__(self)
+        self.cell = cell
+        self.objectlist = objectlist
+        text = cell.kwargs.get('progress_text')
+        if text is not None:
+            self.set_property('text', text)
 
 class CellRendererCombo(gtk.CellRendererCombo):
 

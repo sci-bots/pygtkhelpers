@@ -33,6 +33,9 @@ listing = ObjectTree([
                 tooltip_attr='name'),
     Column('clever', bool, use_checkbox=True, editable=True),
     Column('age', int, use_spin=True, editable=True),
+    Column('age', int, use_progress=True),
+    Column('age', int, use_progress=True, progress_text='static_text'),
+    Column('age', int, use_progress=True, mapped={'text': 'name'}),
     ])
 
 def _on_left_clicked(ol, item, event):
