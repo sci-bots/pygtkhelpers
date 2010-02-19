@@ -121,10 +121,14 @@ class Cell(object):
         self.mapped = kw.get('mapped')
 
         if not self.mappers:
-            map_spec = {self._calculate_primary_prop(): None}
+            self.mappers = []
+            map_spec = {}
+            primary_prop = self._calculate_primary_prop()
+            if primary_prop:
+                map_spec[primary_prop] = None
             if self.mapped:
                 map_spec.update(self.mapped)
-            self.mappers = [CellMapper(map_spec)]
+            self.mappers.append(CellMapper(map_spec))
 
         # formatting
         self.format = kw.get('format', '%s')
@@ -158,13 +162,14 @@ class Cell(object):
         return cell
 
     def _calculate_primary_prop(self):
-        primary_prop = 'text'
         if self.use_stock:
             primary_prop = 'stock-id'
         elif self.type==gtk.gdk.Pixbuf:
             primary_prop = 'pixbuf'
         elif self.use_markup:
             primary_prop = 'markup'
+        else:
+            primary_prop = 'text'
         return primary_prop
 
     def __repr__(self):
