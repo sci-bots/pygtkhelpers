@@ -32,6 +32,7 @@ listing = ObjectTree([
     Column('hair', str, choices=['brown', 'blonde'],
                 tooltip_attr='name'),
     Column('clever', bool, use_checkbox=True, editable=True),
+    Column('age', int, use_spin=True, editable=True),
     ])
 
 def _on_left_clicked(ol, item, event):

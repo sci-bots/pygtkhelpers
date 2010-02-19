@@ -47,6 +47,10 @@ class CellMapper(object):
 class Cell(object):
 
     def __init__(self, attr, type=str, **kw):
+        # ok this is evil, but let the individual cells use it without it
+        # being tagged on the cell.
+        self.kwargs = kw
+
         # attribute and type
         self.attr = attr
         self.type = type
@@ -60,7 +64,7 @@ class Cell(object):
         self.use_stock = kw.get('use_stock', False)
         self.use_checkbox = kw.get('use_checkbox', False)
         self.use_radio = kw.get('use_radio', False)
-        self.ellipsize = kw.get('ellipsize')
+        self.use_spin = kw.get('use_spin', False)
 
         # formatting
         self.format = kw.get('format')
@@ -108,6 +112,8 @@ class Cell(object):
             cell = gtk.CellRendererPixbuf()
         elif self.use_checkbox or self.use_radio:
             cell = CellRendererToggle(self, objectlist)
+        elif self.use_spin:
+            cell = CellRendererSpin(self, objectlist)
         elif self.choices:
             #XXX: a mapping?
             cell = CellRendererCombo(self, objectlist, self.choices)
@@ -128,6 +134,7 @@ class Cell(object):
         elif self.use_markup:
             primary_prop = 'markup'
         else:
+            # Includes: CellRendererText, CellRendererSpin
             primary_prop = 'text'
         return primary_prop
 
@@ -475,18 +482,54 @@ class ObjectTree(ObjectTreeViewBase):
     def _on_row_collapsed(self, objecttree, giter, path):
         self.emit('item-collapsed', self._object_at_iter(giter))
 
-
-class CellRendererText(gtk.CellRendererText):
+class EditableCellMixin(object):
 
     def __init__(self, cell, objectlist):
         gtk.CellRendererText.__init__(self)
         self.cell = cell
         self.objectlist = objectlist
-        self.props.editable = cell.editable
-        if cell.ellipsize is not None:
-            self.set_property('ellipsize', cell.ellipsize)
+        self.set_property('editable', cell.editable)
         if cell.editable:
             self.connect('edited', self._on_edited)
+
+    def _on_edited(self, cellrenderer, path, text):
+        obj = self.objectlist[path]
+        #XXX: full converter
+        value = self.cell.type(text)
+        setattr(obj, self.cell.attr, value)
+        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
+
+
+class CellRendererText(EditableCellMixin, gtk.CellRendererText):
+
+    def __init__(self, cell, objectlist):
+        gtk.CellRendererText.__init__(self)
+        EditableCellMixin.__init__(self, cell, objectlist)
+        ellipsize = cell.kwargs.get('ellipsize')
+        if ellipsize is not None:
+            self.set_property('ellipsize', ellipsize)
+
+
+class CellRendererSpin(EditableCellMixin, gtk.CellRendererSpin):
+
+    def __init__(self, cell, objectlist):
+        gtk.CellRendererSpin.__init__(self)
+        EditableCellMixin.__init__(self, cell, objectlist)
+        adj = cell.kwargs.get('adjustment', None)
+        if adj is None:
+            smin = cell.kwargs.get('min', 0)
+            smax = cell.kwargs.get('max', 2 ** 20)
+            step = cell.kwargs.get('step', 1)
+            adj = gtk.Adjustment(0, smin, smax, step)
+        self.set_property('adjustment', adj)
+        digits = cell.kwargs.get('digits', None)
+        if digits is None:
+            if cell.type is float:
+                digits = 2
+            else:
+                digits = 0
+        self.set_property('digits', digits)
+
 
     def _on_edited(self, cellrenderer, path, text):
         obj = self.objectlist[path]

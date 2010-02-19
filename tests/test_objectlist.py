@@ -211,6 +211,41 @@ def test_cell_radio_checkbox_both():
     renderer = cell.create_renderer(None, None)
     assert renderer.get_property('radio') == False
 
+def test_cell_spin():
+    cell = Cell('test', type=int, use_spin=True)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('adjustment').get_property('lower') == 0
+
+def test_cell_spin_digits_int():
+    cell = Cell('test', type=int, use_spin=True)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('digits') == 0
+
+def test_cell_spin_digits_float():
+    cell = Cell('test', type=float, use_spin=True)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('digits') == 2
+
+def test_cell_spin_digits():
+    cell = Cell('test', type=float, use_spin=True, digits=5)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('digits') == 5
+
+def test_cell_spin_min():
+    cell = Cell('test', type=int, use_spin=True, min=5)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('adjustment').get_property('lower') == 5
+
+def test_cell_spin_max():
+    cell = Cell('test', type=int, use_spin=True, max=5)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('adjustment').get_property('upper') == 5
+
+def test_cell_spin_step():
+    cell = Cell('test', type=int, use_spin=True, step=5)
+    renderer = cell.create_renderer(None, None)
+    assert renderer.get_property('adjustment').get_property('step-increment') == 5
+
 def test_cell_props():
     cell = Cell('test', cell_props={'size': 100})
     renderer = cell.create_renderer(None, None)
