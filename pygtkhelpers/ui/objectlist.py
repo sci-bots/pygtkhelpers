@@ -16,7 +16,8 @@ from pygtkhelpers.utils import gsignal
 
 class PropertyMapper(object):
 
-    def __init__(self, prop, attr=None):
+    def __init__(self, cell, prop, attr=None):
+        self.cell = cell
         self.prop = prop
         self.attr = attr
 
@@ -27,10 +28,11 @@ class PropertyMapper(object):
 
 class CellMapper(object):
 
-    def __init__(self, map_spec):
+    def __init__(self, cell, map_spec):
+        self.cell = cell
         self.mappers = []
         for prop, attr in map_spec.items():
-            self.mappers.append(PropertyMapper(prop, attr))
+            self.mappers.append(PropertyMapper(cell, prop, attr))
 
     def __call__(self, cell, obj, renderer):
         for mapper in self.mappers:
@@ -65,7 +67,7 @@ class Cell(object):
                 map_spec[primary_prop] = None
             if self.mapped:
                 map_spec.update(self.mapped)
-            self.mappers.append(CellMapper(map_spec))
+            self.mappers.append(CellMapper(self, map_spec))
 
         # formatting
         self.format = kw.get('format', '%s')
