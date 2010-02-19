@@ -20,9 +20,14 @@ class PropertyMapper(object):
         self.cell = cell
         self.prop = prop
         self.attr = attr
+        # Check to see if this is the primary attribute, and also there is
+        # format string, we do this once, so we don't check on every update.
+        self.format = (attr is None) and (cell.format or cell.format_func)
 
     def __call__(self, cell, obj, renderer):
         value = getattr(obj, self.attr or cell.attr)
+        if self.format:
+            value = self.cell.format_data(value)
         renderer.set_property(self.prop, value)
 
 
@@ -55,6 +60,10 @@ class Cell(object):
         self.use_stock = kw.get('use_stock', False)
         self.ellipsize = kw.get('ellipsize', None)
 
+        # formatting
+        self.format = kw.get('format')
+        self.format_func = kw.get('format_func')
+
         # attribute/property mapping
         self.mappers = kw.get('mappers')
         self.mapped = kw.get('mapped')
@@ -69,16 +78,9 @@ class Cell(object):
                 map_spec.update(self.mapped)
             self.mappers.append(CellMapper(self, map_spec))
 
-        # formatting
-        self.format = kw.get('format', '%s')
-        self.format_data = kw.get('format_func') or self.format_data
-
     @property
     def primary_mapper(self):
         return self.mappers[0]
-
-    def format_data(self, data):
-        return self.format % data
 
     def render(self, object, cell):
         for mapper in self.mappers:
@@ -87,6 +89,13 @@ class Cell(object):
     def cell_data_func(self, column, cell, model, iter):
         obj = model.get_value(iter, 0)
         self.render(obj, cell)
+
+    def format_data(self, data):
+        if self.format:
+            data = self.format % data
+        elif self.format_func:
+            data = self.format_func(data)
+        return data
 
     def create_renderer(self, column, objectlist):
         #XXX: extend to more types

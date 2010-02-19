@@ -160,6 +160,10 @@ def test_cell_format_func():
     cell = Cell('test', format_func=str)
     assert cell.format_data(1) == '1'
 
+def test_cell_format_string():
+    cell = Cell('test', format='hoo %s')
+    assert cell.format_data(1) == 'hoo 1'
+
 def test_default_type():
     cell = Cell('test')
     assert cell.mappers[0].mappers[0].prop == 'text'
