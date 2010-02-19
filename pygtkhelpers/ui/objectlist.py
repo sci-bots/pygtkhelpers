@@ -38,6 +38,68 @@ class CellMapper(object):
             mapper(cell, obj, renderer)
 
 
+class EditableCellRendererMixin(object):
+
+    copy_properties = []
+
+    def __init__(self, cell, objectlist):
+        self.cell = cell
+        self.objectlist = objectlist
+        self.props.editable = cell.editable
+        for prop in self.copy_properties:
+            value = getattr(cell, prop)
+            if value is not None:
+                self.set_property(prop, getattr(cell, prop))
+        if cell.editable:
+            self.connect('edited', self._on_edited)
+
+    def _on_edited(self, cellrenderer, path, text):
+        obj = self.objectlist[path]
+        #XXX: full converter
+        value = self.cell.type(text)
+        setattr(obj, self.cell.attr, value)
+        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
+
+
+class CellRendererText(EditableCellRendererMixin, gtk.CellRendererText):
+
+    copy_properties = ['ellipsize']
+
+    def __init__(self, cell, objectlist):
+        gtk.CellRendererText.__init__(self)
+        EditableCellRendererMixin.__init__(self, cell, objectlist)
+
+
+
+class CellRendererCombo(gtk.CellRendererCombo):
+
+    def __init__(self, cell, objectlist, choices):
+        gtk.CellRendererCombo.__init__(self)
+        self.cell = cell
+        self.objectlist = objectlist
+        if isinstance(choices[0], tuple):
+            model = gtk.ListStore(str, str) #XXX: hack, propper types
+            text_col = 1
+        else:
+            model = gtk.ListStore(str) #XXX: hack, propper types
+            text_col = 0
+        for choice in choices:
+            if not isinstance(choice, tuple):
+                choice = [choice]
+            model.append(choice)
+        self.props.model = model
+        self.props.editable = True
+        self.props.text_column = text_col
+        self.connect('changed', self._on_changed)
+
+    def _on_changed(self, _, path, new_iter):#XXX:
+        obj = self.objectlist[path]
+        #XXX: full converter
+        value = self.props.model[new_iter][0]
+        setattr(obj, self.cell.attr, value)
+        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
+
+
 class Cell(object):
 
     def __init__(self, attr, type=str, **kw):
@@ -72,8 +134,28 @@ class Cell(object):
     def primary_mapper(self):
         return self.mappers[0]
 
-    def __repr__(self):
-        return '<Cell %s %r>'%(self.attr, self.type)
+    def format_data(self, data):
+        return self.format % data
+
+    def render(self, object, cell):
+        for mapper in self.mappers:
+            mapper(self, object, cell)
+
+    def cell_data_func(self, column, cell, model, iter):
+        obj = model.get_value(iter, 0)
+        self.render(obj, cell)
+
+    def create_renderer(self, column, objectlist):
+        #XXX: extend to more types
+        if self.use_stock or self.type == gtk.gdk.Pixbuf:
+            cell = gtk.CellRendererPixbuf()
+        elif self.choices:
+            #XXX: a mapping?
+            cell = CellRendererCombo(self, objectlist, self.choices)
+        else:
+            cell = CellRendererText(self, objectlist)
+        #cell.set_data('pygtkhelpers::cell', self)
+        return cell
 
     def _calculate_primary_prop(self):
         primary_prop = 'text'
@@ -85,63 +167,9 @@ class Cell(object):
             primary_prop = 'markup'
         return primary_prop
 
-    def format_data(self, data):
-        return self.format % data
+    def __repr__(self):
+        return '<Cell %s %r>'%(self.attr, self.type)
 
-    def render(self, object, cell):
-        for mapper in self.mappers:
-            mapper(self, object, cell)
-
-    def _data_func(self, column, cell, model, iter):
-        obj = model.get_value(iter, 0)
-        self.render(obj, cell)
-
-    def create_renderer(self, column, objectlist):
-        #XXX: extend to more types
-        if self.use_stock or self.type == gtk.gdk.Pixbuf:
-            cell = gtk.CellRendererPixbuf()
-        elif self.choices:
-            #XXX: a mapping?
-            if isinstance(self.choices[0], tuple):
-                model = gtk.ListStore(str, str) #XXX: hack, propper types
-                text_col = 1
-            else:
-                model = gtk.ListStore(str) #XXX: hack, propper types
-                text_col = 0
-
-
-            for choice in self.choices:
-                if not isinstance(choice, tuple):
-                    choice = [choice]
-                model.append(choice)
-            cell = gtk.CellRendererCombo()
-            cell.props.model = model
-            cell.props.editable = True
-            cell.props.text_column = text_col
-            def changed(_, path, new_iter):#XXX:
-                object = objectlist[path]
-                #XXX: full converter
-                value = cell.props.model[new_iter][0]
-
-                setattr(object, self.attr, value)
-                objectlist.emit('item-changed', object, self.attr, value)
-            cell.connect('changed', changed)
-        else:
-            cell = gtk.CellRendererText()
-            cell.props.editable = self.editable
-            if self.ellipsize is not None:
-                cell.props.ellipsize = self.ellipsize
-
-        cell.set_data('pygtkhelpers::cell', self)
-        if self.editable and not self.choices:
-            def simple_set(cellrenderer, path, text):
-                object = objectlist[path]
-                #XXX: full converter
-                value = self.type(text)
-                setattr(object, self.attr, value)
-                objectlist.emit('item-changed', object, self.attr, value)
-            cell.connect('edited', simple_set)
-        return cell
 
 
 class Column(gtk.TreeViewColumn):
@@ -182,7 +210,7 @@ class Column(gtk.TreeViewColumn):
             view_cell.set_data('pygtkhelpers::column', self)
             #XXX: better controll over packing
             col.pack_start(view_cell)
-            col.set_cell_data_func(view_cell, cell._data_func)
+            col.set_cell_data_func(view_cell, cell.cell_data_func)
         return col
 
 
