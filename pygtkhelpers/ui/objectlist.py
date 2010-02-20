@@ -368,17 +368,49 @@ class ObjectTreeViewBase(gtk.TreeView):
     def update(self, item):
         self.model.set(self._iter_for(item), 0, item)
 
+    def move_item_down(self, item):
+        next_iter = self._next_iter_for(item)
+        if next_iter is not None:
+            self.model.swap(self._iter_for(item), next_iter)
+
+    def move_item_up(self, item):
+        prev_iter = self._prev_iter_for(item)
+        if prev_iter is not None:
+            self.model.swap(prev_iter, self._iter_for(item))
+
     def _iter_for(self, obj):
         return self._id_to_iter[id(obj)]
 
+    def _next_iter_for(self, obj):
+        return self.model.iter_next(self._iter_for(obj))
+
+    def _prev_iter_for(self, obj):
+        return self._model_iter_prev(self._iter_for(obj))
+
     def _path_for(self, obj):
-        return self.model.get_string_from_iter(self._iter_for(obj))
+        return self._path_for_iter(self._iter_for(obj))
+
+    def _path_for_iter(self, giter):
+        return self.model.get_string_from_iter(giter)
 
     def _object_at_iter(self, iter):
         return self.model[iter][0]
 
     def _object_at_path(self, path):
         return self._object_at_iter(self.model.get_iter(path))
+
+    def _model_iter_prev(self, giter):
+        # because it's missing, this is from pygtk faq
+        # http://faq.pygtk.org/index.py?req=show&file=faq13.051.htp
+        path = self.model.get_path(giter)
+        position = path[-1]
+        if position == 0:
+            return None
+        prev_path = list(path)[:-1]
+        prev_path.append(position - 1)
+        prev = self.model.get_iter(tuple(prev_path))
+        return prev
+
 
     def _connect_internal(self):
         # connect internal signals

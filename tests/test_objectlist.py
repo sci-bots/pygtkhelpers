@@ -36,6 +36,9 @@ def pytest_funcarg__user(request):
 def pytest_funcarg__user2(request):
     return User(name='Gretel', age=11)
 
+def pytest_funcarg__user3(request):
+    return User(name='Witch', age=409)
+
 def test_append(items, user):
     assert len(items) == 0
     items.append(user)
@@ -466,4 +469,68 @@ def test_tooltip_image_size():
     c.render_tooltip(t, o)
     assert t.iconname == 'value'
     assert t.size == gtk.ICON_SIZE_MENU
+
+def test_move_item_up(items, user, user2):
+    items.append(user)
+    items.append(user2)
+    items.move_item_up(user2)
+    assert items._object_at_iter(0) is user2
+    assert items._object_at_iter(1) is user
+
+def test_move_item_down(items, user, user2):
+    items.append(user)
+    items.append(user2)
+    items.move_item_down(user)
+    assert items._object_at_iter(0) is user2
+    assert items._object_at_iter(1) is user
+
+def test_move_first_item_up(items, user, user2):
+    items.append(user)
+    items.append(user2)
+    items.move_item_up(user)
+    assert items._object_at_iter(0) is user
+    assert items._object_at_iter(1) is user2
+
+def test_move_last_item_down(items, user, user2):
+    items.append(user)
+    items.append(user2)
+    items.move_item_down(user2)
+    assert items._object_at_iter(0) is user
+    assert items._object_at_iter(1) is user2
+
+@py.test.mark.tree_only
+def test_move_subitem_down(items, user, user2, user3):
+    items.append(user)
+    items.append(user2, parent=user)
+    items.append(user3, parent=user)
+    items.move_item_down(user2)
+    assert (items._path_for(user2) ==
+            items._path_for_iter(items._next_iter_for(user3)))
+
+@py.test.mark.tree_only
+def test_move_last_subitem_down(items, user, user2, user3):
+    items.append(user)
+    items.append(user2, parent=user)
+    items.append(user3, parent=user)
+    items.move_item_down(user3)
+    assert (items._path_for(user3) ==
+            items._path_for_iter(items._next_iter_for(user2)))
+
+@py.test.mark.tree_only
+def test_move_subitem_up(items, user, user2, user3):
+    items.append(user)
+    items.append(user2, parent=user)
+    items.append(user3, parent=user)
+    items.move_item_up(user3)
+    assert (items._path_for(user2) ==
+            items._path_for_iter(items._next_iter_for(user3)))
+
+@py.test.mark.tree_only
+def test_move_last_subitem_up(items, user, user2, user3):
+    items.append(user)
+    items.append(user2, parent=user)
+    items.append(user3, parent=user)
+    items.move_item_up(user2)
+    assert (items._path_for(user3) ==
+            items._path_for_iter(items._next_iter_for(user2)))
 

@@ -49,6 +49,7 @@ def _on_middle_clicked(ol, item, event):
 
 def _on_double_clicked(ol, item, event):
     print 'Double clicked', item
+    ol.move_item_down(item)
 
 def _on_expanded(ol, item, msg):
     print msg, item
