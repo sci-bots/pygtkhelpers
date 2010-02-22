@@ -164,18 +164,19 @@ class Column(object):
         self.visible = kwargs.pop('visible', True)
         self.width = kwargs.pop('width', None)
         self.expander = kwargs.pop('expander', None)
-
+        self.sort_key = kwargs.pop('sort_key', None)
+        self.sort_func = kwargs.pop('sort_func', cmp)
+        # tooltips are per column, not per cell
+        self._init_tooltips(**kwargs)
         if 'cells' in kwargs:
             self.cells = kwargs['cells']
         else:
             #XXX: sane arg filter
             self.cells = [Cell(attr, type, **kwargs)]
 
-        # tooltips are per column, not per cell
-        self._init_tooltips(**kwargs)
-
     def create_treecolumn(self, objectlist):
         col = gtk.TreeViewColumn(self.title)
+        col.set_data('pygtkhelpers::objectlist', objectlist)
         col.set_data('pygtkhelpers::column', self)
         col.props.visible = self.visible
         if self.expand is not None:
@@ -183,15 +184,22 @@ class Column(object):
         if self.width is not None:
             col.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
             col.set_fixed_width(self.width)
-
         for cell in self.cells:
             view_cell = cell.create_renderer(self, objectlist)
             view_cell.set_data('pygtkhelpers::column', self)
             #XXX: better control over packing
             col.pack_start(view_cell)
             col.set_cell_data_func(view_cell, cell.cell_data_func)
+        col.set_reorderable(True)
+        col.set_sort_indicator(False)
+        col.set_sort_order(gtk.SORT_DESCENDING)
+        if objectlist and objectlist.sortable and self.sorted:
+            idx = objectlist.columns.index(self)
+            sort_func = self._default_sort_func
+            objectlist.model_sort.set_sort_func(idx, sort_func, objectlist)
+            col.set_sort_column_id(idx)
+        col.connect('clicked', self._on_viewcol_clicked)
         return col
-
 
     def _init_tooltips(self, **kw):
         self.tooltip_attr = kw.get('tooltip_attr')
@@ -201,7 +209,6 @@ class Column(object):
         self.tooltip_value = kw.get('tooltip_value')
         self.tooltip_image_size = kw.get('tooltip_image_size',
                                          gtk.ICON_SIZE_DIALOG)
-
 
     def render_tooltip(self, tooltip, obj):
         if self.tooltip_attr:
@@ -217,7 +224,19 @@ class Column(object):
             setter(val)
         return True
 
+    def _default_sort_func(self, model, iter1, iter2, objectlist):
+        attr1 = getattr(objectlist._object_at_child_sort_iter(iter1),
+                        self.attr, None)
+        attr2 = getattr(objectlist._object_at_child_sort_iter(iter2),
+                        self.attr, None)
+        if self.sort_key:
+            attr1 = self.sort_key(attr1)
+            attr1 = self.sort_key(attr2)
+        return self.sort_func(attr1, attr2)
 
+    def _on_viewcol_clicked(self, view_col):
+        print view_col
+        print view_col.get_sort_order()
 
 
 class ObjectTreeViewBase(gtk.TreeView):
@@ -232,89 +251,24 @@ class ObjectTreeViewBase(gtk.TreeView):
 
     def __init__(self, columns=(), **kwargs):
         gtk.TreeView.__init__(self)
-
         #XXX: make replacable
         self.model = self.create_model()
+        self.model_base = self.model
         self.model_filter = self.model.filter_new()
-        self.set_model(self.model_filter)
-
+        self.model_sort = gtk.TreeModelSort(self.model_filter)
+        self.model_tree = self.model_sort
+        self.set_model(self.model_sort)
         # setup sorting
         self.sortable = kwargs.pop('sortable', True)
-        sort_func = kwargs.pop('sort_func', self._default_sort_func)
+        #sort_func = kwargs.pop('sort_func', self._default_sort_func)
         self.columns = None
         self.set_columns(columns)
-
         # misc initial setup
         self.set_property('has-tooltip', kwargs.pop('show_tooltips', True))
-
         self._connect_internal()
 
     def create_model(self):
         raise NotImplementedError
-
-    def set_columns(self, columns):
-        assert not self.columns
-        self.columns = tuple(columns)
-        for idx, col in enumerate(columns):
-            view_col = col.create_treecolumn(self)
-            view_col.set_reorderable(True)
-            view_col.set_sort_indicator(False)
-            # Hack to make soring work right.  Does not sort.
-            view_col.set_sort_order(gtk.SORT_DESCENDING)
-
-            if self.sortable and col.sorted:
-                self.model.set_sort_func(idx, self._default_sort_func,
-                                         (col, col.attr))
-                view_col.set_sort_column_id(idx)
-                view_col.connect('clicked', self.set_sort_by, idx)
-
-            view_col.set_data('pygtkhelpers::objectlist', self)
-            self.append_column(view_col)
-
-            # needs to be done after adding the column
-            if col.expander:
-                self.set_expander_column(view_col)
-
-        self._id_to_iter = {}
-
-        def on_row_activated(self, path, column, *k):
-            self.emit('item-activated', self.model[path][0])
-        self.connect('row-activated', on_row_activated)
-
-    def set_visible_func(self, visible_func):
-        self.model_filter.set_visible_func(
-                self._internal_visible_func,
-                visible_func,
-                )
-        self.item_visible = visible_func
-        self.model_filter.refilter()
-
-    def item_visible(self, obj):
-        #XXX: this one gets dynamically replaced
-        return True
-
-    def _internal_visible_func(self, model, iter, visible_func):
-        return visible_func(model[iter][0])
-
-    def set_sort_by(self, column, idx):
-        current = column.get_sort_order
-        asc, desc = gtk.SORT_ASCENDING, gtk.SORT_DESCENDING
-        order = desc if column.get_sort_order() == asc else asc
-
-        title = column.get_title()
-        for col in self.get_columns():
-            if title == col.get_title():
-                order = desc if column.get_sort_order() == asc else asc
-                col.set_sort_indicator(True)
-                col.set_sort_order(order)
-            else:
-                col.set_sort_indicator(False)
-                col.set_sort_order(gtk.SORT_DESCENDING)
-
-    def _default_sort_func(self, model, iter1, iter2, data=None):
-        idx, order = self.model.get_sort_column_id()
-        get_value = self.model.get_value
-        return cmp(get_value(iter1, 0), get_value(iter2, 0))
 
     def __len__(self):
         return len(self.model)
@@ -336,6 +290,21 @@ class ObjectTreeViewBase(gtk.TreeView):
         del self._id_to_iter[id(obj)]
         self.model.remove(iter)
 
+    def set_columns(self, columns):
+        assert not self.columns
+        self.columns = tuple(columns)
+        for idx, col in enumerate(columns):
+            view_col = col.create_treecolumn(self)
+            view_col.set_data('pygtkhelpers::objectlist', self)
+            self.append_column(view_col)
+            # needs to be done after adding the column
+            if col.expander:
+                self.set_expander_column(view_col)
+        self._id_to_iter = {}
+
+        def on_row_activated(self, path, column, *k):
+            self.emit('item-activated', self.model[path][0])
+        self.connect('row-activated', on_row_activated)
 
     @property
     def selected_item(self):
@@ -344,17 +313,18 @@ class ObjectTreeViewBase(gtk.TreeView):
         if selection.get_mode() != gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
         model, selected = selection.get_selected()
+        print model, selected
         if selected is not None:
-            return self._object_at_view_iter(selected)
+            return self._object_at_sort_iter(selected)
 
     @selected_item.setter
     def selected_item(self, item):
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
-        giter = self._view_iter_for(item)
+        giter = self._sort_iter_for(item)
         selection.select_iter(giter)
-        self.set_cursor(self.model_filter[giter].path)
+        self.set_cursor(self._path_for(item))
 
     @property
     def selected_items(self):
@@ -373,9 +343,8 @@ class ObjectTreeViewBase(gtk.TreeView):
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_MULTIPLE:
             raise AttributeError('selected_items only valid for select_multiple')
-
         for item in new_selection:
-            selection.select_iter(self._view_iter_for(item))
+            selection.select_iter(self._sort_iter_for(item))
 
     def clear(self):
         self.model.clear()
@@ -394,12 +363,44 @@ class ObjectTreeViewBase(gtk.TreeView):
         if prev_iter is not None:
             self.model.swap(prev_iter, self._iter_for(item))
 
+    def set_visible_func(self, visible_func):
+        self.model_filter.set_visible_func(
+                self._internal_visible_func,
+                visible_func,
+                )
+        self._visible_func = visible_func
+        self.model_filter.refilter()
+
+    def item_visible(self, item):
+        return self._visible_func(item)
+
+    def sort_by(self, attr_or_key, direction='asc'):
+        # work out the direction
+        if direction in ('+', 'asc', gtk.SORT_ASCENDING):
+            direction = gtk.SORT_ASCENDING
+        elif direction in ('-', 'desc', gtk.SORT_DESCENDING):
+            direction = gtk.SORT_DESCENDING
+        else:
+            raise AttributeError('unrecognised direction')
+        if callable(attr_or_key):
+            # is a key
+            sort_func = self._key_sort_func
+        else:
+            # it's an attribute
+            sort_func = self._attr_sort_func
+        self.model.set_default_sort_func(sort_func, attr_or_key)
+        self.model.set_sort_column_id(-1, direction)
+
     def _iter_for(self, obj):
         return self._id_to_iter[id(obj)]
 
     def _view_iter_for(self, obj):
         giter = self._iter_for(obj)
         return self.model_filter.convert_child_iter_to_iter(giter)
+
+    def _sort_iter_for(self, obj):
+        viter = self._view_iter_for(obj)
+        return self.model_sort.convert_child_iter_to_iter(None, viter)
 
     def _next_iter_for(self, obj):
         return self.model.iter_next(self._iter_for(obj))
@@ -425,11 +426,21 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _object_at_view_iter(self, iter):
         return self.model_filter[iter][0]
 
+    def _object_at_sort_iter(self, iter):
+        return self.model_sort[iter][0]
+
+    def _object_at_child_sort_iter(self, iter):
+        giter = self.model_sort.convert_child_iter_to_iter(None, iter)
+        return self.model_sort[giter][0]
+
     def _object_at_path(self, path):
         return self._object_at_iter(self.model.get_iter(path))
 
     def _object_at_view_path(self, path):
         return self._object_at_view_iter(self.model_filter.get_iter(path))
+
+    def _object_at_sort_path(self, path):
+        return self._object_at_sort_iter(self.model_sort.get_iter(path))
 
     def _model_iter_prev(self, giter):
         # because it's missing, this is from pygtk faq
@@ -443,6 +454,17 @@ class ObjectTreeViewBase(gtk.TreeView):
         prev = self.model.get_iter(tuple(prev_path))
         return prev
 
+    def _cols_for_attr(self, attr):
+        return [
+            col for col in self.columns
+            if col.attr == attr
+        ]
+
+    def _viewcols_for_attr(self, attr):
+        return [
+            col for col in self.get_columns()
+            if col.get_data('pygtkhelpers::column').attr == attr
+        ]
 
     def _connect_internal(self):
         # connect internal signals
@@ -451,7 +473,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         self.get_selection().connect('changed', self._on_selection_changed)
 
     def _emit_for_path(self, path, event):
-        item = self._object_at_view_path(path)
+        item = self._object_at_sort_path(path)
         signal_map = {
             (1, gtk.gdk.BUTTON_PRESS): 'item-left-clicked',
             (3, gtk.gdk.BUTTON_PRESS): 'item-right-clicked',
@@ -483,6 +505,23 @@ class ObjectTreeViewBase(gtk.TreeView):
             pcol = column.get_data('pygtkhelpers::column')
             return pcol.render_tooltip(tooltip, obj)
 
+    def _visible_func(self, obj):
+        #XXX: this one gets dynamically replaced
+        return True
+
+    def _internal_visible_func(self, model, iter, visible_func):
+        return visible_func(model[iter][0])
+
+    def _attr_sort_func(self, model, iter1, iter2, attr):
+        # how the hell is this a filter model?
+        obj1 = self._object_at_iter(iter1)
+        obj2 = self._object_at_iter(iter2)
+        return cmp(getattr(obj1, attr, None), getattr(obj2, attr, None))
+
+    def _key_sort_func(self, model, iter1, iter2, key):
+        obj1 = self._object_at_iter(iter1)
+        obj2 = self._object_at_iter(iter2)
+        return cmp(key(obj1), key(obj2))
 
 
 class ObjectList(ObjectTreeViewBase):
@@ -540,16 +579,16 @@ class ObjectTree(ObjectTreeViewBase):
         self.expand_row(self._view_path_for(item), open_all)
 
     def collapse_item(self, item):
-        self.collapse_row(self._view_path_for(item))
+        self.collapse_row(self._path_for(item))
 
     def item_expanded(self, item):
-        return self.row_expanded(self._view_path_for(item))
+        return self.row_expanded(self._path_for(item))
 
     def _on_row_expanded(self, objecttree, giter, path):
-        self.emit('item-expanded', self._object_at_view_iter(giter))
+        return self.emit('item-expanded', self._object_at_sort_iter(giter))
 
     def _on_row_collapsed(self, objecttree, giter, path):
-        self.emit('item-collapsed', self._object_at_view_iter(giter))
+        return self.emit('item-collapsed', self._object_at_sort_iter(giter))
 
 class EditableCellMixin(object):
 

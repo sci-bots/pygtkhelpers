@@ -64,11 +64,9 @@ def test_append_unselected(items, user):
 def test_select_single_fails_when_select_multiple_is_set(items, user):
     items.append(user)
     items.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
-
     py.test.raises(AttributeError, 'items.selected_item = user')
     py.test.raises(AttributeError, 'items.selected_item')
     items.selected_items = [user]
-    print items.selected_items
     refresh_gui()
     assert items.selected_items == [user]
 
@@ -534,10 +532,89 @@ def test_move_last_subitem_up(items, user, user2, user3):
     assert (items._path_for(user3) ==
             items._path_for_iter(items._next_iter_for(user2)))
 
-
 def test_view_iters(items, user, user2, user3):
     items.extend([user, user2, user3])
     items.set_visible_func(lambda obj: obj.age<100)
     refresh_gui()
     assert items.item_visible(user)
     assert not items.item_visible(user3)
+
+def test_sort_by_attr_default(items):
+    items.sort_by('name')
+    assert items.model_sort.has_default_sort_func()
+
+def test_sort_by_attr_asc(items, user, user2, user3):
+    items.extend([user, user2, user3])
+    assert items[0] is user
+    assert items[1] is user2
+    assert items[2] is user3
+    items.sort_by('name')
+    it = [i[0] for i in items.model_sort]
+    assert it[0] is user2
+    assert it[1] is user
+    assert it[2] is user3
+
+def test_sort_by_attr_desc(items, user, user2, user3):
+    items.extend([user, user2, user3])
+    assert items[0] is user
+    assert items[1] is user2
+    assert items[2] is user3
+    items.sort_by('name', direction='desc')
+    it = [i[0] for i in items.model_sort]
+    assert it[0] is user3
+    assert it[1] is user
+    assert it[2] is user2
+
+def _sort_key(obj):
+    # key on the last letter of the name
+    return obj.name[-1]
+
+def test_sort_by_key_asc(items, user, user2, user3):
+    items.extend([user, user2, user3])
+    assert items[0] is user
+    assert items[1] is user2
+    assert items[2] is user3
+    items.sort_by(_sort_key)
+    it = [i[0] for i in items.model_sort]
+    assert it[0] is user3
+    assert it[1] is user2
+    assert it[2] is user
+
+def test_sort_by_key_desc(items, user, user2, user3):
+    items.extend([user, user2, user3])
+    assert items[0] is user
+    assert items[1] is user2
+    assert items[2] is user3
+    items.sort_by(_sort_key, '-')
+    it = [i[0] for i in items.model_sort]
+    assert it[0] is user
+    assert it[1] is user2
+    assert it[2] is user3
+
+def test_sort_by_col(items, user, user2, user3):
+    items.extend([user, user2, user3])
+    assert items[0] is user
+    assert items[1] is user2
+    assert items[2] is user3
+    # simulate a click on the header
+    items.model_sort.set_sort_column_id(0, gtk.SORT_ASCENDING)
+    it = [i[0] for i in items.model_sort]
+    assert it[0] is user2
+    assert it[1] is user
+    assert it[2] is user3
+
+def test_sort_by_col_desc(items, user, user2, user3):
+    items.extend([user, user2, user3])
+    it = [i[0] for i in items.model_sort]
+    assert it[0] is user
+    assert it[1] is user2
+    assert it[2] is user3
+    ui = items._sort_iter_for(user)
+    print items.model_sort.iter_next(ui)
+    # simulate a click on the header
+    items.model_sort.set_sort_column_id(0, gtk.SORT_DESCENDING)
+    it = [i[0] for i in items.model_sort]
+    assert it[0] is user3
+    assert it[1] is user
+    assert it[2] is user2
+
