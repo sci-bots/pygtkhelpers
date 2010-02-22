@@ -168,6 +168,8 @@ class Column(object):
         self.sort_func = kwargs.pop('sort_func', cmp)
         # tooltips are per column, not per cell
         self._init_tooltips(**kwargs)
+        self.searchable = kwargs.pop('searchable', False)
+        self.search_key = kwargs.pop('search_key', None)
         if 'cells' in kwargs:
             self.cells = kwargs['cells']
         else:
@@ -198,6 +200,9 @@ class Column(object):
             sort_func = self._default_sort_func
             objectlist.model_sort.set_sort_func(idx, sort_func, objectlist)
             col.set_sort_column_id(idx)
+        if objectlist and objectlist.searchable and self.searchable:
+            ###
+            self.search_by(objectlist)
         col.connect('clicked', self._on_viewcol_clicked)
         return col
 
@@ -209,6 +214,9 @@ class Column(object):
         self.tooltip_value = kw.get('tooltip_value')
         self.tooltip_image_size = kw.get('tooltip_image_size',
                                          gtk.ICON_SIZE_DIALOG)
+
+    def search_by(self, objectlist):
+        objectlist.set_search_equal_func(self._search_equal_func)
 
     def render_tooltip(self, tooltip, obj):
         if self.tooltip_attr:
@@ -234,9 +242,18 @@ class Column(object):
             attr1 = self.sort_key(attr2)
         return self.sort_func(attr1, attr2)
 
+    def _search_equal_func(self, model, column, key, iter):
+        obj = model[iter][0]
+        val = getattr(obj, self.attr)
+        if self.search_key is not None:
+            val = self.search_key(val)
+        # return False for success!
+        return not (key.lower() in str(val).lower())
+
     def _on_viewcol_clicked(self, view_col):
         print view_col
         print view_col.get_sort_order()
+
 
 
 class ObjectTreeViewBase(gtk.TreeView):
@@ -261,6 +278,10 @@ class ObjectTreeViewBase(gtk.TreeView):
         # setup sorting
         self.sortable = kwargs.pop('sortable', True)
         #sort_func = kwargs.pop('sort_func', self._default_sort_func)
+        self.searchable = kwargs.pop('searchable', True)
+        self.set_enable_search(self.searchable)
+        if self.searchable:
+            self.set_search_column(0)
         self.columns = None
         self.set_columns(columns)
         # misc initial setup
@@ -390,6 +411,12 @@ class ObjectTreeViewBase(gtk.TreeView):
             sort_func = self._attr_sort_func
         self.model.set_default_sort_func(sort_func, attr_or_key)
         self.model.set_sort_column_id(-1, direction)
+
+    def search_by(self, attr_or_test):
+        if callable(attr_or_test):
+            self.set_search_equal_func(self._test_search_func, attr_or_test)
+        else:
+            self.set_search_equal_func(self._attr_search_func, attr_or_test)
 
     def _iter_for(self, obj):
         return self._id_to_iter[id(obj)]
@@ -522,6 +549,17 @@ class ObjectTreeViewBase(gtk.TreeView):
         obj1 = self._object_at_iter(iter1)
         obj2 = self._object_at_iter(iter2)
         return cmp(key(obj1), key(obj2))
+
+    def _attr_search_func(self, model, column, key, iter, attr):
+        obj = model[iter][0]
+        val = getattr(obj, attr, '')
+        return not (key.lower() in str(val).lower())
+
+    def _test_search_func(self, model, column, key, iter, test):
+        obj = model[iter][0]
+        return not test(obj, key)
+
+
 
 
 class ObjectList(ObjectTreeViewBase):

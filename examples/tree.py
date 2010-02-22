@@ -23,7 +23,7 @@ class User(object):
 
 
 listing = ObjectTree([
-    Column('name', str, editable=True),
+    Column('name', str, editable=True, searchable=True),
     Column('age', int, editable=True),
     Column('sex', str, expander=True, choices=[
         ('m', 'Male'),
@@ -47,7 +47,7 @@ def _on_right_clicked(ol, item, event):
     print ol.model_sort.get_sort_column_id()
 
 def _on_middle_clicked(ol, item, event):
-    ol.sort_by('age', '-')
+    ol.search_by('age')
     print 'Middle clicked', item
 
 def _on_double_clicked(ol, item, event):
