@@ -235,7 +235,8 @@ class ObjectTreeViewBase(gtk.TreeView):
 
         #XXX: make replacable
         self.model = self.create_model()
-        self.set_model(self.model)
+        self.model_filter = self.model.filter_new()
+        self.set_model(self.model_filter)
 
         # setup sorting
         self.sortable = kwargs.pop('sortable', True)
@@ -279,6 +280,21 @@ class ObjectTreeViewBase(gtk.TreeView):
         def on_row_activated(self, path, column, *k):
             self.emit('item-activated', self.model[path][0])
         self.connect('row-activated', on_row_activated)
+
+    def set_visible_func(self, visible_func):
+        self.model_filter.set_visible_func(
+                self._internal_visible_func,
+                visible_func,
+                )
+        self.item_visible = visible_func
+        self.model_filter.refilter()
+
+    def item_visible(self, obj):
+        #XXX: this one gets dynamically replaced
+        return True
+
+    def _internal_visible_func(self, model, iter, visible_func):
+        return visible_func(model[iter][0])
 
     def set_sort_by(self, column, idx):
         current = column.get_sort_order
@@ -329,16 +345,16 @@ class ObjectTreeViewBase(gtk.TreeView):
             raise AttributeError('selected_item not valid for select_multiple')
         model, selected = selection.get_selected()
         if selected is not None:
-            return self._object_at_iter(selected)
+            return self._object_at_view_iter(selected)
 
     @selected_item.setter
     def selected_item(self, item):
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
-        giter = self._iter_for(item)
+        giter = self._view_iter_for(item)
         selection.select_iter(giter)
-        self.set_cursor(self.model[giter].path)
+        self.set_cursor(self.model_filter[giter].path)
 
     @property
     def selected_items(self):
@@ -359,7 +375,7 @@ class ObjectTreeViewBase(gtk.TreeView):
             raise AttributeError('selected_items only valid for select_multiple')
 
         for item in new_selection:
-            selection.select_iter(self._iter_for(item))
+            selection.select_iter(self._view_iter_for(item))
 
     def clear(self):
         self.model.clear()
@@ -381,6 +397,10 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _iter_for(self, obj):
         return self._id_to_iter[id(obj)]
 
+    def _view_iter_for(self, obj):
+        giter = self._iter_for(obj)
+        return self.model_filter.convert_child_iter_to_iter(giter)
+
     def _next_iter_for(self, obj):
         return self.model.iter_next(self._iter_for(obj))
 
@@ -390,14 +410,26 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _path_for(self, obj):
         return self._path_for_iter(self._iter_for(obj))
 
+    def _view_path_for(self, obj):
+        return self._view_path_for_iter(self._view_iter_for(obj))
+
+    def _view_path_for_iter(self, giter):
+        return self.model_filter.get_string_from_iter(giter)
+
     def _path_for_iter(self, giter):
         return self.model.get_string_from_iter(giter)
 
     def _object_at_iter(self, iter):
         return self.model[iter][0]
 
+    def _object_at_view_iter(self, iter):
+        return self.model_filter[iter][0]
+
     def _object_at_path(self, path):
         return self._object_at_iter(self.model.get_iter(path))
+
+    def _object_at_view_path(self, path):
+        return self._object_at_view_iter(self.model_filter.get_iter(path))
 
     def _model_iter_prev(self, giter):
         # because it's missing, this is from pygtk faq
@@ -419,7 +451,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         self.get_selection().connect('changed', self._on_selection_changed)
 
     def _emit_for_path(self, path, event):
-        item = self._object_at_path(path)
+        item = self._object_at_view_path(path)
         signal_map = {
             (1, gtk.gdk.BUTTON_PRESS): 'item-left-clicked',
             (3, gtk.gdk.BUTTON_PRESS): 'item-right-clicked',
@@ -505,19 +537,19 @@ class ObjectTree(ObjectTreeViewBase):
             self.append(item, parent)
 
     def expand_item(self, item, open_all=True):
-        self.expand_row(self._path_for(item), open_all)
+        self.expand_row(self._view_path_for(item), open_all)
 
     def collapse_item(self, item):
-        self.collapse_row(self._path_for(item))
+        self.collapse_row(self._view_path_for(item))
 
     def item_expanded(self, item):
-        return self.row_expanded(self._path_for(item))
+        return self.row_expanded(self._view_path_for(item))
 
     def _on_row_expanded(self, objecttree, giter, path):
-        self.emit('item-expanded', self._object_at_iter(giter))
+        self.emit('item-expanded', self._object_at_view_iter(giter))
 
     def _on_row_collapsed(self, objecttree, giter, path):
-        self.emit('item-collapsed', self._object_at_iter(giter))
+        self.emit('item-collapsed', self._object_at_view_iter(giter))
 
 class EditableCellMixin(object):
 

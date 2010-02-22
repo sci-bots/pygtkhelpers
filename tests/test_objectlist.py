@@ -534,3 +534,10 @@ def test_move_last_subitem_up(items, user, user2, user3):
     assert (items._path_for(user3) ==
             items._path_for_iter(items._next_iter_for(user2)))
 
+
+def test_view_iters(items, user, user2, user3):
+    items.extend([user, user2, user3])
+    items.set_visible_func(lambda obj: obj.age<100)
+    refresh_gui()
+    assert items.item_visible(user)
+    assert not items.item_visible(user3)
