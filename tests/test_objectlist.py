@@ -106,6 +106,12 @@ def test_extend(items):
         ])
     assert len(items)==2
 
+def test_remove(items, user):
+    items.append(user)
+    assert user in items
+    items.remove(user)
+    assert user not in items
+
 def test_column_title():
     col = Column("name")
     view_col = col.create_treecolumn(None)

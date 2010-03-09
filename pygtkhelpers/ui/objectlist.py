@@ -251,6 +251,7 @@ class Column(object):
         return not (key.lower() in str(val).lower())
 
     def _on_viewcol_clicked(self, view_col):
+        return #
         print view_col
         print view_col.get_sort_order()
 
@@ -311,6 +312,10 @@ class ObjectTreeViewBase(gtk.TreeView):
         del self._id_to_iter[id(obj)]
         self.model.remove(iter)
 
+    def remove(self, item):
+        giter = self._iter_for(item)
+        del self[giter]
+
     def set_columns(self, columns):
         assert not self.columns
         self.columns = tuple(columns)
@@ -334,7 +339,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         if selection.get_mode() != gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
         model, selected = selection.get_selected()
-        print model, selected
+        #print model, selected
         if selected is not None:
             return self._object_at_sort_iter(selected)
 
