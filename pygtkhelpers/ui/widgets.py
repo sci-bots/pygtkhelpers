@@ -104,6 +104,8 @@ class StringList(gtk.VBox):
 
 class SimpleComboBox(gtk.ComboBox):
     '''a simple combobox that maps descriptions to keys'''
+    __gtype_name__ = 'PyGTKHelpersSimpleComboBox'
+
     def __init__(self, choices=None, default=None):
         gtk.ComboBox.__init__(self)
         if choices and not default:
