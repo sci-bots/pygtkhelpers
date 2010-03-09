@@ -313,6 +313,8 @@ class ObjectTreeViewBase(gtk.TreeView):
         self.model.remove(iter)
 
     def remove(self, item):
+        if item not in self:
+            raise ValueError('objectlist.remove(item) failed, item not in list')
         giter = self._iter_for(item)
         del self[giter]
 

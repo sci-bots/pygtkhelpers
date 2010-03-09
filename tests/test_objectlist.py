@@ -112,6 +112,9 @@ def test_remove(items, user):
     items.remove(user)
     assert user not in items
 
+def test_remove_missing(items, user):
+    py.test.raises(ValueError, items.remove, user)
+
 def test_column_title():
     col = Column("name")
     view_col = col.create_treecolumn(None)
