@@ -534,7 +534,10 @@ class ObjectTreeViewBase(gtk.TreeView):
             return False
         else:
             tx, ty = self.convert_widget_to_tree_coords(x, y)
-            path, column, rx, ry = self.get_path_at_pos(tx, ty)
+            item_spec = self.get_path_at_pos(tx, ty)
+            if not item_spec:
+                return False
+            path, column, rx, ry = item_spec
             obj = self._object_at_path(path)
             pcol = column.get_data('pygtkhelpers::column')
             return pcol.render_tooltip(tooltip, obj)
