@@ -331,7 +331,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         self._id_to_iter = {}
 
         def on_row_activated(self, path, column, *k):
-            self.emit('item-activated', self.model[path][0])
+            self.emit('item-activated', self._object_at_sort_iter(path))
         self.connect('row-activated', on_row_activated)
 
     @property
