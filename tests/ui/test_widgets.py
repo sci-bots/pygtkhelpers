@@ -47,10 +47,10 @@ def test_pl_edit(pl):
     assert pl.value == ['test']
 
 
-def test_attrsortcombo():
+def test_attrsortcombo_with_treeview():
     mock = importorskip('mock')
 
-    ol = mock.Mock(spec=ObjectList)
+    ol = mock.Mock(spec=gtk.TreeView)
     model = ol.get_model.return_value = mock.Mock(spec=gtk.TreeSortable)
 
     sort = AttrSortCombo(ol, [
@@ -76,5 +76,30 @@ def test_attrsortcombo():
     sort._order_button.set_active(True)
     assert col.call_args[0] == (-1, gtk.SORT_DESCENDING)
 
+def test_attrsortcombo_with_objectlist():
 
+    mock = importorskip('mock')
+
+    ol = mock.Mock(spec=ObjectList)
+
+    sort = AttrSortCombo(ol, [
+        ('name', 'Der name'),
+        ('age', 'Das Alter'),
+        ], 'name')
+
+    (name, order), kw = ol.sort_by.call_args
+    assert name == 'name'
+
+    sort._proxy.update('age')
+    name, order = ol.sort_by.call_args[0]
+    print (name, order)
+    assert name == 'age'
+
+    sort._combo.set_active(0) # the combo is connected
+    name, order = ol.sort_by.call_args[0]
+    assert order == gtk.SORT_ASCENDING
+
+    sort._order_button.set_active(True)
+    name, order = ol.sort_by.call_args[0]
+    assert order == gtk.SORT_DESCENDING
 
