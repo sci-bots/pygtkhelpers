@@ -4,7 +4,7 @@ import gtk, gtk.gdk
 from pygtkhelpers.ui.objectlist import ObjectList, ObjectTree, Column, Cell
 from pygtkhelpers.utils import refresh_gui
 from pygtkhelpers.test import CheckCalled
-
+from mock import Mock
 
 class User(object):
     def __init__(self, name, age):
@@ -655,6 +655,17 @@ def test_sort_by_col_desc(items, user, user2, user3):
     assert it[0] is user3
     assert it[1] is user
     assert it[2] is user2
+
+def test_sort_item_activated(items, user, user2, user3):
+    items.extend([user, user2, user3])
+    mock = Mock()
+    items.connect('item-activated', mock.cb)
+    items.emit('row-activated', '0', gtk.TreeViewColumn())
+    assert mock.cb.call_args[0][1] is user
+
+    items.sort_by('age', '-')
+    items.emit('row-activated', '0', gtk.TreeViewColumn())
+    assert mock.cb.call_args[0][1] is user3
 
 def test_search_col(searchcheck):
     searchcheck.assert_selects('a', searchcheck.u1)
