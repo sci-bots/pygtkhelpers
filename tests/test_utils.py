@@ -2,10 +2,7 @@
 from py.test import raises as assert_raises
 import gobject, gtk
 
-from pygtkhelpers.utils import (
-        gsignal, gproperty,
-        enum_to_string, flags_to_string
-        )
+from pygtkhelpers.utils import gsignal, gproperty
 
 from pygtkhelpers.delegates import BaseDelegate
 
@@ -52,18 +49,3 @@ def test_gproperty():
     t = T2()
     print t
     assert t.get_property('a') == 0
-
-
-
-def test_enum_to_string():
-    assert enum_to_string(gtk.JUSTIFY_LEFT) == 'left'
-    assert enum_to_string(int(gtk.JUSTIFY_LEFT), gtk.Justification) == 'left'
-    assert_raises(TypeError, enum_to_string, gtk.JUSTIFY_LEFT, int)
-    assert_raises(TypeError, enum_to_string, 1)
-
-
-def test_flags_to_string_button():
-    assert flags_to_string(gtk.BUTTON_DRAGS) == 'drags | ignored'
-
-    assert flags_to_string(int(gtk.BUTTON_DRAGS), gtk.ButtonAction) == 'drags | ignored'
-    #XXX: test more flag combinations
