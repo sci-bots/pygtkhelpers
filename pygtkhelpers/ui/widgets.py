@@ -165,9 +165,7 @@ class AttrSortCombo(gtk.HBox):
 
         try:
             self._objectlist.sort_by(attribute, order)
-            print 'smart sort', self._objectlist, attribute, order
         except AttributeError:
-            print 'broken sort', self._objectlist, attribute, order
             model = self._objectlist.get_model()
             model.set_default_sort_func(_attr_sort_func, attribute)
             model.set_sort_column_id(-1, order)
