@@ -45,7 +45,6 @@ def pytest_funcarg__searchcheck(request):
     return SearchChecker(items)
 
 class SearchChecker(object):
-
     def __init__(self, ol):
         self.ol = ol
         self.entry = gtk.Entry()
@@ -66,7 +65,6 @@ class SearchChecker(object):
         self.entry.set_text(key)
         refresh_gui()
         assert self.ol.selected_item is item
-
 
 def test_append(items, user):
     assert len(items) == 0

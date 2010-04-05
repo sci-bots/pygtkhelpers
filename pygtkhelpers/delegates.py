@@ -121,10 +121,19 @@ class BaseDelegate(gobject.GObject):
         """Call show_all on the toplevel widget"""
         self.widget.show_all()
 
+    def hide(self):
+        """Call hide on the toplevel widget"""
+        self.widget.hide()
+
     def show_and_run(self):
         """Show the main widget and run the gtk loop"""
         self.show()
         gtk.main()
+
+    def hide_and_quit(self):
+        """Hide the widget and quit the main loop"""
+        self.hide()
+        gtk.main_quit()
 
     def _load_builder(self):
         builder = gtk.Builder()
