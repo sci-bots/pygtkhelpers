@@ -334,8 +334,7 @@ class ObjectTreeViewBase(gtk.TreeView):
             self.emit('item-activated', self._object_at_sort_iter(path))
         self.connect('row-activated', on_row_activated)
 
-    @property
-    def selected_item(self):
+    def _get_selected_item(self):
         """The currently selected item"""
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_SINGLE:
@@ -345,8 +344,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         if selected is not None:
             return self._object_at_sort_iter(selected)
 
-    @selected_item.setter
-    def selected_item(self, item):
+    def _set_selected_item(self, item):
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
@@ -354,8 +352,14 @@ class ObjectTreeViewBase(gtk.TreeView):
         selection.select_iter(giter)
         self.set_cursor(self._path_for(item))
 
-    @property
-    def selected_items(self):
+    selected_item = property(
+            fget=_get_selected_item,
+            fset=_set_selected_item,
+            #XXX: fdel for deselect?
+            doc=_get_selected_item.__doc__,
+            )
+
+    def _get_selected_items(self):
         """List of currently selected items"""
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_MULTIPLE:
@@ -366,13 +370,19 @@ class ObjectTreeViewBase(gtk.TreeView):
             result.append(model[path][0])
         return result
 
-    @selected_items.setter
-    def selected_items(self, new_selection):
+    def _set_selected_items(self, new_selection):
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_MULTIPLE:
             raise AttributeError('selected_items only valid for select_multiple')
         for item in new_selection:
             selection.select_iter(self._sort_iter_for(item))
+
+    selected_items = property(
+            fget=_get_selected_items,
+            fset=_set_selected_items,
+            #XXX: fdel for deselect?
+            doc=_get_selected_items.__doc__,
+            )
 
     def clear(self):
         self.model.clear()
