@@ -198,6 +198,8 @@ class GtkComboBoxProxy(GObjectProxy):
     signal_name = 'changed'
 
     def get_widget_value(self):
+        if not self.active_row:
+            return
         return self.get_row_value(self.active_row)
 
     def set_widget_value(self, value):
@@ -211,6 +213,8 @@ class GtkComboBoxProxy(GObjectProxy):
 
     @property
     def active_row(self):
+        if self.widget.get_active() == -1:
+            return
         return self.model[self.widget.get_active()]
 
     @property
