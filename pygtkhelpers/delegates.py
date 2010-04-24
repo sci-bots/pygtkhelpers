@@ -162,7 +162,7 @@ class BaseDelegate(gobject.GObject):
         else: return
         self._toplevel = self.get_builder_toplevel(builder)
         for obj in builder.get_objects():
-            setattr(self, obj.get_name(), obj)
+            setattr(self, gtk.Buildable.get_name(obj), obj)
 
     def _connect_signals(self):
         for name in self._get_all_handlers():
