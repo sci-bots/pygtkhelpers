@@ -300,6 +300,7 @@ def test_left_click_event(items, user):
     items._emit_for_path((0,), e)
     refresh_gui()
     assert item_clicked.called
+    assert item_clicked.called_count == 1
 
 def test_right_click_event(items, user):
     items.append(user, select=True)
@@ -309,6 +310,7 @@ def test_right_click_event(items, user):
     items._emit_for_path((0,), e)
     refresh_gui()
     assert item_clicked.called
+    assert item_clicked.called_count == 1
 
 def test_middle_click_event(items, user):
     items.append(user, select=True)
@@ -318,6 +320,7 @@ def test_middle_click_event(items, user):
     items._emit_for_path((0,), e)
     refresh_gui()
     assert item_clicked.called
+    assert item_clicked.called_count == 1
 
 def test_double_click_event(items, user):
     items.append(user, select=True)
@@ -327,6 +330,7 @@ def test_double_click_event(items, user):
     items._emit_for_path((0,), e)
     refresh_gui()
     assert item_clicked.called
+    assert item_clicked.called_count == 1
 
 @py.test.mark.tree_only
 def test_expander_column(items):

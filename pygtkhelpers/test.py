@@ -15,8 +15,11 @@ class CheckCalled(object):
     """
     def __init__(self, object, signal):
         self.called = None
+        self.called_count = 0
         object.connect(signal, self)
 
     def __call__(self, *k):
+        print 'call'
         self.called = k
+        self.called_count += 1
 
