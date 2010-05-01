@@ -19,7 +19,7 @@ class User(object):
 
 
 listing = ObjectList([
-    Column('name', str, editable=True),
+    Column('name', str, editable=False),
     Column('age', int, editable=True),
     Column('sex', str, choices=[
         ('m', 'Male'),
@@ -39,10 +39,14 @@ def _on_middle_clicked(ol, item, event):
 def _on_double_clicked(ol, item, event):
     print 'Double clicked', item
 
+def _on_item_activated(ol, item):
+    print 'Item activated', item
+
 listing.connect('item-left-clicked', _on_left_clicked)
 listing.connect('item-right-clicked', _on_right_clicked)
 listing.connect('item-middle-clicked', _on_middle_clicked)
 listing.connect('item-double-clicked', _on_double_clicked)
+listing.connect('item-activated', _on_item_activated)
 
 listing.append(
     User("test", 12, 'm')
