@@ -330,10 +330,6 @@ class ObjectTreeViewBase(gtk.TreeView):
                 self.set_expander_column(view_col)
         self._id_to_iter = {}
 
-        def on_row_activated(self, path, column, *k):
-            self.emit('item-activated', self._object_at_sort_iter(path))
-        self.connect('row-activated', on_row_activated)
-
     def _get_selected_item(self):
         """The currently selected item"""
         selection = self.get_selection()
@@ -514,6 +510,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         # connect internal signals
         self.connect('button-press-event', self._on_button_press_event)
         self.connect('query-tooltip', self._on_query_tooltip)
+        self.connect('row-activated', self._on_row_activated)
         self.get_selection().connect('changed', self._on_selection_changed)
 
     def _emit_for_path(self, path, event):
@@ -551,6 +548,9 @@ class ObjectTreeViewBase(gtk.TreeView):
             obj = self._object_at_path(path)
             pcol = column.get_data('pygtkhelpers::column')
             return pcol.render_tooltip(tooltip, obj)
+
+    def _on_row_activated(self, objectlist, path, column, *k):
+        self.emit('item-activated', self._object_at_sort_iter(path))
 
     def _visible_func(self, obj):
         #XXX: this one gets dynamically replaced
