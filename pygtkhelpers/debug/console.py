@@ -513,6 +513,18 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
         sys.stdout, sys.stderr = saved_stdout, saved_stderr
         self.raw_input(ps)
 
+    def execfile(self, filename):
+        saved_stdout, saved_stderr = sys.stdout, sys.stderr
+        sys.stdout, sys.stderr = self._stdout, self._stderr
+        try:
+            execfile(filename, self.locals)
+        except SystemExit:
+            raise
+        except:
+            self.showtraceback()
+        finally:
+            sys.stdout, sys.stderr = saved_stdout, saved_stderr
+
     def do_command(self, code):
         try:
             eval(code, self.locals)
@@ -594,6 +606,17 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
         completions.sort()
         return completions
 
+    def flush(self):
+        pass
+
+    def tell(self):
+        return 0
+
+    def isatty(self):
+        return False
+
+    def truncate(self):
+        raise IOError('cant truncate fake file')
 
 def ReadLineType(t=gtk.TextView):
     class readline(t, _ReadLine):
