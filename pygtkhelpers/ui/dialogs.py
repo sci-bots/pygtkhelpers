@@ -13,6 +13,7 @@
 """
 
 #XXX: i18n
+import os
 
 import gtk
 from functools import partial
