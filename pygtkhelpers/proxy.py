@@ -21,8 +21,8 @@ class GObjectProxy(gobject.GObject):
     """A proxy for a gtk.Widget
 
     This proxy provides a common api to gtk widgets, so that they can be used
-    without knowing which specific widget they are. Very useful in form
-    generation.
+    without knowing which specific widget they are. All proxy types should
+    extend this class.
     """
     __gtype_name__ = 'PyGTKHelperGObjectProxy'
 
@@ -107,7 +107,6 @@ class GObjectProxy(gobject.GObject):
 class SinglePropertyGObjectProxy(GObjectProxy):
     """Proxy which uses a single property to set and get the value.
     """
-
     prop_name = None
 
     def set_widget_value(self, value):
@@ -116,10 +115,13 @@ class SinglePropertyGObjectProxy(GObjectProxy):
     def get_widget_value(self):
         return self.widget.get_property(self.prop_name)
 
-class SingleDelegatedPropertyGObjectProxy(GObjectProxy):
 
+class SingleDelegatedPropertyGObjectProxy(GObjectProxy):
+    """Proxy which uses a delegated property on its widget.
+    """
     prop_name = None
     dprop_name = None
+    signal_name = None
 
     def set_widget_value(self, value):
         return self.widget.get_property(self.dprop_name
@@ -137,21 +139,29 @@ class SingleDelegatedPropertyGObjectProxy(GObjectProxy):
 
 
 class GtkEntryProxy(SinglePropertyGObjectProxy):
+    """Proxy for a gtk.Entry.
+    """
     prop_name = 'text'
     signal_name = 'changed'
 
 
 class GtkToggleButtonProxy(SinglePropertyGObjectProxy):
+    """Proxy for a gtk.ToggleButton.
+    """
     prop_name = 'active'
     signal_name = 'toggled'
 
 
 class GtkColorButtonProxy(SinglePropertyGObjectProxy):
-
+    """Proxy for a gtk.ColorButton
+    """
     prop_name = 'color'
     signal_name = 'color-set'
 
+
 class StringListProxy(GObjectProxy):
+    """Proxy for a pygtkhelpers.ui.widgets.StringList.
+    """
     signal_name = 'content-changed'
 
     def get_widget_value(self):
@@ -162,6 +172,8 @@ class StringListProxy(GObjectProxy):
 
 
 class GtkRangeProxy(GObjectProxy):
+    """Base class for widgets employing a gtk.Range.
+    """
     signal_name = 'value-changed'
 
     def get_widget_value(self):
@@ -172,6 +184,8 @@ class GtkRangeProxy(GObjectProxy):
 
 
 class GtkFileChooserProxy(GObjectProxy):
+    """Proxy for a gtk.FileChooser.
+    """
     signal_name = 'selection-changed'
 
     def get_widget_value(self):
@@ -190,11 +204,15 @@ class GtkFileChooserProxy(GObjectProxy):
 
 
 class GtkFontButtonProxy(SinglePropertyGObjectProxy):
+    """Proxy for a gtk.FontButton.
+    """
     signal_name = 'font-set'
     prop_name = 'font-name'
 
 
 class GtkComboBoxProxy(GObjectProxy):
+    """Proxy for a gtk.ComboBox.
+    """
     signal_name = 'changed'
 
     def get_widget_value(self):
@@ -232,25 +250,34 @@ class GtkComboBoxProxy(GObjectProxy):
 
 
 class GtkTextViewProxy(SingleDelegatedPropertyGObjectProxy):
-
+    """Proxy for a gtk.TextView.
+    """
     signal_name = 'changed'
     prop_name = 'text'
     dprop_name = 'buffer'
 
 
 class GtkLabelProxy(SinglePropertyGObjectProxy):
+    """Proxy for a gtk.Label.
+    """
     prop_name = 'label'
 
 
 class GtkImageProxy(SinglePropertyGObjectProxy):
+    """Proxy for a gtk.Image.
+    """
     prop_name = 'file'
 
 
 class GtkLinkButtonProxy(SinglePropertyGObjectProxy):
+    """Proxy for a gtk.LinkButton.
+    """
     prop_name = 'uri'
 
 
 class GtkProgressBarProxy(SinglePropertyGObjectProxy):
+    """Proxy for a gtk.ProgressBar.
+    """
     prop_name = 'fraction'
 
 
