@@ -46,8 +46,8 @@ This just adds an entry to the widget, which you can see as you run it.
 Combining multiple views
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-As mentioned, it is best to separte components by their use, so for example in
-our user mangement application, the view to edit a User, might be consistent
+As mentioned, it is best to separate components by their use, so for example in
+our user mangement application, the view to edit a User might be consistent
 throughout the application. You may want it next to a list, or you may want it
 in a dialog. Either way, this should be separated out into it's own view.
 
@@ -119,5 +119,33 @@ Lets look at an example of handling a signal:
 This creates a very simple view with a single `gtk.Entry`, but there is a
 method on the delegate that connects to the `changed` signal. Our handler is
 very basic.
+
+Let's add a signal handler that is a bit more useful:
+
+.. literalinclude:: ../examples/manual/d5.py
+
+This handles the delete-event to our gtk.Window, that is the default "widget"
+for a :class:`~pygtkheleprs.delegates.ToplevelView`. It illustrates an
+important point that any attribute of the delegate can have it's signals
+connected to if that is a GObject instance, eg a gtk.Widget or any
+pygtkhelpers Delegate. As long as the item has been set as an attribute on the
+delegate by the end of the create_ui method, it can be connected in this way.
+
+Pygtkhelpers has a utility function for helping to define signals for GObject
+isntances: :func:`~pygtkhelprs.utils.gsignal`. This can be used on any widget
+subclass, or delegate.
+
+The following example illustrates two delegates, one receiving signals from
+the other, all using the simple declarative handling style above:
+
+.. literalinclude:: ../examples/manual/d7.py
+
+In this example, it can be seen that since the slave is added, it can be
+connected to by defining the correct "on_" named method.
+
+The gsignal function can also be used to define more complex signals with
+parameters, as in the following example:
+
+.. literalinclude:: ../examples/manual/d6.py
 
 
