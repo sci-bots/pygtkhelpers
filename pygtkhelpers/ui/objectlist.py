@@ -4,11 +4,12 @@
     pygtkhelpers.ui.objectlist
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    ListViews that are object orientated, and mimic Pythonic lists
+    TreeViews that are object orientated, and mimic Pythonic lists
 
     :copyright: 2005-2008 by pygtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
+
 import gtk, gobject
 
 from pygtkhelpers.utils import gsignal
@@ -149,7 +150,37 @@ class Cell(object):
 
 
 class Column(object):
-    #XXX: handle cells propperly
+    """A Column for an ObjectList.
+
+    A column loosely combines a GUI TreeView column with an attribute of an
+    instance. The column encapsulates the type of the attribute, how it is
+    displayed, whether fields are editable, the column headings, whether
+    sorting can be applied, and other features.
+
+    The mapping between columns and attributes is not exactly correct as there
+    is the flexibility to add multiple cells per column.
+
+    :param attr: The attribute to display from the object
+    :param type: The Python type of the data for this attribute
+    :param title: The header title for the column
+    :param visible: Whether this column should be displayed
+    :param width: The width of this column
+    :param expand: Whether this column should expand to fit available space
+    :param sorted: Whether this column should be sorted
+    :param sort_key: The sort key to sort by this column
+    :param sort_func: The function to sort this column by
+    :param searchable: Whether this field is searchable
+    :param search_key: The key used to search this column
+    :param expander: Whether the expander should be shown before this column
+    :param cells: A list of Cell instances to display in this colum
+    :param tooltip_attr: An attribute that will display the tooltip for this
+                         column
+    :param tooltip_type: The type of tooltip for this column
+    :param tooltip_value: The static value of the tooltip for this column
+    :param tooltip_image_size: The size of an image tooltip
+
+    """
+    #XXX: handle cells properly
 
     def __init__(self, attr=None, type=str, title=None, **kwargs):
 
@@ -177,6 +208,8 @@ class Column(object):
             self.cells = [Cell(attr, type, **kwargs)]
 
     def create_treecolumn(self, objectlist):
+        """Create a gtk.TreeViewColumn for the configuration.
+        """
         col = gtk.TreeViewColumn(self.title)
         col.set_data('pygtkhelpers::objectlist', objectlist)
         col.set_data('pygtkhelpers::column', self)
@@ -216,9 +249,15 @@ class Column(object):
                                          gtk.ICON_SIZE_DIALOG)
 
     def search_by(self, objectlist):
+        """Search by this column on an ObjectList
+
+        :param objectlist: An ObjectList or ObjectTree
+        """
         objectlist.set_search_equal_func(self._search_equal_func)
 
     def render_tooltip(self, tooltip, obj):
+        """Render the tooltip for this column for an object
+        """
         if self.tooltip_attr:
             val = getattr(obj, self.tooltip_attr)
         elif self.tooltip_value:
@@ -258,6 +297,13 @@ class Column(object):
 
 
 class ObjectTreeViewBase(gtk.TreeView):
+    """Abstract base class for object-based TreeView implementations
+
+    :param columns: A list of Column instances
+    :param searchable: Whether this view is searchable
+    :param sortable: Whether this view is sortable
+    :param show_tooltips: Whether this view shows tooltips
+    """
 
     gsignal('item-activated', object)
     gsignal('item-changed', object, str, object)
@@ -290,16 +336,30 @@ class ObjectTreeViewBase(gtk.TreeView):
         self._connect_internal()
 
     def create_model(self):
+        """Create the TreeModel instance.
+
+        This abstract method must be implemented for subclasses. The concrete
+        model should be created and returned.
+
+        :rtype: gtk.TreeModel
+        """
         raise NotImplementedError
 
     def __len__(self):
+        """Number of items in this list
+        """
         return len(self.model)
 
     def __contains__(self, item):
-        """identity based check of membership"""
+        """Identity based check of membership
+
+        :param item: The item to check membership for
+        """
         return id(item) in self._id_to_iter
 
     def __iter__(self):
+        """Iterable
+        """
         for row in self.model:
             yield row[0]
 
@@ -313,6 +373,11 @@ class ObjectTreeViewBase(gtk.TreeView):
         self.model.remove(iter)
 
     def remove(self, item):
+        """Remove an item from the list
+
+        :param item: The item to remove from the list.
+        :raises ValueError: If the item is not present in the list.
+        """
         if item not in self:
             raise ValueError('objectlist.remove(item) failed, item not in list')
         giter = self._iter_for(item)
@@ -381,23 +446,50 @@ class ObjectTreeViewBase(gtk.TreeView):
             )
 
     def clear(self):
+        """Clear all the items in the list
+        """
         self.model.clear()
         self._id_to_iter.clear()
 
     def update(self, item):
+        """Manually update an item's display in the list
+
+        :param item: The item to be updated.
+        """
         self.model.set(self._iter_for(item), 0, item)
 
     def move_item_down(self, item):
+        """Move an item down in the list.
+
+        Essentially swap it with the item below it.
+
+        :param item: The item to be moved.
+        """
         next_iter = self._next_iter_for(item)
         if next_iter is not None:
             self.model.swap(self._iter_for(item), next_iter)
 
     def move_item_up(self, item):
+        """Move an item up in the list.
+
+        Essentially swap it with the item above it.
+
+        :param item: The item to be moved.
+        """
         prev_iter = self._prev_iter_for(item)
         if prev_iter is not None:
             self.model.swap(prev_iter, self._iter_for(item))
 
     def set_visible_func(self, visible_func):
+        """Set the function to decide visibility of an item
+
+        :param visible_func: A callable that returns a boolean result to
+                             decide if an item should be visible, for
+                             example::
+
+                                def is_visible(item):
+                                    return True
+        """
         self.model_filter.set_visible_func(
                 self._internal_visible_func,
                 visible_func,
@@ -406,9 +498,20 @@ class ObjectTreeViewBase(gtk.TreeView):
         self.model_filter.refilter()
 
     def item_visible(self, item):
+        """Return whether an item is visible
+
+        :param item: The item to test visibility
+        :rtype: bool
+        """
         return self._visible_func(item)
 
     def sort_by(self, attr_or_key, direction='asc'):
+        """Sort the view by an attribute or key
+
+        :param attr_or_key: The attribute or key to sort by
+        :param direction: Either `asc` or `desc` indicating the direction of
+                          sorting
+        """
         # work out the direction
         if direction in ('+', 'asc', gtk.SORT_ASCENDING):
             direction = gtk.SORT_ASCENDING
@@ -583,6 +686,8 @@ class ObjectTreeViewBase(gtk.TreeView):
 
 
 class ObjectList(ObjectTreeViewBase):
+    """An object list
+    """
 
     __gtype_name__ = "PyGTKHelpersObjectList"
 
@@ -590,6 +695,11 @@ class ObjectList(ObjectTreeViewBase):
         return gtk.ListStore(object)
 
     def append(self, item, select=False):
+        """Add an item to the end of the list.
+
+        :param item: The item to be added
+        :param select: Whether the item should be selected after adding
+        """
         if item in self:
             raise ValueError("item %s allready in list"%item )
         modeliter = self.model.append((item,))
@@ -598,11 +708,17 @@ class ObjectList(ObjectTreeViewBase):
             self.selected_item = item
 
     def extend(self, iter):
+        """Add a sequence of items to the end of the list
+
+        :param iter: The iterable of items to add.
+        """
         for item in iter:
             self.append(item)
 
 
 class ObjectTree(ObjectTreeViewBase):
+    """An object tree
+    """
 
     __gtype_name__ = "PyGTKHelpersObjectTree"
 
@@ -618,6 +734,13 @@ class ObjectTree(ObjectTreeViewBase):
         return gtk.TreeStore(object)
 
     def append(self, item, parent=None, select=False):
+        """Add an item to the end of the list.
+
+        :param item: The item to be added
+        :param parent: The parent item to add this as a child of, or None for
+                       a top-level node
+        :param select: Whether the item should be selected after adding
+        """
         if item in self:
             raise ValueError("item %s allready in list"%item )
         if parent is not None:
@@ -630,16 +753,36 @@ class ObjectTree(ObjectTreeViewBase):
             self.selected_item = item
 
     def extend(self, iter, parent=None):
+        """Add a sequence of items to the end of the list
+
+        :param iter: The iterable of items to add.
+        :param parent: The node to add the items as a child of, or None for
+                       top-level nodes.
+        """
         for item in iter:
             self.append(item, parent)
 
     def expand_item(self, item, open_all=True):
+        """Display a node as expanded
+
+        :param item: The item to show expanded
+        :param open_all: Whether all child nodes should be recursively
+                         expanded.
+        """
         self.expand_row(self._view_path_for(item), open_all)
 
     def collapse_item(self, item):
+        """Display a node as collapsed
+
+        :param item: The item to show collapsed
+        """
         self.collapse_row(self._path_for(item))
 
     def item_expanded(self, item):
+        """Return whether an item is expanded or collapsed
+
+        :param item: The item that is queried for expanded state
+        """
         return self.row_expanded(self._path_for(item))
 
     def _on_row_expanded(self, objecttree, giter, path):
@@ -647,6 +790,7 @@ class ObjectTree(ObjectTreeViewBase):
 
     def _on_row_collapsed(self, objecttree, giter, path):
         return self.emit('item-collapsed', self._object_at_sort_iter(giter))
+
 
 class EditableCellMixin(object):
 

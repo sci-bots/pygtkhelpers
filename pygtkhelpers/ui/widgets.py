@@ -9,11 +9,15 @@
     :copyright: 2005-2010 by pygtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
+
 import gtk
+
 from pygtkhelpers.utils import gsignal
 
 
 class StringList(gtk.VBox):
+    """An editable list of strings
+    """
 
     gsignal('content-changed')
 
@@ -54,7 +58,7 @@ class StringList(gtk.VBox):
         self.pack_start(hb, expand=False)
         self._current =  None
         self._block = False
-        
+
     def _on_add(self, button):
         iter = self.store.append(["New Item"])
         self.view.get_selection().select_iter(iter)
@@ -87,7 +91,7 @@ class StringList(gtk.VBox):
 
     def _emit_changed(self) :
         self.emit('content-changed')
-        
+
     def update(self, value):
         if not self._block: 
             self.store.clear()
@@ -101,9 +105,9 @@ class StringList(gtk.VBox):
     value = property(read, update)
 
 
-
 class SimpleComboBox(gtk.ComboBox):
-    '''a simple combobox that maps descriptions to keys'''
+    """A simple combobox that maps descriptions to keys
+    """
     __gtype_name__ = 'PyGTKHelpersSimpleComboBox'
 
     def __init__(self, choices=None, default=None):
@@ -127,11 +131,8 @@ class SimpleComboBox(gtk.ComboBox):
                 self.set_active_iter(iter)
 
 
-
-
 class AttrSortCombo(gtk.HBox):
-    """
-    A evil utility class that hijacks a objectlist and forces ordering onto its model
+    """A evil utility class that hijacks a objectlist and forces ordering onto its model
     """
     def __init__(self, objectlist, attribute_list, default):
         gtk.HBox.__init__(self, spacing=3)
@@ -172,7 +173,8 @@ class AttrSortCombo(gtk.HBox):
 
 
 def _attr_sort_func(model, iter1, iter2 , attribute):
-    """internal heloer"""
+    """Internal helper
+    """
     attr1 = getattr(model[iter1][0], attribute, None)
     attr2 = getattr(model[iter2][0], attribute, None)
     return cmp(attr1, attr2)

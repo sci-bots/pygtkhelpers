@@ -183,19 +183,38 @@ def _message_dialog(type, short,
 
 def simple(type, short, long=None,
            parent=None, buttons=gtk.BUTTONS_OK, default=None, **kw):
+    """A simple dialog
+
+    :param type: The type of dialog
+    :param short: The short description
+    :param long: The long description
+    :param parent: The parent Window to make this dialog transient to
+    :param buttons: A buttons enum
+    :param default: A default response
+    """
     if buttons == gtk.BUTTONS_OK:
         default = gtk.RESPONSE_OK
     return _message_dialog(type, short, long,
                          parent=parent, buttons=buttons,
                          default=default, **kw)
 
+
+#: Show an error dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
 error = partial(simple, gtk.MESSAGE_ERROR)
+
+
+#: Show an info dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
 info = partial(simple, gtk.MESSAGE_INFO)
+
+
+#: Show a warning dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
 warning = partial(simple, gtk.MESSAGE_WARNING)
+
+
+#:  A yes/no question dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
 yesno = partial(simple, gtk.MESSAGE_WARNING,
                 default=gtk.RESPONSE_YES,
                 buttons=gtk.BUTTONS_YES_NO,)
-
 
 
 def open(title='Open', parent=None, patterns=None,
