@@ -16,6 +16,7 @@ pygtkhelpers API Documentation
 
 .. automodule:: pygtkhelpers.ui.objectlist
     :members:
+    :inherited-members:
 
 .. automodule:: pygtkhelpers.ui.dialogs
     :members:
