@@ -12,6 +12,24 @@
 
 class CheckCalled(object):
     """Utility to check whether a signal has been emitted
+
+    :param object: The Object that will fire the signal
+    :param signal: The signal name
+
+    This class should be used when testing whether a signal has been called.
+    It could be used in conjuntion with :func:`pygtkhelpers.utils.refresh_gui`
+    in order to block the UI adequately to check::
+
+        >>> import gtk
+        >>> from pygtkhelpers.utils import refresh_gui
+        >>> b = gtk.Button()
+        >>> check = CheckCalled(b, 'clicked')
+        >>> b.clicked()
+        >>> assert check.called
+        >>> assert check.called_count = 1
+        >>> b.click()
+        >>> assert check.called_count = 2
+
     """
     def __init__(self, object, signal):
         self.called = None
@@ -19,7 +37,6 @@ class CheckCalled(object):
         object.connect(signal, self)
 
     def __call__(self, *k):
-        print 'call'
         self.called = k
         self.called_count += 1
 

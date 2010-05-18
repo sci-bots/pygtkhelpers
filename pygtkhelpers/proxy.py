@@ -34,6 +34,7 @@ class GObjectProxy(gobject.GObject):
         gobject.GObject.__init__(self)
         self.widget = widget
         self.connections = []
+        self.connect_widget()
 
     # public API
 
@@ -101,7 +102,9 @@ class GObjectProxy(gobject.GObject):
         """
         if self.signal_name is not None:
             # None for read only widgets
-            self.widget.connect(self.signal_name, self.widget_changed)
+            sid = self.widget.connect(self.signal_name, self.widget_changed)
+            self.connections.append(sid)
+
 
 
 class SinglePropertyGObjectProxy(GObjectProxy):
@@ -116,26 +119,16 @@ class SinglePropertyGObjectProxy(GObjectProxy):
         return self.widget.get_property(self.prop_name)
 
 
-class SingleDelegatedPropertyGObjectProxy(GObjectProxy):
+class SingleDelegatedPropertyGObjectProxy(SinglePropertyGObjectProxy):
     """Proxy which uses a delegated property on its widget.
     """
     prop_name = None
     dprop_name = None
-    signal_name = None
 
-    def set_widget_value(self, value):
-        return self.widget.get_property(self.dprop_name
-            ).set_property(self.prop_name, value)
-
-    def get_widget_value(self):
-        return self.widget.get_property(self.dprop_name
-            ).get_property(self.prop_name)
-
-    def connect_widget(self):
-        if self.signal_name is not None:
-            # None for read only widgets
-            self.widget.get_property(self.dprop_name
-                ).connect(self.signal_name, self.widget_changed)
+    def __init__(self, widget, *args, **kw):
+        self.owidget = widget
+        widget = widget.get_property(self.dprop_name)
+        GObjectProxy.__init__(self, widget, *args, **kw)
 
 
 class GtkEntryProxy(SinglePropertyGObjectProxy):
@@ -225,9 +218,6 @@ class GtkComboBoxProxy(GObjectProxy):
         for i, row in enumerate(self.model):
             if self.get_row_value(row) == value:
                 self.widget.set_active(i)
-
-    def connect_widget(self):
-        self.widget.connect('changed', self.widget_changed)
 
     @property
     def active_row(self):

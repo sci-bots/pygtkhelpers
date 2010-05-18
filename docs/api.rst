@@ -2,34 +2,19 @@
 pygtkhelpers API Documentation
 ==============================
 
-.. automodule:: pygtkhelpers.delegates
-    :members:
+.. toctree::
+    :maxdepth: 2
 
-.. automodule:: pygtkhelpers.gthreads
-    :members:
+    api_delegates
+    api_proxy
+    api_utils
+    api_gthreads
+    api_objectlist
+    api_widgets
+    api_dialogs
+    api_test
+    api_debut
 
-.. automodule:: pygtkhelpers.proxy
-    :members:
 
-.. automodule:: pygtkhelpers.ui
-    :members:
 
-.. automodule:: pygtkhelpers.ui.objectlist
-    :members:
-    :inherited-members:
-
-.. automodule:: pygtkhelpers.ui.dialogs
-    :members:
-
-.. automodule:: pygtkhelpers.ui.widgets
-    :members:
-
-.. automodule:: pygtkhelpers.utils
-    :members:
-
-.. automodule:: pygtkhelpers.test
-    :members:
-
-.. automodule:: pygtkhelpers.debug.dialogs
-    :members:
 

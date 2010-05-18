@@ -122,3 +122,10 @@ def test_update_internal_wont_emit_changed(proxy, value):
     print data
     assert len(data)==0
 
+def test_widget_externally_changed_emits():
+    data = []
+    w = gtk.Entry()
+    proxy = widget_proxies[gtk.Entry](w)
+    w.connect('changed', lambda p: data.append(p))
+    w.set_text('hello')
+    assert len(data)==1
