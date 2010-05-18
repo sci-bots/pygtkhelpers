@@ -1,0 +1,4 @@
+
+.. automodule:: pygtkhelpers.delegates
+    :members:
+

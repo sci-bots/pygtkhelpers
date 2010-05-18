@@ -8,6 +8,32 @@
 
     :copyright: 2005-2008 by pygtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
+
+    An example session of using a proxy::
+
+        >>> import gtk
+        >>> from pygtkhelpers.proxy import proxy_for
+        >>> widget = gtk.Entry()
+        >>> proxy = proxy_for(widget)
+        >>> proxy
+        <GtkEntryProxy object at 0x9aea25c (PyGTKHelperGObjectProxy at 0x9e6ec50)>
+        >>> proxy.update('hello')
+        >>> proxy.read()
+        'hello'
+        >>> def changed(proxy, value):
+        ...     print proxy, 'changed to', value
+        ...
+        ...
+        >>> proxy.connect('changed', changed)
+        32L
+        >>> proxy.update('bye bye')
+        <GtkEntryProxy object at 0x9aea25c (PyGTKHelperGObjectProxy at 0x9e6ec50)> changed to bye bye
+        >>> widget.get_text()
+        'bye bye'
+        >>> widget.set_text('banana')
+        <GtkEntryProxy object at 0x9aea25c (PyGTKHelperGObjectProxy at 0x9e6ec50)> changed to banana
+        >>> proxy.read()
+        'banana'
 """
 
 
@@ -125,10 +151,10 @@ class SingleDelegatedPropertyGObjectProxy(SinglePropertyGObjectProxy):
     prop_name = None
     dprop_name = None
 
-    def __init__(self, widget, *args, **kw):
+    def __init__(self, widget):
         self.owidget = widget
         widget = widget.get_property(self.dprop_name)
-        GObjectProxy.__init__(self, widget, *args, **kw)
+        GObjectProxy.__init__(self, widget)
 
 
 class GtkEntryProxy(SinglePropertyGObjectProxy):
@@ -296,4 +322,17 @@ widget_proxies = {
     StringList: StringListProxy,
     SimpleComboBox: GtkComboBoxProxy,
 }
+
+def proxy_for(widget):
+    """Create a proxy for a Widget
+
+    :param widget: A gtk.Widget to proxy
+
+    This will raise a KeyError if there is no proxy type registered for the
+    widget type.
+    """
+    proxy_type = widget_proxies.get(widget.__class__)
+    if proxy_type is None:
+        raise KeyError('There is no proxy type registered for %r' % widget)
+    return proxy_type(widget)
 
