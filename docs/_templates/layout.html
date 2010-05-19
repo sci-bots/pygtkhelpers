@@ -1,0 +1,25 @@
+
+{# extending the basic template layout #}
+{% extends "!layout.html" %}
+
+{% block extrahead %}
+   <link href="_static/draco.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{# appears before the document #}
+{% block header %}
+    <div class="banner">
+        <a href="index.html">
+        <img src="_static/scope.jpg" alt="pygtkhelpers logo"></img>
+        <h1>
+        PyGTKHelpers
+        </h1>
+        </a>
+        <div>easing the pain of developing PyGTK, somewhat</div>
+    </div>
+{% endblock %}
+
+{#
+vim: ft=htmljinja
+#}
+

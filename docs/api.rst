@@ -1,6 +1,6 @@
 
-pygtkhelpers API Documentation
-==============================
+API
+===
 
 .. toctree::
     :maxdepth: 2
