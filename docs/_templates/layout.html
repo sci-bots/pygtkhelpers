@@ -6,8 +6,28 @@
    <link href="_static/draco.css" rel="stylesheet" type="text/css" />
 {% endblock %}
 
+{% macro ribbon() %}
+    <div class="ribbon">
+        <div>
+        <a href="http://bitbucket.org/aafshar/pygtkhelpers-main">
+            <img src="_static/bblogo.png" />
+        </a>
+        </div>
+        <div>
+        <a href="http://bitbucket.org/aafshar/pygtkhelpers-main/src">
+            source
+        </a>|
+        <a href="http://bitbucket.org/aafshar/pygtkhelpers-main/issues">
+            issues
+        </a>
+        </div>
+    </div>
+{% endmacro %}
+
 {# appears before the document #}
 {% block header %}
+    {{ ribbon() }}
+
     <div class="banner">
         <a href="index.html">
         <img src="_static/scope.jpg" alt="pygtkhelpers logo"></img>

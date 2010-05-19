@@ -2,18 +2,24 @@
 body {
     width: 800px;
     margin: auto;
+    font-family: sans-serif;
 }
 
 a {
     font-weight: bold;
-    color: #837D7C;
+    color: #003366;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family:georgia,'bitstream vera serif',serif;
+    font-weight: normal;
 }
 
 .document {
-    font-family: sans;
     border-bottom:1px solid #837D7C;
     border-top:1px solid #837D7C;
     margin: 12px 0px;
+    line-height: 1.3em;
 }
 
 .related a {
@@ -51,6 +57,7 @@ div.related ul {
 
 .banner a {
     color:#000000;
+    text-decoration: none;
 }
 
 
@@ -89,3 +96,28 @@ div.sphinxsidebar {
     width: 100%;
     font-size: 0.8em;
 }
+
+.toctree-l1 a {
+    text-decoration: none;
+}
+
+img.align-right {
+    margin-left: 24px;
+}
+
+.ribbon {
+  overflow: hidden;
+  position: absolute;
+  right: 1em;
+  top: 1em;
+  text-align: right;
+}
+.ribbon a {
+  color: #000;
+  font-weight: bold;
+    font-family:"lucida console","monaco","andale mono","bitstream vera sans mono","consolas",monospace;
+  font-size: 12px;
+  padding: 0.2em 0.2em;
+  text-decoration: none;
+}
+

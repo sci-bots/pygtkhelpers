@@ -1,23 +1,30 @@
-.. pygtkhelpers documentation master file, created by
-   sphinx-quickstart on Sun Feb  7 13:36:15 2010.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to pygtkhelpers's documentation!
-========================================
+.. image:: _static/nurse.jpg
+    :align: right
+    :alt: PyGTKHelpers, because being stabbed in the eye hurts, somewhat
 
-Contents:
+Welcome to PyGTKHelpers
+=======================
+
+PyGTKHelpers is a library to assist the building of PyGTK applications. It is
+intentionally designed to be *non-frameworky*, and blend well with your
+particular style of PyGTK development.
+
+PyGTKHelpers provides a number of widespread features including: View
+delegation, MVC, mixed GtkBuilder/Python views, widget proxying, signal
+auto-connection, object-base lists and trees, a number of helper widgets,
+utility functions for assisting creating new GObject types, unit testing
+helpers and utilities to help debug PyGTK applications.
+
+PyGTKHelpers attempts to adhere to good practice, and is well unit tested. We
+generally believe it to be awesome, and present it to the community under the
+LGPL license.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   reusablecomponents
-   api
+   downloads
+   community
+   doc
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
