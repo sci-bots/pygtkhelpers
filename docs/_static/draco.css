@@ -11,7 +11,7 @@ a {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family:georgia,'bitstream vera serif',serif;
+    font-family:'OFL Sorts Mill Goudy TT',georgia,'bitstream vera serif',serif;
     font-weight: normal;
 }
 
@@ -50,7 +50,7 @@ div.related ul {
 .banner {
     color:#000000;
     letter-spacing:-1px;
-    font-family:georgia,'bitstream vera serif',serif;
+    font-family:'OFL Sorts Mill Goudy TT',georgia,'bitstream vera serif',serif;
     height: 100px;
     margin-bottom: 24px;
 }
