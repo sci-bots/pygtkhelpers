@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
     name='pygtkhelpers',
-    version='0.4',
+    version='0.4.1',
     author='Ali Afshar',
     author_email='aafshar@gmail.com',
     description='Helper library for PyGTK',
