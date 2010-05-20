@@ -703,3 +703,13 @@ def test_search_missing_func(searchcheck):
     searchcheck.ol.search_by(_search_missing_func)
     searchcheck.assert_selects('z', None)
 
+def test_item_after(items, user, user2, user3):
+    items.extend([user, user2, user3])
+    assert items.item_after(user) is user2
+    assert items.item_after(user2) is user3
+
+def test_item_before(items, user, user2, user3):
+    items.extend([user, user2, user3])
+    assert items.item_before(user2) is user
+    assert items.item_before(user3) is user2
+

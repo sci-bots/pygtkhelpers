@@ -480,6 +480,23 @@ class ObjectTreeViewBase(gtk.TreeView):
         if prev_iter is not None:
             self.model.swap(prev_iter, self._iter_for(item))
 
+    def item_after(self, item):
+        """The item after an item
+        """
+        next_iter = self._next_iter_for(item)
+        if next_iter is not None:
+            return self._object_at_iter(next_iter)
+
+    def item_before(self, item):
+        """The item before an item
+
+        :param item: The item to get the previous item relative to
+        """
+        prev_iter = self._prev_iter_for(item)
+        if prev_iter is not None:
+            return self._object_at_iter(prev_iter)
+
+
     def set_visible_func(self, visible_func):
         """Set the function to decide visibility of an item
 
