@@ -336,3 +336,48 @@ def proxy_for(widget):
         raise KeyError('There is no proxy type registered for %r' % widget)
     return proxy_type(widget)
 
+
+class MasterProxy(gobject.GObject):
+    """A controller to handle multiple proxies, and sub-masters
+
+    A MasterProxy is a bridge to reduce multiple proxies and sub-masters to a
+    single signal based on the key of the individual proxies.
+    """
+
+    gsignal('changed', object, str, object)
+
+    def __init__(self):
+        gobject.GObject.__init__(self)
+
+    def add_proxy(self, name, proxy):
+        """Add a proxy to this master
+
+        :param name: The name or key of the proxy, which will be emitted with
+                     the changed signal
+        :param proxy: The proxy instance to add
+        """
+        proxy.connect('changed', self._on_proxy_changed, name)
+
+    def add_proxy_for(self, name, widget):
+        """Create a proxy for a widget and add it to this master
+
+        :param name: The name or key of the proxy, which will be emitted with
+                     the changed signal
+        :param widget: The widget to create a proxy for
+        """
+        proxy = proxy_for(widget)
+        self.add_proxy(name, proxy)
+
+    def add_master(self, master):
+        """Add an existing master to this master and proxy its signals
+
+        :param master: The MasterProxy instance to add
+        """
+        master.connect('changed', self._on_master_changed)
+
+    def _on_proxy_changed(self, proxy, value, name):
+        self.emit('changed', proxy, name, value)
+
+    def _on_master_changed(self, master, proxy, value, name):
+        self.emit('changed', proxy, name, value)
+
