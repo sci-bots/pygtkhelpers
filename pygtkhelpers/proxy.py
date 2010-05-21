@@ -337,10 +337,10 @@ def proxy_for(widget):
     return proxy_type(widget)
 
 
-class MasterProxy(gobject.GObject):
-    """A controller to handle multiple proxies, and sub-masters
+class ProxyGroup(gobject.GObject):
+    """A controller to handle multiple proxies, and sub-groups
 
-    A MasterProxy is a bridge to reduce multiple proxies and sub-masters to a
+    A ProxyGroup is a bridge to reduce multiple proxies and sub-groups to a
     single signal based on the key of the individual proxies.
     """
 
@@ -350,7 +350,7 @@ class MasterProxy(gobject.GObject):
         gobject.GObject.__init__(self)
 
     def add_proxy(self, name, proxy):
-        """Add a proxy to this master
+        """Add a proxy to this group
 
         :param name: The name or key of the proxy, which will be emitted with
                      the changed signal
@@ -359,7 +359,7 @@ class MasterProxy(gobject.GObject):
         proxy.connect('changed', self._on_proxy_changed, name)
 
     def add_proxy_for(self, name, widget):
-        """Create a proxy for a widget and add it to this master
+        """Create a proxy for a widget and add it to this group
 
         :param name: The name or key of the proxy, which will be emitted with
                      the changed signal
@@ -368,16 +368,16 @@ class MasterProxy(gobject.GObject):
         proxy = proxy_for(widget)
         self.add_proxy(name, proxy)
 
-    def add_master(self, master):
-        """Add an existing master to this master and proxy its signals
+    def add_group(self, group):
+        """Add an existing group to this group and proxy its signals
 
-        :param master: The MasterProxy instance to add
+        :param group: The ProxyGroup instance to add
         """
-        master.connect('changed', self._on_master_changed)
+        group.connect('changed', self._on_group_changed)
 
     def _on_proxy_changed(self, proxy, value, name):
         self.emit('changed', proxy, name, value)
 
-    def _on_master_changed(self, master, proxy, value, name):
+    def _on_group_changed(self, group, proxy, value, name):
         self.emit('changed', proxy, name, value)
 

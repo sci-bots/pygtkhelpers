@@ -3,10 +3,10 @@ import gtk
 
 from pygtkhelpers.test import CheckCalled
 from pygtkhelpers.utils import refresh_gui
-from pygtkhelpers.proxy import MasterProxy, GtkEntryProxy
+from pygtkhelpers.proxy import ProxyGroup, GtkEntryProxy
 
 def test_add_proxy():
-    m = MasterProxy()
+    m = ProxyGroup()
     e = gtk.Entry()
     p = GtkEntryProxy(e)
     m.add_proxy('foo', p)
@@ -19,7 +19,7 @@ def test_add_proxy():
     assert check.called_count == 2
 
 def test_add_proxy_for():
-    m = MasterProxy()
+    m = ProxyGroup()
     e = gtk.Entry()
     m.add_proxy_for('foo', e)
     check = CheckCalled(m, 'changed')
@@ -27,12 +27,12 @@ def test_add_proxy_for():
     refresh_gui()
     assert check.called_count == 1
 
-def add_master():
-    m = MasterProxy()
+def test_add_group():
+    m = ProxyGroup()
     e = gtk.Entry()
     m.add_proxy_for('foo', e)
-    m2 = MasterProxy()
-    m2.add_master(m)
+    m2 = ProxyGroup()
+    m2.add_group(m)
     check = CheckCalled(m2, 'changed')
     e.set_text('a')
     assert check.called_count == 1
