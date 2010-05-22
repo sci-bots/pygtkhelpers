@@ -7,6 +7,7 @@ API
 
     api_delegates
     api_proxy
+    api_forms
     api_utils
     api_gthreads
     api_objectlist
