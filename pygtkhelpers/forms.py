@@ -24,11 +24,9 @@ from pygtkhelpers.utils import gsignal
 def _view_type_for_element(element):
     # now do something with element.__class__
     ## something nasty
-    bases = (c.__name__ for c in
-             [element.__class__] + list(element.__class__.__bases__))
-    for base in bases:
-        if base in element_views:
-            return element_views[base]
+    for element_type in element.__class__.__mro__:
+        if element_type in element_views:
+            return element_views[element_type]
 
 
 def widget_for(element):
@@ -220,9 +218,9 @@ VIEW_LAYOUT_TABLE = 'layout-table'
 
 #: Map of flatland element types to view types
 element_views = {
-    'String': VIEW_ENTRY,
-    'Integer': VIEW_NUMBER,
-    'Boolean': VIEW_CHECK,
+    String: VIEW_ENTRY,
+    Integer: VIEW_NUMBER,
+    Boolean: VIEW_CHECK,
 }
 
 #: map of view types to flatland element types
