@@ -19,7 +19,7 @@ class User(object):
 
 
 listing = ObjectList([
-    Column('name', str, editable=False),
+    Column('name', str, editable=False, resizable=True),
     Column('age', int, editable=True),
     Column('sex', str, choices=[
         ('m', 'Male'),

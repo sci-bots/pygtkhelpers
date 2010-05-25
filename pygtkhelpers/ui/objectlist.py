@@ -172,6 +172,7 @@ class Column(object):
     :param searchable: Whether this field is searchable
     :param search_key: The key used to search this column
     :param expander: Whether the expander should be shown before this column
+    :param resizable: Whether the user can resize the column
     :param cells: A list of Cell instances to display in this colum
     :param tooltip_attr: An attribute that will display the tooltip for this
                          column
@@ -195,6 +196,7 @@ class Column(object):
         self.visible = kwargs.pop('visible', True)
         self.width = kwargs.pop('width', None)
         self.expander = kwargs.pop('expander', None)
+        self.resizable = kwargs.pop('resizable', None)
         self.sort_key = kwargs.pop('sort_key', None)
         self.sort_func = kwargs.pop('sort_func', cmp)
         # tooltips are per column, not per cell
@@ -216,6 +218,8 @@ class Column(object):
         col.props.visible = self.visible
         if self.expand is not None:
             col.props.expand = self.expand
+        if self.resizable is not None:
+            col.props.resizable = self.resizable
         if self.width is not None:
             col.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
             col.set_fixed_width(self.width)
