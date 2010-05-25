@@ -128,17 +128,73 @@ class WidgetBuilder(object):
         return self.widget_type()
 
 
-class IntegerBuilder(object):
+class ElementBuilder(object):
+
+    default_style = None
+
+    styles = {}
 
     def __call__(self, element):
-        render_options = getattr(element, 'render_options', {})
-        print element.name, render_options
-        style = render_options.get('style', 'spin')
-        widget_types = {
-            'spin': gtk.SpinButton,
-            'slider': gtk.HScale,
-        }
-        widget = widget_types.get(style)()
+        options = getattr(element, 'render_options', {})
+        style = options.get('style', self.default_style)
+        widget_type = self.styles.get(style)
+        if widget_type is None:
+            raise NotImplementedError(element)
+        widget = widget_type()
+        return self.build(widget, style, element, options)
+
+    def build(self, widget, style, element, options):
+        raise NotImplementedError
+
+
+class BooleanBuilder(ElementBuilder):
+
+    default_style = 'check'
+
+    styles = {
+        'check': gtk.CheckButton,
+        'toggle': gtk.ToggleButton
+    }
+
+    def build(self, widget, style, element, options):
+        if style == 'toggle':
+            widget.connect('toggled', self._on_toggle_toggled)
+            widget.set_use_stock(True)
+            self._on_toggle_toggled(widget)
+        return widget
+
+    def _on_toggle_toggled(self, toggle):
+        if toggle.get_active():
+            toggle.set_label(gtk.STOCK_YES)
+        else:
+            toggle.set_label(gtk.STOCK_NO)
+
+
+class StringBuilder(ElementBuilder):
+
+    default_style = 'uniline'
+
+    styles = {
+        'uniline': gtk.Entry,
+        'multiline': gtk.TextView,
+    }
+
+    def build(self, widget, style, element, options):
+        if style == 'multiline':
+            widget.set_size_request(-1, 100)
+        return widget
+
+
+class IntegerBuilder(ElementBuilder):
+
+    default_style = 'spin'
+
+    styles = {
+        'spin': gtk.SpinButton,
+        'slider': gtk.HScale,
+    }
+
+    def build(self, widget, style, element, options):
         widget.set_digits(0)
         adj = widget.get_adjustment()
         min, max = -sys.maxint, sys.maxint
@@ -171,9 +227,9 @@ element_views = {
 
 #: map of view types to flatland element types
 view_widgets = {
-    VIEW_ENTRY: WidgetBuilder(gtk.Entry),
+    VIEW_ENTRY: StringBuilder(),
     VIEW_NUMBER: IntegerBuilder(),
-    VIEW_CHECK: WidgetBuilder(gtk.CheckButton),
+    VIEW_CHECK: BooleanBuilder(),
 }
 
 

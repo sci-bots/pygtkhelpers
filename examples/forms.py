@@ -24,6 +24,16 @@ class PersonSchema(Form):
 
     friendly = Boolean
 
+    address = String.using()
+    address.render_options = dict(
+        style='multiline'
+    )
+
+    happy = Boolean.using()
+    happy.render_options = dict(
+        style='toggle'
+    )
+
 
 class PersonView(FormView):
 
