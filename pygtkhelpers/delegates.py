@@ -236,7 +236,7 @@ class SlaveView(BaseDelegate):
         if toplevel is None:
             toplevel = get_first_builder_window(builder).child
         if toplevel is not None:
-            toplevel.unparent()
+            toplevel.get_parent().remove(toplevel)
         return toplevel
 
     def create_default_toplevel(self):
