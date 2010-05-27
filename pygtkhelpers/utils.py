@@ -74,6 +74,7 @@ _MAX_VALUES = {int : _max('i'),
                long : _max('l') }
 _DEFAULT_VALUES = {str : '', float : 0.0, int : 0, long : 0L}
 
+
 def gproperty(name, ptype, default=None, nick='', blurb='',
               flags=gobject.PARAM_READWRITE, **kwargs):
     """Add a GObject property to the current object.
@@ -151,7 +152,17 @@ def gproperty(name, ptype, default=None, nick='', blurb='',
 
     dict[name] = (ptype, nick, blurb) + default + (flags,)
 
+
 def refresh_gui(delay=0.0001, wait=0.0001):
+    """Use up all the events waiting to be run
+
+    :param delay: Time to wait before using events
+    :param wait: Time to wait between iterations of events
+
+    This function will block until all pending events are emitted. This is
+    useful in testing to ensure signals and other asynchronous functionality
+    is required to take place.
+    """
     time.sleep(delay)
     while gtk.events_pending():
         gtk.main_iteration_do(block=False)
@@ -170,14 +181,38 @@ def _get_in_window(widget):
         w.add(widget)
         return w
 
-def run_in_window(target, on_destroy=gtk.main_quit):
 
+def run_in_window(target, on_destroy=gtk.main_quit):
+    """Run a widget, or a delegate in a Window
+    """
     w = _get_in_window(target)
     if on_destroy:
         w.connect('destroy', on_destroy)
-
     w.resize(500, 400)
     w.move(100, 100)
     w.show_all()
     gtk.main()
+
+
+class GObjectUserDataProxy(object):
+    """Proxy the GObject data interface to attribute-based access
+
+    :param widget: The widget for which to provide attribute access
+
+    >>> w = gtk.Label()
+    >>> data = GObjectUserDataProxy()
+    >>> data.foo = 123
+    """
+
+    def __init__(self, widget):
+        object.__setattr__(self, '_widget', widget)
+
+    def __getattr__(self, attr):
+        return self._widget.get_data(attr)
+
+    def __setattr__(self, attr, value):
+        self._widget.set_data(attr, value)
+
+    def __delattr__(self, attr):
+        self._widget.set_data(attr, None)
 

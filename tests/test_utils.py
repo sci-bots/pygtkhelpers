@@ -2,7 +2,7 @@
 from py.test import raises as assert_raises
 import gobject, gtk
 
-from pygtkhelpers.utils import gsignal, gproperty
+from pygtkhelpers.utils import gsignal, gproperty, GObjectUserDataProxy
 
 from pygtkhelpers.delegates import BaseDelegate
 
@@ -49,3 +49,30 @@ def test_gproperty():
     t = T2()
     print t
     assert t.get_property('a') == 0
+
+
+def test_data_proxy_set():
+    w = gtk.Entry()
+    data = GObjectUserDataProxy(w)
+    data.foo = 123
+    assert w.get_data('foo') == 123
+
+def test_data_proxy_get():
+    w = gtk.Entry()
+    w.set_data('foo', 123)
+    data = GObjectUserDataProxy(w)
+    assert data.foo == 123
+
+def test_data_proxy_missing():
+    w = gtk.Entry()
+    data = GObjectUserDataProxy(w)
+    assert data.foo is None
+
+def test_data_proxy_delete():
+    w = gtk.Entry()
+    data = GObjectUserDataProxy(w)
+    data.foo = 123
+    assert data.foo == 123
+    del data.foo
+    assert data.foo is None
+
