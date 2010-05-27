@@ -199,9 +199,18 @@ class GObjectUserDataProxy(object):
 
     :param widget: The widget for which to provide attribute access
 
+    >>> import gtk
+    >>> from pygtkhelpers.utils import GObjectUserDataProxy
     >>> w = gtk.Label()
-    >>> data = GObjectUserDataProxy()
+    >>> data = GObjectUserDataProxy(w)
     >>> data.foo = 123
+    >>> data.foo
+    123
+    >>> w.get_data('foo')
+    123
+    >>> w.set_data('goo', 456)
+    >>> data.goo
+    456
     """
 
     def __init__(self, widget):
