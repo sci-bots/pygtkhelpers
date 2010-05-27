@@ -31,14 +31,23 @@ def apply_addons(widget, *addon_types, **named_addon_types):
     it. Once loaded, addons will be available as widget.addons.<addon_name>
     withe standard attribute access.
     """
+    for addon_type in addon_types:
+        apply_addon(widget, addon_type)
+
+    for name, addon_type in named_addon_types.items():
+        apply_addon(widget, addon_type, addon_name=name)
+
+def apply_addon(widget, addon_type, **kw):
+    """Apply a single addon to a widget
+
+    :param widget: The widget to apply the addon to.
+    :param kw: A dict of keyword arguments to be passed to the addon
+    """
     if not hasattr(widget, 'addons'):
         widget.addons = GObjectUserDataProxy(widget)
-    for addon_type in addon_types:
-        addon = addon_type(widget)
-        setattr(widget.addons, addon.addon_name, addon)
-    for name, addon_type in named_addon_types.items():
-        addon = addon_type(widget, addon_name=name)
-        setattr(widget.addons, addon.addon_name, addon)
+
+    addon = addon_type(widget, **kw)
+    setattr(widget.addons, addon.addon_name, addon)
 
 
 class GObjectPlugin(object):
