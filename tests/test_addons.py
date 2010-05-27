@@ -9,7 +9,7 @@ class OkButtonPlugin(GObjectPlugin):
     """
     addon_name = 'ok_button'
 
-    def create_ui(self):
+    def configure(self):
         self.widget.set_use_stock(True)
         self.widget.set_label(gtk.STOCK_OK)
 

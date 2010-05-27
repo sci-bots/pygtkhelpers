@@ -71,10 +71,10 @@ class GObjectPlugin(object):
         self.addon_name = addon_name or self.addon_name
         if self.addon_name is None:
             raise ValueError('addon_name must be set.')
-        self.create_ui()
+        self.configure()
 
-    def create_ui(self):
-        """Create the user interface
+    def configure(self):
+        """Configure and initialise the addon
 
         For overriding in implementations.
         """
