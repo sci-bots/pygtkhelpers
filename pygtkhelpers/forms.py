@@ -11,21 +11,22 @@
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
+import sys
 import gtk
 
 from flatland import Dict, String, Integer, Boolean
 
-from pygtkhelpers.proxy import ProxyGroup
+from pygtkhelpers.proxy import ProxyGroup, proxy_for
 from pygtkhelpers.delegates import SlaveView
+from pygtkhelpers.utils import gsignal
 
 
 def _view_type_for_element(element):
     # now do something with element.__class__
     ## something nasty
-    bases = [element.__class__] + list(element.__class__.__bases__)
-    for base in bases:
-        if base in element_views:
-            return element_views[base]
+    for element_type in element.__class__.__mro__:
+        if element_type in element_views:
+            return element_views[element_type]
 
 
 def widget_for(element):
@@ -40,12 +41,67 @@ def widget_for(element):
     return builder(element)
 
 
-class Field(SlaveView):
+class Field(object):
+    """Encapsulates the widget and the label display
+    """
 
-    def __init__(self, widget=None, label=None):
-        self.field_widget = widget
-        self.label_widget = label
-        SlaveView.__init__(self)
+    def __init__(self, element, widget, label_widget=None):
+        self.element = element
+        self.widget = widget
+        self.proxy = proxy_for(widget)
+        self.label_widget = gtk.Label()
+
+    def set_label(self, text):
+        self.label_widget.set_text(text)
+
+    def _unparent(self):
+        self.widget.unparent()
+        self.label_widget.unparent()
+
+    def layout_as_table(self, table, row):
+        self._unparent()
+        self.label_widget.set_alignment(1.0, 0.5)
+        table.attach(self.label_widget, 0, 1, row, row+1,
+            xoptions=gtk.SHRINK|gtk.FILL, yoptions=gtk.SHRINK)
+        table.attach(self.widget, 1, 2, row, row+1,
+            xoptions=gtk.EXPAND|gtk.FILL, yoptions=gtk.SHRINK)
+
+
+
+
+
+class FieldSet(object):
+
+    def __init__(self, delegate, schema_type):
+        self.delegate = delegate
+        self.schema = schema_type()
+        self.proxies = ProxyGroup()
+        self.fields = {}
+        self.proxies.connect('changed', self._on_proxies_changed)
+        for name, element in self.schema.items():
+            self._setup_widget(name, element)
+
+    def _setup_widget(self, name, element):
+        widget = getattr(self.delegate, name, None)
+        #XXX (AA) this will always be the case, we are running too soon
+        if widget is None:
+            widget = widget_for(element)
+            setattr(self.delegate, name, widget)
+        field = self.fields[name] = Field(element, widget=widget)
+        field.set_label(name.capitalize())
+        self.proxies.add_proxy(name, field.proxy)
+
+    def _on_proxies_changed(self, group, proxy, name, value):
+        self.schema[name].set(value)
+
+    def layout_as_table(self):
+        table = gtk.Table(len(self.fields), 2)
+        table.set_row_spacings(6)
+        table.set_col_spacings(6)
+        table.set_border_width(6)
+        for row, name in enumerate(self.fields):
+            self.fields[name].layout_as_table(table, row)
+        return table
 
 
 class FormView(SlaveView):
@@ -54,22 +110,10 @@ class FormView(SlaveView):
 
     schema_type = None
 
-    def __init__(self):
-        self.schema = self.schema_type()
-        self.proxies = ProxyGroup()
-        SlaveView.__init__(self)
-        for name, element in self.schema.items():
-            self._setup_widget(name, element)
+    def create_ui(self):
+        self.form = FieldSet(self, self.schema_type)
+        self.widget.pack_start(self.form.layout_as_table())
 
-    def _setup_widget(self, name, element):
-        widget = getattr(self, name, None)
-        if widget is None:
-            widget = widget_for(element)
-            setattr(self, name, widget)
-        self.proxies.add_proxy_for(name, widget)
-
-    def on_proxies__changed(self, group, proxy, name, value):
-        self.schema[name].set(value)
 
 
 class WidgetBuilder(object):
@@ -80,6 +124,85 @@ class WidgetBuilder(object):
 
     def __call__(self, element):
         return self.widget_type()
+
+
+class ElementBuilder(object):
+
+    default_style = None
+
+    styles = {}
+
+    def __call__(self, element):
+        options = getattr(element, 'render_options', {})
+        style = options.get('style', self.default_style)
+        widget_type = self.styles.get(style)
+        if widget_type is None:
+            raise NotImplementedError(element)
+        widget = widget_type()
+        return self.build(widget, style, element, options)
+
+    def build(self, widget, style, element, options):
+        raise NotImplementedError
+
+
+class BooleanBuilder(ElementBuilder):
+
+    default_style = 'check'
+
+    styles = {
+        'check': gtk.CheckButton,
+        'toggle': gtk.ToggleButton
+    }
+
+    def build(self, widget, style, element, options):
+        if style == 'toggle':
+            widget.connect('toggled', self._on_toggle_toggled)
+            widget.set_use_stock(True)
+            self._on_toggle_toggled(widget)
+        return widget
+
+    def _on_toggle_toggled(self, toggle):
+        if toggle.get_active():
+            toggle.set_label(gtk.STOCK_YES)
+        else:
+            toggle.set_label(gtk.STOCK_NO)
+
+
+class StringBuilder(ElementBuilder):
+
+    default_style = 'uniline'
+
+    styles = {
+        'uniline': gtk.Entry,
+        'multiline': gtk.TextView,
+    }
+
+    def build(self, widget, style, element, options):
+        if style == 'multiline':
+            widget.set_size_request(-1, 100)
+        return widget
+
+
+class IntegerBuilder(ElementBuilder):
+
+    default_style = 'spin'
+
+    styles = {
+        'spin': gtk.SpinButton,
+        'slider': gtk.HScale,
+    }
+
+    def build(self, widget, style, element, options):
+        widget.set_digits(0)
+        adj = widget.get_adjustment()
+        min, max = -sys.maxint, sys.maxint
+        for v in element.validators:
+            if hasattr(v, 'minimum'):
+                min = v.minimum
+            elif hasattr(v, 'maximum'):
+                max = v.maximum
+        adj.set_all(min, min, max, 1.0, 10.0)
+        return widget
 
 
 VIEW_ENTRY = 'entry'
@@ -102,9 +225,9 @@ element_views = {
 
 #: map of view types to flatland element types
 view_widgets = {
-    VIEW_ENTRY: WidgetBuilder(gtk.Entry),
-    VIEW_NUMBER: WidgetBuilder(gtk.SpinButton),
-    VIEW_CHECK: WidgetBuilder(gtk.CheckButton),
+    VIEW_ENTRY: StringBuilder(),
+    VIEW_NUMBER: IntegerBuilder(),
+    VIEW_CHECK: BooleanBuilder(),
 }
 
 

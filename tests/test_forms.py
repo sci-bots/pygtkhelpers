@@ -29,7 +29,7 @@ def test_form_fields():
 
 def test_form_field_value_changed():
     f = PersonForm()
-    check = CheckCalled(f.proxies, 'changed')
+    check = CheckCalled(f.form.proxies, 'changed')
     f.name.set_text('hello')
     assert check.called[2] == 'name'
     assert check.called[3] == 'hello'
@@ -37,17 +37,17 @@ def test_form_field_value_changed():
 
 def test_update_schema_value():
     f = PersonForm()
-    assert f.schema['name'].value == None
+    assert f.form.schema['name'].value == None
     f.name.set_text('hello')
-    assert f.schema['name'].value == 'hello'
+    assert f.form.schema['name'].value == 'hello'
 
 
 def test_update_schema_value_typed():
     f = PersonForm()
-    assert f.schema['friendly'].value == None
+    assert f.form.schema['friendly'].value == None
     f.friendly.set_active(True)
-    assert f.schema['friendly'].value == True
+    assert f.form.schema['friendly'].value == True
     f.friendly.set_active(False)
-    assert f.schema['friendly'].value == False
+    assert f.form.schema['friendly'].value == False
 
 

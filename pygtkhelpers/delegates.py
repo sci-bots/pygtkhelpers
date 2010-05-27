@@ -236,11 +236,18 @@ class SlaveView(BaseDelegate):
         if toplevel is None:
             toplevel = get_first_builder_window(builder).child
         if toplevel is not None:
-            toplevel.unparent()
+            toplevel.get_parent().remove(toplevel)
         return toplevel
 
     def create_default_toplevel(self):
         return gtk.VBox()
+
+    def show_and_run(self):
+        """Show the main widget in a window and run the gtk loop"""
+        self.display_widget = gtk.Window()
+        self.display_widget.add(self.widget)
+        self.display_widget.show()
+        BaseDelegate.show_and_run(self)
 
 class ToplevelView(BaseDelegate):
     """A View that is a toplevel widget"""
