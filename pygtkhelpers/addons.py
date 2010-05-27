@@ -66,14 +66,14 @@ class GObjectPlugin(object):
     #: The default addon name for instances of this addon
     addon_name = None
 
-    def __init__(self, widget, addon_name=None):
+    def __init__(self, widget, addon_name=None, **kw):
         self.widget = widget
         self.addon_name = addon_name or self.addon_name
         if self.addon_name is None:
             raise ValueError('addon_name must be set.')
-        self.configure()
+        self.configure(**kw)
 
-    def configure(self):
+    def configure(self, **kw):
         """Configure and initialise the addon
 
         For overriding in implementations.
