@@ -37,6 +37,7 @@ def apply_addons(widget, *addon_types, **named_addon_types):
     for name, addon_type in named_addon_types.items():
         apply_addon(widget, addon_type, addon_name=name)
 
+
 def apply_addon(widget, addon_type, **kw):
     """Apply a single addon to a widget
 

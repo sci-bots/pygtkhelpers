@@ -21,12 +21,14 @@ def test_addon_apply():
     assert w.get_label() == gtk.STOCK_OK
     assert w.get_use_stock()
 
+
 def test_named_addon_apply():
     w = gtk.Button()
     apply_addons(w, dummy=OkButtonPlugin)
     assert w.addons.dummy
     assert w.get_label() == gtk.STOCK_OK
     assert w.get_use_stock()
+
 
 def test_named_multiple_addons_apply():
     w = gtk.Button()
