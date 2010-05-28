@@ -23,7 +23,7 @@ class PersonForm(SlaveView):
         self.lastname_entry.set_text('')
         self.email_entry.set_text('')
 
-    def on_model_set(self):
+    def model_set(self):
         if self.model:
             self.firstname_entry.set_text(self.model.name)
             self.lastname_entry.set_text(self.model.surname)
