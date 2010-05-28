@@ -99,7 +99,7 @@ def test_update(proxy, value):
 
 def test_update_and_read(proxy, value):
     proxy.update(value)
-    refresh_gui()
+    refresh_gui(wait=0.1, delay=0.1)
     data = proxy.read()
     assert data == value
 
