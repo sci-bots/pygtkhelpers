@@ -19,13 +19,12 @@ def test_info():
 def test_filechooser_open(tmpdir):
     filename = str(tmpdir.ensure('somefile.txt'))
     def before_run(dialog):
+        dialog.set_current_folder(str(tmpdir))
         def idle_fun():
-            dialog.emit('response', gtk.RESPONSE_OK)
-            dialog.set_filename(filename)
             dialog.response(gtk.RESPONSE_OK)
-            dialog.hide()
-            dialog.response(gtk.RESPONSE_OK)
-
+            assert dialog.select_filename(filename)
+            #dialog.set_file(filename
+            dialog.get_action_area().get_children()[0].emit('clicked')
         glib.idle_add(idle_fun)
 
     res = open(_before_run=before_run)
