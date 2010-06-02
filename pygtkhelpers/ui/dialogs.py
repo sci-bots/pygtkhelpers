@@ -217,8 +217,11 @@ yesno = partial(simple, gtk.MESSAGE_WARNING,
                 buttons=gtk.BUTTONS_YES_NO,)
 
 
-def open(title='Open', parent=None, patterns=None,
-         folder=None, filter=None, _before_run=None):
+
+def open_filechooser(
+    title, parent=None, patterns=None,
+    folder=None, filter=None, _before_run=None,
+    action=None):
     """an open dialog
     :param parent: window or None
     :param patterns: file match patterns
@@ -229,10 +232,10 @@ def open(title='Open', parent=None, patterns=None,
     """
 
     assert not (patterns and filter)
-
+    assert action is not None
     filechooser = gtk.FileChooserDialog(title,
                                         parent,
-                                        gtk.FILE_CHOOSER_ACTION_OPEN,
+                                        action,
                                         (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                          gtk.STOCK_OPEN, gtk.RESPONSE_OK))
     if patterns or filter:
@@ -250,10 +253,12 @@ def open(title='Open', parent=None, patterns=None,
         if _before_run is not None:
             _before_run(filechooser)
         response = filechooser.run()
-        if response != gtk.RESPONSE_OK:
+        print gtk.ResponseType(response)
+        if response not in (gtk.RESPONSE_OK, gtk.RESPONSE_NONE):
             return
 
         path = filechooser.get_filename()
+        print path
         if path and os.access(path, os.R_OK):
             return path
 
@@ -261,6 +266,13 @@ def open(title='Open', parent=None, patterns=None,
         _destroy(filechooser)
 
 
+open = partial(open_filechooser,
+               title='Open',
+               action=gtk.FILE_CHOOSER_ACTION_OPEN)
+
+select_folder = partial(open_filechooser,
+                        title='Select folder',
+                        action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER)
 
 def ask_overwrite(filename, parent=None, **kw):
     submsg1 = 'A file named "%s" already exists' % os.path.abspath(filename)
