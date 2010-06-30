@@ -323,3 +323,38 @@ def save(title='Save', parent=None, current_name='', folder=None,
     _destroy(filechooser)
     return path
 
+
+
+def input(title, value=None, label=None, parent=None, _before_run=None):
+    d = gtk.Dialog(
+        title=title,
+        buttons=button_types[gtk.BUTTONS_OK_CANCEL]
+    )
+
+    e = gtk.Entry()
+    if value:
+        e.set_text(value)
+
+    if label is None:
+        e.show()
+        d.vbox.pack_start(e)
+    else:
+        hbox = gtk.HBox()
+        hbox.set_spacing(6)
+        hbox.set_border_width(6)
+        hbox.add(gtk.Label(label))
+        hbox.add(e)
+        hbox.show_all()
+        d.vbox.add(hbox)
+
+    if parent:
+        d.set_transient_for(parent)
+
+    if _before_run:
+        _before_run(d)
+    r = d.run()
+    res = e.get_text()
+    d.hide()
+    d.destroy()
+    if r == gtk.RESPONSE_OK:
+        return res
