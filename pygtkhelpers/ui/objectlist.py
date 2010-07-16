@@ -26,7 +26,8 @@ class PropertyMapper(object):
         self.format = (attr is None) and (cell.format or cell.format_func)
 
     def __call__(self, cell, obj, renderer):
-        value = getattr(obj, self.attr or cell.attr)
+        attr = self.attr or cell.attr
+        value = obj if attr is None else getattr(obj, attr)
         if self.format:
             value = self.cell.format_data(value)
         renderer.set_property(self.prop, value)
@@ -187,7 +188,6 @@ class Column(object):
 
         #XXX: better error messages
         assert title or attr, "Columns need a title or an attribute to infer it"
-        assert attr or 'cells' in kwargs, 'Columns need a attribute or a set of cells'
 
         self.title = title or attr.capitalize()
         self.attr = attr
@@ -826,6 +826,7 @@ class EditableCellMixin(object):
     def _on_edited(self, cellrenderer, path, text):
         obj = self.objectlist[path]
         #XXX: full converter
+        #XXX: breaks if attr is None
         value = self.cell.type(text)
         setattr(obj, self.cell.attr, value)
         self.objectlist.emit('item-changed', obj, self.cell.attr, value)
