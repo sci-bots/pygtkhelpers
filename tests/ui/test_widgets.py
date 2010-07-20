@@ -121,12 +121,12 @@ def test_attrsortcombo_with_objectlist():
 def test_empty_text_filler(etf):
     etf, e = etf
     etf.grab_focus()
-    refresh_gui()
+    refresh_gui(0.1, 0.1)
     e.grab_focus()
-    refresh_gui()
+    refresh_gui(0.1, 0.1)
     assert etf.get_buffer().props.text == 'enter something'
     assert etf.addons.empty_filler.empty
     etf.grab_focus()
-    refresh_gui()
+    refresh_gui(0.1, 0.1)
     assert etf.get_buffer().props.text == ''
 
