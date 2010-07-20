@@ -11,8 +11,10 @@
 """
 
 import gtk
+from pango import STYLE_ITALIC
 
 from pygtkhelpers.utils import gsignal
+from pygtkhelpers.addons import GObjectPlugin
 
 
 class StringList(gtk.VBox):
@@ -178,4 +180,50 @@ def _attr_sort_func(model, iter1, iter2 , attribute):
     attr1 = getattr(model[iter1][0], attribute, None)
     attr2 = getattr(model[iter2][0], attribute, None)
     return cmp(attr1, attr2)
+
+
+class EmptyTextViewFiller(GObjectPlugin):
+    """Fill empty text views with some default text
+
+    This does it's stuff on focus-in and focus-out, because that feels most
+    natural.
+
+    :param empty_text: The text to use.
+
+    TODO:
+        Allow options for text formatting to be passed
+    """
+
+    addon_name = 'empty_filler'
+
+    def configure(self, empty_text):
+        self.empty = False
+        self.empty_text = empty_text
+        self.buffer = self.widget.get_buffer()
+        self.buffer.create_tag('empty-text', foreground='#666',
+                                style=STYLE_ITALIC)
+        self.widget.connect('focus-in-event', self._on_view_focus_in)
+        self.widget.connect('focus-out-event', self._on_view_focus_out)
+
+    def _on_view_focus_in(self, view, event):
+        if self.empty:
+            self.set_empty()
+
+    def _on_view_focus_out(self, view, event):
+        self.empty = not len(self.buffer.props.text)
+        if self.empty:
+            self.set_empty_text()
+
+    def set_empty(self):
+        """Display a bank text view
+        """
+        self.buffer.props.text = ''
+
+    def set_empty_text(self):
+        """Display the empty text
+        """
+        self.buffer.insert_with_tags_by_name(
+            self.buffer.get_start_iter(),
+            self.empty_text, 'empty-text')
+
 

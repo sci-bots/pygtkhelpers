@@ -1,11 +1,25 @@
 from py.test import importorskip
 import gtk
 from pygtkhelpers.utils import refresh_gui
-from pygtkhelpers.ui.widgets import StringList, AttrSortCombo
+from pygtkhelpers.ui.widgets import StringList, AttrSortCombo, \
+    EmptyTextViewFiller
+from pygtkhelpers.addons import apply_addon
 from pygtkhelpers.ui.objectlist import ObjectList
 
 def pytest_funcarg__pl(request):
     return StringList()
+
+def pytest_funcarg__etf(request):
+    etf = gtk.TextView()
+    apply_addon(etf, EmptyTextViewFiller, empty_text='enter something')
+    w = gtk.Window()
+    v = gtk.VBox()
+    w.add(v)
+    e = gtk.Entry()
+    v.add(e)
+    v.add(etf)
+    w.show()
+    return etf, e
 
 def test_proxy_stringlist_create():
     pl = StringList()
@@ -102,4 +116,17 @@ def test_attrsortcombo_with_objectlist():
     sort._order_button.set_active(True)
     name, order = ol.sort_by.call_args[0]
     assert order == gtk.SORT_DESCENDING
+
+
+def test_empty_text_filler(etf):
+    etf, e = etf
+    etf.grab_focus()
+    refresh_gui()
+    e.grab_focus()
+    refresh_gui()
+    assert etf.get_buffer().props.text == 'enter something'
+    assert etf.addons.empty_filler.empty
+    etf.grab_focus()
+    refresh_gui()
+    assert etf.get_buffer().props.text == ''
 
