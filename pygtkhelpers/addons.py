@@ -32,10 +32,10 @@ def apply_addons(widget, *addon_types, **named_addon_types):
     withe standard attribute access.
     """
     for addon_type in addon_types:
-        apply_addon(widget, addon_type)
+        addon_type(widget)
 
     for name, addon_type in named_addon_types.items():
-        apply_addon(widget, addon_type, addon_name=name)
+        addon_type(widget, addon_name=name)
 
 
 def apply_addon(widget, addon_type, **kw):
@@ -44,11 +44,7 @@ def apply_addon(widget, addon_type, **kw):
     :param widget: The widget to apply the addon to.
     :param kw: A dict of keyword arguments to be passed to the addon
     """
-    if not hasattr(widget, 'addons'):
-        widget.addons = GObjectUserDataProxy(widget)
-
-    addon = addon_type(widget, **kw)
-    setattr(widget.addons, addon.addon_name, addon)
+    return addon_type(widget, **kw)
 
 
 class GObjectPlugin(object):
@@ -72,6 +68,9 @@ class GObjectPlugin(object):
         self.addon_name = addon_name or self.addon_name
         if self.addon_name is None:
             raise ValueError('addon_name must be set.')
+        if not hasattr(widget, 'addons'):
+            widget.addons = GObjectUserDataProxy(widget)
+        setattr(widget.addons, self.addon_name, self)
         self.configure(**kw)
 
     def configure(self, **kw):

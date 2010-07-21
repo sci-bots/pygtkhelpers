@@ -69,7 +69,7 @@ class Field(object):
 
 
 
-
+# XXX AA: Needs splitting into view component, and controller component
 class FieldSet(object):
 
     def __init__(self, delegate, schema_type):
