@@ -196,14 +196,16 @@ class EmptyTextViewFiller(GObjectPlugin):
 
     addon_name = 'empty_filler'
 
-    def configure(self, empty_text):
-        self.empty = False
+    def configure(self, empty_text='Enter text'):
         self.empty_text = empty_text
         self.buffer = self.widget.get_buffer()
+        self.empty = not len(self.buffer.props.text)
         self.buffer.create_tag('empty-text', foreground='#666',
                                 style=STYLE_ITALIC)
         self.widget.connect('focus-in-event', self._on_view_focus_in)
         self.widget.connect('focus-out-event', self._on_view_focus_out)
+        if self.empty:
+            self.set_empty_text()
 
     def _on_view_focus_in(self, view, event):
         if self.empty:
