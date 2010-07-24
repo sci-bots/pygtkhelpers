@@ -29,7 +29,7 @@ component. The type of View you subclass depends on whether the view is a
 top-level widget (Window, Dialog, ...) or a slave widget, which can be placed
 inside other widgets. The available delegate types are
 :class:`~pygtkhelpers.delegates.SlaveView` and
-`~pygtkhelpers.delegates.WindowView`:
+:class:`~pygtkhelpers.delegates.WindowView`:
 
 .. literalinclude:: ../examples/manual/d1.py
 
