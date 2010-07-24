@@ -5,7 +5,7 @@ import gtk
 from pygtkhelpers.delegates import WindowView
 
 class UserView(WindowView):
-    """The user interface for my user management ogram"""
+    """The user interface for my user management program"""
     def create_ui(self):
         """Create the user interface
 
