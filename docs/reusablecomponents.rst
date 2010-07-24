@@ -33,7 +33,7 @@ inside other widgets. The available delegate types are
 
 .. literalinclude:: ../examples/manual/d1.py
 
-I just shows a toplevel Window, with no widgets inside. We are going to leave
+It just shows a toplevel Window, with no widgets inside. We are going to leave
 that like that, and create a component to go inside. Remember *reusable
 components*, there is no point putting UI straight into the Window, although
 you could do that, and pygtkhelpers won't stop you:
