@@ -222,13 +222,14 @@ def open_filechooser(
     title, parent=None, patterns=None,
     folder=None, filter=None, _before_run=None,
     action=None):
-    """an open dialog
+    """An open dialog.
+
     :param parent: window or None
     :param patterns: file match patterns
     :param folder: initial folder
     :param filter: file filter
 
-    use of filter and patterns at the same time is invalid
+    Use of filter and patterns at the same time is invalid.
     """
 
     assert not (patterns and filter)
