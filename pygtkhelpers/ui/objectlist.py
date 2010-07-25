@@ -823,7 +823,7 @@ class EditableCellMixin(object):
             self.connect('edited', self._on_edited)
 
     def _on_edited(self, cellrenderer, path, text):
-        obj = self.objectlist[path]
+        obj = self.objectlist._object_at_sort_path(path)
         #XXX: full converter
         #XXX: breaks if attr is None
         value = self.cell.type(text)
@@ -863,7 +863,7 @@ class CellRendererSpin(EditableCellMixin, gtk.CellRendererSpin):
 
 
     def _on_edited(self, cellrenderer, path, text):
-        obj = self.objectlist[path]
+        obj = self.objectlist._object_at_sort_path(path)
         #XXX: full converter
         value = self.cell.type(text)
         setattr(obj, self.cell.attr, value)
@@ -882,7 +882,7 @@ class CellRendererToggle(gtk.CellRendererToggle):
             self.connect('toggled', self._on_toggled)
 
     def _on_toggled(self, cellrenderer, path):
-        obj = self.objectlist._object_at_path(path)
+        obj = self.objectlist._object_at_sort_path(path)
         value = not getattr(obj, self.cell.attr)
         setattr(obj, self.cell.attr, value)
         self.objectlist.emit('item-changed', obj, self.cell.attr, value)
