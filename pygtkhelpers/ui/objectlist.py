@@ -276,10 +276,9 @@ class Column(object):
         return True
 
     def _default_sort_func(self, model, iter1, iter2, objectlist):
-        attr1 = getattr(objectlist._object_at_child_sort_iter(iter1),
-                        self.attr, None)
-        attr2 = getattr(objectlist._object_at_child_sort_iter(iter2),
-                        self.attr, None)
+        assert model is objectlist.model_filter  # the filtermodel gets sorted
+        attr1 = getattr(model[iter1][0], self.attr, None)
+        attr2 = getattr(model[iter2][0], self.attr, None)
         if self.sort_key:
             attr1 = self.sort_key(attr1)
             attr1 = self.sort_key(attr2)
