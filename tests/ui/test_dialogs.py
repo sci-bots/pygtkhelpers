@@ -15,7 +15,6 @@ def with_response(response, starter, *k, **kw):
 def test_info():
     with_response(1, info, 'hi')
 
-@py.test.mark.xfail(reason='no idea how to argument filechooser dialog')
 def test_filechooser_open(tmpdir):
     filename = str(tmpdir.ensure('somefile.txt'))
     def before_run(dialog):
