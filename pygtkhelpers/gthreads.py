@@ -6,6 +6,11 @@
 
     Helpers for integration of aysnchronous behaviour in PyGTK.
 
+    .. warning::
+
+        in order to get well-behaved threading, run :function:`initial_setup` 
+        as early as possible (befor doing any gui operations
+
     :copyright: 2005-2010 by pygtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
@@ -17,6 +22,17 @@ import Queue as queue
 import subprocess
 import gobject
 import time
+
+def initial_setup():
+    """
+    * set up gdk threading
+    * enter it
+    * set up glib mainloop threading
+    """
+    from gtk import gdk
+    gdk.threads_init()
+    gdk.threads_enter()
+    gobject.threads_init() #the glib mainloop doesn't love us else
 
 
 class AsyncTask(object):
@@ -46,7 +62,6 @@ class AsyncTask(object):
     """
     def __init__(self, work_callback=None, loop_callback=None, daemon=True):
         self.counter = 0
-        gobject.threads_init() #the glib mainloop doesn't love us else
         self.daemon = daemon
 
         if work_callback is not None:
