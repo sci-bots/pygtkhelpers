@@ -117,6 +117,24 @@ def test_deselect(items, user):
     items.selected_item = None
     refresh_gui()
 
+def test_deselect_multiple(items, user, user2):
+    listing = [user, user2]
+    items.extend(listing)
+    items.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
+    items.selected_items = listing
+    refresh_gui()
+    assert items.selected_items == listing
+    items.selected_items = []
+    refresh_gui()
+    assert items.selected_items == []
+
+    items.selected_items = listing
+    refresh_gui()
+    assert items.selected_items == listing
+    items.selected_items = None
+    refresh_gui()
+    assert items.selected_items == []
+
 def test_remove_missing(items, user):
     py.test.raises(ValueError, items.remove, user)
 

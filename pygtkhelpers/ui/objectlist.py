@@ -442,6 +442,9 @@ class ObjectTreeViewBase(gtk.TreeView):
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_MULTIPLE:
             raise AttributeError('selected_items only valid for select_multiple')
+        selection.unselect_all()
+        if new_selection is None:
+            new_selection = ()
         for item in new_selection:
             selection.select_iter(self._sort_iter_for(item))
 
