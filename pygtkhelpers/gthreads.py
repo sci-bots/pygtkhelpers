@@ -16,12 +16,15 @@
 """
 
 
-import os
+from __future__ import with_statement
 import threading, thread
 import Queue as queue
 import subprocess
 import gobject
 import time
+import sys
+from gtk import gdk
+
 
 def initial_setup():
     """
@@ -29,7 +32,6 @@ def initial_setup():
     * enter it
     * set up glib mainloop threading
     """
-    from gtk import gdk
     gdk.threads_init()
     gdk.threads_enter()
     gobject.threads_init() #the glib mainloop doesn't love us else
@@ -104,8 +106,8 @@ class AsyncTask(object):
             ret = ()
         if not isinstance(ret, tuple):
             ret = (ret,)
-
-        self.loop_callback(*ret)
+        with gdk.lock:
+            self.loop_callback(*ret)
 
 
 class GeneratorTask(AsyncTask):
@@ -156,6 +158,9 @@ class GeneratorTask(AsyncTask):
             gobject.idle_add(self._loop_callback, (counter, ret),
                              priority=self.priority)
         if self._complete_callback is not None:
+            def idle(callback=self._complete_callback):
+                with gdk.lock:
+                    callback()
             gobject.idle_add(self._complete_callback,
                              priority=self.priority)
 
@@ -176,7 +181,10 @@ def gcall(func, *args, **kwargs):
     If this call would be made in a thread there could be problems, using
     it inside Gtk's main loop makes it thread safe.
     """
-    return gobject.idle_add(lambda: (func(*args, **kwargs) or False))
+    def idle():
+        with gdk.lock:
+            return bool(func(*args, **kwargs))
+    return gobject.idle_add(idle)
 
 
 def invoke_in_mainloop(func, *args, **kwargs):
@@ -184,7 +192,8 @@ def invoke_in_mainloop(func, *args, **kwargs):
     invoke a function in the mainloop, pass the data back
     """
     results = queue.Queue()
-
+    
+    @gcall
     def run():
         try:
             data = func(*args, **kwargs)
@@ -192,15 +201,13 @@ def invoke_in_mainloop(func, *args, **kwargs):
             results.put(None)
         except BaseException, e: #XXX: handle
             results.put(None)
-            results.put(e)
+            results.put(sys.exc_info())
             raise
 
-    gcall(run)
-
     data = results.get()
-    exception = results.get()
+    tp, val, tb = results.get()
 
     if exception is None:
         return data
     else:
-        raise exception
+        raise tp, val, tb

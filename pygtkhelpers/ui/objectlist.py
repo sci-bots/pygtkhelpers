@@ -409,12 +409,16 @@ class ObjectTreeViewBase(gtk.TreeView):
             return self._object_at_sort_iter(selected)
 
     def _set_selected_item(self, item):
+
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
-        giter = self._sort_iter_for(item)
-        selection.select_iter(giter)
-        self.set_cursor(self._path_for(item))
+        if item is None:
+            selection.unselect_all()
+        else:
+            giter = self._sort_iter_for(item)
+            selection.select_iter(giter)
+            self.set_cursor(self._path_for(item))
 
     selected_item = property(
             fget=_get_selected_item,
