@@ -72,7 +72,7 @@ class BaseDelegate(gobject.GObject):
     # (attribute, value)
     gsignal('model-updated', object, object) # one should emit that when changing the models
 
-    def __init__(self):
+    def __init__(self, model=None):
         gobject.GObject.__init__(self)
         self._props = {}
         self._toplevel = None
@@ -81,9 +81,11 @@ class BaseDelegate(gobject.GObject):
         if self._toplevel is None:
             self._toplevel = self.create_default_toplevel()
         self.widget = self._toplevel
+        self.model = model
         self.create_ui()
         self._connect_signals()
-        self.model = None
+        #re-set the model to emit the signal XXX: potentially confusing
+        self.model = self.model
 
     # Public API
     def get_builder_toplevel(self, builder):
