@@ -108,7 +108,8 @@ class BaseDelegate(gobject.GObject):
     def model_set(self):
         """This method is called when the model is changed
         """
-    def add_slave(self, slave, container_name):
+
+    def add_slave(self, slave, container_name="widget"):
         """Add a slave delegate
         """
         cont = getattr(self, container_name, None)
