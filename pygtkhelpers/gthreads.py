@@ -63,6 +63,7 @@ class AsyncTask(object):
     should stick code that affects the UI.
     """
     def __init__(self, work_callback=None, loop_callback=None, daemon=True):
+        gobject.threads_init() #the glib mainloop doesn't love us else
         self.counter = 0
         self.daemon = daemon
 
