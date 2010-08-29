@@ -40,18 +40,18 @@ def initial_setup():
 class AsyncTask(object):
     """Perform lengthy tasks without delaying the UI loop cycle.
 
-    AsyncTasks removes the boilerplate of deferring a task to a thread and
-    receiving intermittent feedback from the thread. It Handles creating and
+    AsyncTask removes the boilerplate of deferring a task to a thread and
+    receiving intermittent feedback from the thread. It handles creating and
     starting a thread for the task, and forcing any user interface calls to be
     pushed to the GTK main loop from the thread, thus ensuring against
-    insanity which invariably ensues if this precaustion is not taken.
+    insanity which invariably ensues if this precaution is not taken.
 
     It is also assumed that each action that the async worker performs cancels
     the old one (if it's still working), thus there's no problem when the task
     takes too long.  You can either extend this class or pass two callable
     objects through its constructor.
 
-    The first on is the 'work_callback' this is where the lengthy
+    The first one is the 'work_callback' this is where the lengthy
     operation must be performed. This object may return an object or a group
     of objects, these will be passed onto the second callback 'loop_callback'.
     You must be aware on how the argument passing is done. If you return an
@@ -73,7 +73,7 @@ class AsyncTask(object):
             self.loop_callback = loop_callback
 
     def start(self, *args, **kwargs):
-        """Start the task
+        """Start the task.
 
         This is:
             * not threadsave
@@ -113,7 +113,7 @@ class AsyncTask(object):
 
 class GeneratorTask(AsyncTask):
     """
-    The diference between this task and AsyncTask
+    The difference between this task and AsyncTask
     is that the `work` callback returns a generator.
     For each value the generator yields
     the `loop` callback is called inside Gtk+'s main loop.
@@ -190,7 +190,7 @@ def gcall(func, *args, **kwargs):
 
 def invoke_in_mainloop(func, *args, **kwargs):
     """
-    invoke a function in the mainloop, pass the data back
+    Invoke a function in the mainloop, pass the data back.
     """
     results = queue.Queue()
     

@@ -132,7 +132,7 @@ pygtkhelpers Delegate. As long as the item has been set as an attribute on the
 delegate by the end of the create_ui method, it can be connected in this way.
 
 Pygtkhelpers has a utility function for helping to define signals for GObject
-isntances: :func:`~pygtkhelprs.utils.gsignal`. This can be used on any widget
+instances: :func:`~pygtkhelprs.utils.gsignal`. This can be used on any widget
 subclass, or delegate.
 
 The following example illustrates two delegates, one receiving signals from
