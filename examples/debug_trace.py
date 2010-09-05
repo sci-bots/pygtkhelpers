@@ -1,6 +1,6 @@
 import gtk
 
-from pygtkhelpers.debug import ExtendedExceptionDialog, install_hook
+from pygtkhelpers.debug import install_hook
 
 
 def _test2(*a):
@@ -13,7 +13,7 @@ def _test(*a):
     x()
 
 def _main():
-    install_hook(ExtendedExceptionDialog)
+    install_hook(invoke_old_hook=True)
     w = gtk.Window()
     w.set_title('test')
     w.set_size_request(100,100)

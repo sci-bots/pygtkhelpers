@@ -15,6 +15,7 @@ from cgi import escape
 
 import gtk
 import gobject
+from pygtkhelpers.ui.objectlist import ObjectList, Column
 
 
 def scrolled(widget, shadow=gtk.SHADOW_NONE):
@@ -51,7 +52,7 @@ class SimpleExceptionDialog(gtk.MessageDialog):
 
         expander = gtk.Expander("Exception Details")
         self.vbox.pack_start(expander)
-        expander.add(self.get_trace_view(exc, tb))
+        expander.add(scrolled(self.get_trace_view(exc, tb)))
 
         #XXX: add additional buttons for pastebin/bugreport
 
@@ -59,59 +60,52 @@ class SimpleExceptionDialog(gtk.MessageDialog):
 
 
     def get_trace_view(self, exc, tb):
-        text = traceback.format_exception(type(exc), exc, tb)
-        textview = gtk.TextView()
-        textview.get_buffer().set_text(''.join(text))
-        return scrolled(textview)
+        olist = ObjectList([Column('markup', use_markup=True)])
+        olist.set_headers_visible(False)
+
+        while tb is not None:
+            olist.append(TracebackEntry(tb))
+            tb = tb.tb_next
+        return olist
+
+
+class TracebackEntry(object):
+    format = ('File <span color="darkgreen">{filename}</span>,'
+              ' line <span color="blue"><i>{lineno}</i></span>'
+              ' in <i>{name}</i>\n'
+              '  {line}')
+
+    def __init__(self, tb):
+        self.frame = tb.tb_frame
+        self.lineno = tb.tb_lineno
+        self.code = self.frame.f_code
+        self.filename = self.code.co_filename
+        self.name = self.code.co_name
+        linecache.checkcache(self.filename)
+        line = linecache.getline(self.filename,
+                                 self.lineno,
+                                 self.frame.f_globals)
+        self.line = line.strip() if line else None
+
+    @property
+    def markup(self):
+        return self.format.format(
+            filename=escape(self.filename),
+            lineno=self.lineno,
+            name=escape(self.name),
+            line=escape(self.line),
+        )
 
 
 
-def extract_tb(tb, limit=None):
-    if limit is None and hasattr(sys, 'tracebacklimit'):
-        limit = sys.tracebacklimit
-    assert limit is None or limit>0
 
-    while tb is not None and (limit is None or limit >0):
-        frame = tb.tb_frame
-        lineno = tb.tb_lineno
-        code = frame.f_code
-        filename = code.co_filename
-        name = code.co_name
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, frame.f_globals)
-        line = line.strip() if line else None
-        yield filename, lineno, name, line, frame
-        tb = tb.tb_next
+_old_hook = None
 
-
-class ExtendedExceptionDialog(SimpleExceptionDialog):
-    format = ('File <span color="darkgreen">%r</span>,'
-              ' line <span color="blue"><i>%d</i></span> in <i>%s</i>\n'
-              '  %s')
-    def get_trace_view(self, exc, tb):
-        store = gtk.ListStore(str, int, str, str, object)
-        for item in extract_tb(tb):
-            store.append(item)
-
-        view = gtk.TreeView(model=store)
-        view.set_headers_visible(False)
-        cell = gtk.CellRendererText()
-        column = gtk.TreeViewColumn('Pango Markup', cell, markup=0)
-        view.append_column(column)
-        column.set_cell_data_func(cell, self.data_func)
-        return view
-
-    def data_func(self, column, cell, model, iter):
-        filename = escape(model.get_value(iter, 0))
-        lineno = model.get_value(iter, 1)
-        name = escape(model.get_value(iter, 2))
-        line = escape(model.get_value(iter, 3))
-
-        text = self.format%(filename, lineno, name, line)
-        cell.set_property('markup', text)
-
-
-_hook_installed = False
+def dialog_handler(dialog, etype, eval, trace, extra):
+    if etype not in (KeyboardInterrupt, SystemExit):
+        d = dialog(eval, trace, **extra)
+        d.run()
+        d.destroy()
 
 def install_hook(
         dialog=SimpleExceptionDialog,
@@ -125,19 +119,20 @@ def install_hook(
     :oparam dialog: a different exception dialog class
     :oparam invoke_old_hook: should we invoke the old exception hook?
     """
-    global _hook_installed
-    old_hook = sys.excepthook
+    global _old_hook
+    assert _old_hook is None
 
     def new_hook(etype, eval, trace):
-        def handler(etype, eval, trace):
-            if etype not in (KeyboardInterrupt, SystemExit):
-                d = dialog(eval, trace, **extra)
-                d.run()
-                d.destroy()
-        gobject.idle_add(handler, etype, eval, trace)
+        gobject.idle_add(dialog_handler, dialog, etype, eval, trace, extra)
         if invoke_old_hook:
-            old_hook(etype, eval, trace)
-    assert not _hook_installed
-    sys.excepthook = new_hook
-    _hook_installed = True
+            _old_hook(etype, eval, trace)
 
+    _old_hook = sys.excepthook
+    sys.excepthook = new_hook
+
+def uninstall_hook():
+    """
+    uninstall our hook
+    """
+    sys.excepthook = _old_hook
+    _old_hook = None
