@@ -232,6 +232,16 @@ class XFormatter(string.Formatter):
     """
     extended string formatter supporting xml entity escape
     """
+    def __init__(self, *args):
+        self.lookup_objects = args
+
+
+    def get_value(self, key, args, kwargs):
+        if isinstance(key, basestring):
+            for obj in self.lookup_objects:
+                if hasattr(obj, key):
+                    return getattr(obj, key)
+        return super(XFormatter, self).get_value(key, args, kwargs)
 
     def convert_field(self, value, conversion):
         if conversion == 'e':
@@ -239,8 +249,8 @@ class XFormatter(string.Formatter):
         return super(XFormatter, self).convert_field(value, conversion)
 
 
-def eformat(str, *k, **kw):
-    return XFormatter().vformat(str, k, kw)
+def eformat(format, *k, **kw):
+    return XFormatter().vformat(format, k, kw)
 
 class MarkupMixin(object):
     """
@@ -251,4 +261,4 @@ class MarkupMixin(object):
     format = None
     @property
     def markup(self):
-        return eformat(self.format, self=self)
+        return XFormatter(self).format(self.format)

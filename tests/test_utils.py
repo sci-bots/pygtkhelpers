@@ -85,7 +85,7 @@ def test_eformat():
 
 def test_markup_mixin():
     class Tested(MarkupMixin):
-        format = '{self.a} 1'
+        format = '{a} 1'
         a = 1
     instance = Tested()
 

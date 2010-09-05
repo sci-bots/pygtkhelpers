@@ -72,10 +72,10 @@ class SimpleExceptionDialog(gtk.MessageDialog):
 
 class TracebackEntry(MarkupMixin):
     format = (
-        'File <span color="darkgreen">{self.filename!e}</span>,'
-        ' line <span color="blue"><i>{self.lineno}</i></span>'
-        ' in <i>{self.name!e}</i>\n'
-        '  {self.line!e}'
+        'File <span color="darkgreen">{filename!e}</span>,'
+        ' line <span color="blue"><i>{lineno}</i></span>'
+        ' in <i>{name!e}</i>\n'
+        '  {line!e}'
     )
 
     def __init__(self, tb):
