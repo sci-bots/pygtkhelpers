@@ -12,9 +12,11 @@
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
-import sys, struct, time
+import sys, struct, time, string
 
 import gobject, gtk
+
+from cgi import escape as _xml_escape
 
 
 def gsignal(name, *args, **kwargs):
@@ -225,3 +227,28 @@ class GObjectUserDataProxy(object):
     def __delattr__(self, attr):
         self._widget.set_data(attr, None)
 
+
+class XFormatter(string.Formatter):
+    """
+    extended string formatter supporting xml entity escape
+    """
+
+    def convert_field(self, value, conversion):
+        if conversion == 'e':
+            return _xml_escape(value)
+        return super(XFormatter, self).convert_field(value, conversion)
+
+
+def eformat(str, *k, **kw):
+    return XFormatter().vformat(str, k, kw)
+
+class MarkupMixin(object):
+    """
+    adds a markup property based on eformat
+    using self.format as format string
+    and self=self as format args
+    """
+    format = None
+    @property
+    def markup(self):
+        return eformat(self.format, self=self)

@@ -2,7 +2,9 @@
 from py.test import raises as assert_raises
 import gobject, gtk
 
-from pygtkhelpers.utils import gsignal, gproperty, GObjectUserDataProxy
+from pygtkhelpers.utils import gsignal, gproperty, \
+        GObjectUserDataProxy, \
+        eformat, MarkupMixin
 
 from pygtkhelpers.delegates import BaseDelegate
 
@@ -76,3 +78,15 @@ def test_data_proxy_delete():
     del data.foo
     assert data.foo is None
 
+
+def test_eformat():
+    assert eformat('{self!e}', self='<') == '&lt;'
+
+
+def test_markup_mixin():
+    class Tested(MarkupMixin):
+        format = '{self.a} 1'
+        a = 1
+    instance = Tested()
+
+    assert instance.markup == '1 1'

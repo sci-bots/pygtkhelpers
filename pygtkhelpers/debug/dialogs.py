@@ -16,6 +16,7 @@ from cgi import escape
 import gtk
 import gobject
 from pygtkhelpers.ui.objectlist import ObjectList, Column
+from pygtkhelpers.utils import MarkupMixin
 
 
 def scrolled(widget, shadow=gtk.SHADOW_NONE):
@@ -69,11 +70,13 @@ class SimpleExceptionDialog(gtk.MessageDialog):
         return olist
 
 
-class TracebackEntry(object):
-    format = ('File <span color="darkgreen">{filename}</span>,'
-              ' line <span color="blue"><i>{lineno}</i></span>'
-              ' in <i>{name}</i>\n'
-              '  {line}')
+class TracebackEntry(MarkupMixin):
+    format = (
+        'File <span color="darkgreen">{self.filename!e}</span>,'
+        ' line <span color="blue"><i>{self.lineno}</i></span>'
+        ' in <i>{self.name!e}</i>\n'
+        '  {self.line!e}'
+    )
 
     def __init__(self, tb):
         self.frame = tb.tb_frame
@@ -86,17 +89,6 @@ class TracebackEntry(object):
                                  self.lineno,
                                  self.frame.f_globals)
         self.line = line.strip() if line else None
-
-    @property
-    def markup(self):
-        return self.format.format(
-            filename=escape(self.filename),
-            lineno=self.lineno,
-            name=escape(self.name),
-            line=escape(self.line),
-        )
-
-
 
 
 _old_hook = None
