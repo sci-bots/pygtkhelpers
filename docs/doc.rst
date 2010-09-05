@@ -11,7 +11,7 @@ Table of contents
    :maxdepth: 2
 
    reusablecomponents
-   api
+   api/index
 
 Indices and tables
 ==================

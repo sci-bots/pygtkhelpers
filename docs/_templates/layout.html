@@ -4,14 +4,14 @@
 
 {% block extrahead %}
     <link href='http://fonts.googleapis.com/css?family=OFL+Sorts+Mill+Goudy+TT' rel='stylesheet' type='text/css'>
-   <link href="_static/draco.css" rel="stylesheet" type="text/css" />
+    <link href="{{ pathto("_static/draco.css", 1) }}" rel="stylesheet" type="text/css" />
 {% endblock %}
 
 {% macro ribbon() %}
     <div class="ribbon">
         <div>
         <a href="http://bitbucket.org/aafshar/pygtkhelpers-main">
-            <img src="_static/bblogo.png" />
+          <img src="{{ pathto("_static/bblogo.png", 1) }}" />
         </a>
         </div>
         <div>
@@ -31,7 +31,7 @@
 
     <div class="banner">
         <a href="index.html">
-        <img src="_static/scope.jpg" alt="pygtkhelpers logo"></img>
+          <img src="{{ pathto("_static/scope.jpg", 1) }}" alt="pygtkhelpers logo"></img>
         <h1>
         PyGTKHelpers
         </h1>

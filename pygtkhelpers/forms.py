@@ -7,6 +7,9 @@
     Providing specialized delegates that can be used to map and validate
     against schemas. Validation and schema support is provided by Flatland_.
 
+
+    .. _Flatland: http://discorporate.us/projects/flatland/
+
     :copyright: 2005-2008 by pygtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
