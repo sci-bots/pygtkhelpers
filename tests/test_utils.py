@@ -94,6 +94,7 @@ def test_markup_mixin_obj():
 def test_markup_mixing_kwargs():
     class Tested(MarkupMixin):
         format = '{a} 1'
+        a = 2 # markup kwargs should override attributes
         def markup_kwargs(self):
             return {'a': '1'}
 

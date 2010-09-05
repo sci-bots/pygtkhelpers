@@ -237,11 +237,14 @@ class XFormatter(string.Formatter):
 
 
     def get_value(self, key, args, kwargs):
-        if isinstance(key, basestring):
-            for obj in self.lookup_objects:
-                if hasattr(obj, key):
-                    return getattr(obj, key)
-        return super(XFormatter, self).get_value(key, args, kwargs)
+        try:
+            return super(XFormatter, self).get_value(key, args, kwargs)
+        except LookupError:
+            if isinstance(key, basestring):
+                for obj in self.lookup_objects:
+                    if hasattr(obj, key):
+                        return getattr(obj, key)
+            raise # reraise the lookup error
 
     def convert_field(self, value, conversion):
         if conversion == 'e':
