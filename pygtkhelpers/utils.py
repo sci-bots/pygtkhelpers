@@ -232,8 +232,12 @@ class XFormatter(string.Formatter):
     """
     extended string formatter supporting xml entity escape
     """
-    def __init__(self, *args):
-        self.lookup_objects = args
+    def __init__(self, *lookup_objects, **extra_converters):
+        # add e as xml escape converter if the name is not used
+        if 'e' not in extra_converters:
+            extra_converters['e'] = _xml_escape
+        self.extra_converters = extra_converters
+        self.lookup_objects = lookup_objects
 
 
     def get_value(self, key, args, kwargs):
@@ -247,8 +251,8 @@ class XFormatter(string.Formatter):
             raise # reraise the lookup error
 
     def convert_field(self, value, conversion):
-        if conversion == 'e':
-            return _xml_escape(value)
+        if conversion in self.extra_converters:
+            return self.extra_converters[conversion](value)
         return super(XFormatter, self).convert_field(value, conversion)
 
 

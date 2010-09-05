@@ -4,7 +4,7 @@ import gobject, gtk
 
 from pygtkhelpers.utils import gsignal, gproperty, \
         GObjectUserDataProxy, \
-        eformat, MarkupMixin
+        eformat, MarkupMixin, XFormatter
 
 from pygtkhelpers.delegates import BaseDelegate
 
@@ -101,3 +101,8 @@ def test_markup_mixing_kwargs():
     instance = Tested()
 
     assert instance.markup == '1 1'
+
+def test_xformatter_extraconverters():
+    formatter = XFormatter(a=lambda x: str(x)*2)
+    result = formatter.format('{0!a}', 'x')
+    assert result=='xx'
