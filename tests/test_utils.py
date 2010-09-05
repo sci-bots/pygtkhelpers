@@ -106,3 +106,15 @@ def test_xformatter_extraconverters():
     formatter = XFormatter(a=lambda x: str(x)*2)
     result = formatter.format('{0!a}', 'x')
     assert result=='xx'
+
+def test_markup_mixin_extra_formatter():
+    class Tested(MarkupMixin):
+        format = '{a!c}'
+        markup_converters = {
+            'c': lambda x: x.capitalize(),
+        }
+        a = 'a'
+
+
+    instance = Tested()
+    assert instance.markup == 'A'
