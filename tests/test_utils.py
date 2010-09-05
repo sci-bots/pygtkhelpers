@@ -83,10 +83,20 @@ def test_eformat():
     assert eformat('{self!e}', self='<') == '&lt;'
 
 
-def test_markup_mixin():
+def test_markup_mixin_obj():
     class Tested(MarkupMixin):
         format = '{a} 1'
         a = 1
+    instance = Tested()
+
+    assert instance.markup == '1 1'
+
+def test_markup_mixing_kwargs():
+    class Tested(MarkupMixin):
+        format = '{a} 1'
+        def markup_kwargs(self):
+            return {'a': '1'}
+
     instance = Tested()
 
     assert instance.markup == '1 1'

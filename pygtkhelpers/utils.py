@@ -259,6 +259,10 @@ class MarkupMixin(object):
     and self=self as format args
     """
     format = None
+
+    def markup_kwargs(self):
+        return {}
+
     @property
     def markup(self):
-        return XFormatter(self).format(self.format)
+        return XFormatter(self).vformat(self.format, (), self.markup_kwargs())
