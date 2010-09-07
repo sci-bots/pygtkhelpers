@@ -21,6 +21,14 @@ class _Delegate3(BaseDelegate):
     def create_default_toplevel(self):
         pass
 
+class _BuilderConnectHandler(SlaveView):
+
+    builder_file = 'test_slave_builder_connect.ui'
+
+    def the_dammed_handler(self, btn, *k):
+        self.clicked = 1
+
+
 
 class _TestDelegate(SlaveView):
 
@@ -91,6 +99,11 @@ def test_delegate2():
 
 def test_delegatge3():
     raises(NotImplementedError, _Delegate3)
+
+def test_object_connect():
+    d = _BuilderConnectHandler()
+    d.button1.emit('clicked')
+    assert d.clicked
 
 def test_no_ui_file():
     d = SlaveView()
