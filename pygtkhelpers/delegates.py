@@ -81,7 +81,7 @@ class BaseDelegate(gobject.GObject):
         if self._toplevel is None:
             self._toplevel = self.create_default_toplevel()
         self.widget = self._toplevel
-        self.model = model
+        self._model = model
         self.create_ui()
         self._connect_signals()
         #re-set the model to emit the signal XXX: potentially confusing
