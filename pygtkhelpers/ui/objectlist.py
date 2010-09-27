@@ -17,29 +17,27 @@ from pygtkhelpers.utils import gsignal
 
 class PropertyMapper(object):
 
-    def __init__(self, cell, prop, attr=None):
-        self.cell = cell
+    def __init__(self, prop, attr=None, format_func=None):
         self.prop = prop
         self.attr = attr
         # Check to see if this is the primary attribute, and also there is
         # format string, we do this once, so we don't check on every update.
-        self.format = (attr is None) and (cell.format or cell.format_func)
+        self.format_func = format_func
 
     def __call__(self, cell, obj, renderer):
         attr = self.attr or cell.attr
         value = obj if attr is None else getattr(obj, attr)
-        if self.format:
-            value = self.cell.format_data(value)
+        if self.format_func:
+            value = self.format_func(value)
         renderer.set_property(self.prop, value)
 
 
 class CellMapper(object):
 
-    def __init__(self, cell, map_spec):
-        self.cell = cell
+    def __init__(self, map_spec):
         self.mappers = []
         for prop, attr in map_spec.items():
-            self.mappers.append(PropertyMapper(cell, prop, attr))
+            self.mappers.append(PropertyMapper(prop, attr))
 
     def __call__(self, cell, obj, renderer):
         for mapper in self.mappers:
@@ -81,10 +79,10 @@ class Cell(object):
         
         #XXX: cellmapper needs to die
         if self.mapped:
-            self.mappers.append(CellMapper(self, self.mapped))
+            self.mappers.append(CellMapper(self.mapped))
         if not (self.mappers):
             default_prop = self._calculate_default_prop()
-            self.mappers.append(PropertyMapper(self, default_prop))
+            self.mappers.append(PropertyMapper(default_prop, format_func=self.format_data))
 
     def render(self, object, cell):
         for mapper in self.mappers:
