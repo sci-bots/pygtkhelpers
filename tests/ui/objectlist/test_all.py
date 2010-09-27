@@ -364,11 +364,11 @@ def test_double_click_event(items, user):
     assert item_clicked.called_count == 1
 
 @py.test.mark.tree_only
-def test_expander_column(items):
+def test_tree_expander_column(items):
     assert items.get_expander_column() is items.get_columns()[-1]
 
 @py.test.mark.list_only
-def test_expander_column(items):
+def test_list_expander_column(items):
     assert items.get_expander_column() is None
 
 @py.test.mark.tree_only
@@ -390,7 +390,7 @@ def test_expand_item(items, user, user2):
     assert item_expanded.called
 
 @py.test.mark.tree_only
-def test_collapse_item(items, user, user2):
+def test_tree_collapse_item(items, user, user2):
     items.append(user)
     items.append(user2, user)
     item_collapsed = CheckCalled(items, 'item-collapsed')
@@ -401,7 +401,7 @@ def test_collapse_item(items, user, user2):
     assert item_collapsed.called
 
 @py.test.mark.tree_only
-def test_collapse_item(items, user, user2):
+def test_list_collapse_item(items, user, user2):
     items.append(user)
     items.append(user2, user)
     item_collapsed = CheckCalled(items, 'item-collapsed')
