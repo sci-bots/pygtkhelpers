@@ -6,21 +6,6 @@ from pygtkhelpers.utils import refresh_gui
 from pygtkhelpers.test import CheckCalled
 from mock import Mock
 
-def test_build_simple():
-    uidef = '''
-        <interface>
-          <object class="PyGTKHelpersObjectList" id="test">
-          </object>
-        </interface>
-    '''
-    b = gtk.Builder()
-    b.add_from_string(uidef)
-    objectlist = b.get_object('test')
-    print objectlist
-    assert isinstance(objectlist, ObjectList)
-
-
-
 def test_sort_by_attr_default(items):
     items.sort_by('name')
     assert items.model_sort.has_default_sort_func()
