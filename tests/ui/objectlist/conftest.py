@@ -1,6 +1,3 @@
-import gtk
-
-from pygtkhelpers.utils import refresh_gui
 from pygtkhelpers.ui.objectlist import ObjectList, ObjectTree, Column
 
 class User(object):

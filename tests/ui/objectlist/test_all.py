@@ -1,11 +1,10 @@
 
 import py
 import gtk, gtk.gdk
-from pygtkhelpers.ui.objectlist import ObjectList, Column, Cell
+from pygtkhelpers.ui.objectlist import ObjectList, Column
 from pygtkhelpers.utils import refresh_gui
 from pygtkhelpers.test import CheckCalled
 from mock import Mock
-from .conftest import User
 
 def test_column_title():
     col = Column("name")
