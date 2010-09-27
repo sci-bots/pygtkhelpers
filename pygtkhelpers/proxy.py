@@ -378,6 +378,7 @@ class ProxyGroup(gobject.GObject):
     def _on_proxy_changed(self, proxy, value, name):
         self.emit('changed', proxy, name, value)
 
+    #XXX namespacing
     def _on_group_changed(self, group, proxy, value, name):
         self.emit('changed', proxy, name, value)
 

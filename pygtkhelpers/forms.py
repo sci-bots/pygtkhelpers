@@ -62,6 +62,7 @@ class Field(object):
         self.label_widget.unparent()
 
     def layout_as_table(self, table, row):
+        # XXX: turn to utility function
         self._unparent()
         self.label_widget.set_alignment(1.0, 0.5)
         table.attach(self.label_widget, 0, 1, row, row+1,
@@ -98,6 +99,7 @@ class FieldSet(object):
         self.schema[name].set(value)
 
     def layout_as_table(self):
+        # XXX: turn to utility function
         table = gtk.Table(len(self.fields), 2)
         table.set_row_spacings(6)
         table.set_col_spacings(6)
@@ -108,6 +110,7 @@ class FieldSet(object):
 
 
 class FormView(SlaveView):
+    #XXX: helper, dont use for complex
     """A specialized delegate that adds widget proxying and schema support
     """
 
