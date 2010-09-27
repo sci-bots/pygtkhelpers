@@ -76,23 +76,15 @@ class Cell(object):
         self.cell_props = kw.get('cell_props', {})
 
         # attribute/property mapping
-        self.mappers = kw.get('mappers')
-        self.mapped = kw.get('mapped')
-
-
-        if not self.mappers:
-            self.mappers = []
-            map_spec = {}
-            primary_prop = self._calculate_primary_prop()
-            if primary_prop:
-                map_spec[primary_prop] = None
-            if self.mapped:
-                map_spec.update(self.mapped)
-            self.mappers.append(CellMapper(self, map_spec))
-
-    @property
-    def primary_mapper(self):
-        return self.mappers[0]
+        self.mappers = kw.get('mappers', [])
+        self.mapped = kw.get('mapped', {})
+        
+        #XXX: cellmapper needs to die
+        if self.mapped:
+            self.mappers.append(CellMapper(self, self.mapped))
+        if not (self.mappers):
+            default_prop = self._calculate_default_prop()
+            self.mappers.append(PropertyMapper(self, default_prop))
 
     def render(self, object, cell):
         for mapper in self.mappers:
@@ -129,7 +121,7 @@ class Cell(object):
             cell.set_property(prop, value)
         return cell
 
-    def _calculate_primary_prop(self):
+    def _calculate_default_prop(self):
         if self.use_stock:
             primary_prop = 'stock-id'
         elif self.type==gtk.gdk.Pixbuf:

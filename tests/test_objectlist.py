@@ -222,33 +222,32 @@ def test_cell_format_string():
 def test_cell_format_for_obj():
     cell = Cell(None)
     renderer = Mock()
-    cell.mappers[0].mappers[0](cell, 1, renderer)
+    cell.mappers[0](cell, 1, renderer)
     assert renderer.set_property.call_args[0][1] == 1
 
 
 def test_default_type():
     cell = Cell('test')
-    assert cell.mappers[0].mappers[0].prop == 'text'
+    assert cell.mappers[0].prop == 'text'
 
 def test_pixbuf_type():
     cell = Cell('test', type=gtk.gdk.Pixbuf)
-    assert cell.mappers[0].mappers[0].prop == 'pixbuf'
+    assert cell.mappers[0].prop == 'pixbuf'
 
 def test_markup():
     cell = Cell('test', use_markup=True)
-    assert cell.mappers[0].mappers[0].prop == 'markup'
+    assert cell.mappers[0].prop == 'markup'
 
 def test_stock_type():
     cell = Cell('test', use_stock=True)
-    assert cell.mappers[0].mappers[0].prop == 'stock-id'
+    assert cell.mappers[0].prop == 'stock-id'
 
-def test_secondary_mappers():
+def test_secondar_mappers():
     cell = Cell('test', mapped={'markup': 'markup_attr'})
-    m = cell.mappers[0]
-    assert m.mappers[0].prop == 'text'
-    assert m.mappers[0].attr == None
-    assert m.mappers[1].prop == 'markup'
-    assert m.mappers[1].attr == 'markup_attr'
+    assert len(cell.mappers) == 1
+    m = cell.mappers[0].mappers[0] #XXX cellmapper needs death
+    assert m.prop == 'markup'
+    assert m.attr == 'markup_attr'
 
 def test_cell_ellipsize():
     import pango
