@@ -31,6 +31,7 @@ setup(
     packages=[
         'pygtkhelpers',
         'pygtkhelpers.ui',
+        'pygtkhelpers.ui.objectlist',
         'pygtkhelpers.debug',
     ],
 )
