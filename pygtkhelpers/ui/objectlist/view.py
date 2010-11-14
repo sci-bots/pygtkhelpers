@@ -426,6 +426,11 @@ class ObjectTreeViewBase(gtk.TreeView):
         return not test(obj, key)
 
 
+    def scroll_to(self, obj):
+        path = self._view_path_for(obj)
+        self.scroll_to_cell(path)
+
+
 class ObjectList(ObjectTreeViewBase):
     """An object list
     """
