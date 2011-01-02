@@ -207,3 +207,6 @@ def test_missing_container():
     w = WindowView()
     raises(AttributeError, w.add_slave, S(), 'banana')
 
+def test_set_title():
+    w = WindowView()
+    w.set_title('test')

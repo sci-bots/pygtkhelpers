@@ -284,5 +284,5 @@ class ToplevelView(BaseDelegate):
 class WindowView(ToplevelView):
     """A View that is a Window"""
     def set_title(self, title):
-        self.get_toplevel().set_title(title)
+        self.widget.set_title(title)
 
