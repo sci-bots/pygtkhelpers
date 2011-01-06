@@ -246,6 +246,8 @@ class SlaveView(BaseDelegate):
         if toplevel is None:
             toplevel = get_first_builder_window(builder).child
         if toplevel is not None:
+            #XXX: what to do if a developer
+            #     gave the name of a window instead of its child
             toplevel.get_parent().remove(toplevel)
         return toplevel
 
