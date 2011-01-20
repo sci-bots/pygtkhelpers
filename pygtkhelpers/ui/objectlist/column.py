@@ -77,9 +77,9 @@ class Cell(object):
         #XXX: cellmapper needs to die
         if self.mapped:
             self.mappers.append(CellMapper(self.mapped))
-        if not (self.mappers):
+        if self.attr:
             default_prop = self._calculate_default_prop()
-            self.mappers.append(PropertyMapper(default_prop, format_func=self.format_data))
+            self.mappers.append(PropertyMapper(default_prop, attr=self.attr, format_func=self.format_data))
 
     def render(self, object, cell):
         for mapper in self.mappers:
