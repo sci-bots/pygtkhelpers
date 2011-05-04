@@ -255,6 +255,11 @@ class XFormatter(string.Formatter):
             return self.extra_converters[conversion](value)
         return super(XFormatter, self).convert_field(value, conversion)
 
+    def format_field(self, value, conversion):
+        if conversion in self.extra_converters:
+            return self.extra_converters[conversion](value)
+        return super(XFormatter, self).format_field(value, conversion)
+
 
 def eformat(format, *k, **kw):
     return XFormatter().vformat(format, k, kw)
