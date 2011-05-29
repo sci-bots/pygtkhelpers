@@ -34,7 +34,11 @@ class CellMapper(object):
     def __init__(self, map_spec):
         self.mappers = []
         for prop, attr in map_spec.items():
-            self.mappers.append(PropertyMapper(prop, attr))
+            # the user may either specify a function to compute the attribute or a fixed attribute.
+            if callable(attr):
+                self.mappers.append(PropertyMapper(prop, format_func=attr))
+            else:
+                self.mappers.append(PropertyMapper(prop, attr))
 
     def __call__(self, cell, obj, renderer):
         for mapper in self.mappers:
