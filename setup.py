@@ -21,7 +21,7 @@ helpers and utilities to help debug PyGTK applications.
 
 setup(
     name='pygtkhelpers',
-    version='0.4.2',
+    version='0.4.3',
     author='Ali Afshar',
     author_email='aafshar@gmail.com',
     url='http://packages.python.org/pygtkhelpers',
