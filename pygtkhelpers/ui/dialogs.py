@@ -138,6 +138,7 @@ def _message_dialog(type, short,
                     parent=None,
                     buttons=gtk.BUTTONS_OK,
                     default=None, #XXX: kiwi had -1 there, why?
+                    alt_button_order=None,
                     _before_run=None): # for unittests
 
     if buttons in button_types:
@@ -173,6 +174,8 @@ def _message_dialog(type, short,
         dialog.set_transient_for(parent)
         dialog.set_modal(True)
 
+    if alt_button_order:
+        dialog.set_alternative_button_order(alt_button_order)
     if _before_run is not None:
         _before_run(dialog)
 
