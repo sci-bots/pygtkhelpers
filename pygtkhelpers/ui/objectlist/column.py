@@ -305,8 +305,11 @@ class EditableCellMixin(object):
         #XXX: full converter
         #XXX: breaks if attr is None
         value = self.cell.type(text)
-        setattr(obj, self.cell.attr, value)
-        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
+        original_value = getattr(obj, self.cell.attr)
+        if value != original_value:
+            # Only trigger update if value has actually changed
+            setattr(obj, self.cell.attr, value)
+            self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
 
 class CellRendererText(EditableCellMixin, gtk.CellRendererText):
@@ -338,14 +341,6 @@ class CellRendererSpin(EditableCellMixin, gtk.CellRendererSpin):
             else:
                 digits = 0
         self.set_property('digits', digits)
-
-
-    def _on_edited(self, cellrenderer, path, text):
-        obj = self.objectlist._object_at_sort_path(path)
-        #XXX: full converter
-        value = self.cell.type(text)
-        setattr(obj, self.cell.attr, value)
-        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
 
 class CellRendererToggle(gtk.CellRendererToggle):
@@ -393,8 +388,11 @@ class CellRendererCombo(gtk.CellRendererCombo):
     def _on_changed(self, _, path, new_iter):#XXX:
         obj = self.objectlist[path]
         value = self.props.model[new_iter][0]
-        setattr(obj, self.cell.attr, value)
-        self.objectlist.emit('item-changed', obj, self.cell.attr, value)
+        original_value = getattr(obj, self.cell.attr)
+        if value != original_value:
+            # Only trigger update if value has actually changed
+            setattr(obj, self.cell.attr, value)
+            self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
 
 TOOLTIP_TEXT = 'text'
