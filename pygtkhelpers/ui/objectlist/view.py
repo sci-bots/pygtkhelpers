@@ -32,6 +32,7 @@ class ObjectTreeViewBase(gtk.TreeView):
     gsignal('item-middle-clicked', object, gtk.gdk.Event)
     gsignal('item-double-clicked', object, gtk.gdk.Event)
     gsignal('item-added', object)
+    gsignal('item-inserted', object, int)
     gsignal('item-removed', object, int)
 
     def __init__(self, columns=(), **kwargs):
@@ -443,6 +444,21 @@ class ObjectList(ObjectTreeViewBase):
 
     def create_model(self):
         return gtk.ListStore(object)
+
+    def insert(self, position, item, select=False):
+        """Insert an item at the specified position in the list.
+
+        :param position: The position to insert the item at
+        :param item: The item to be added
+        :param select: Whether the item should be selected after adding
+        """
+        if item in self:
+            raise ValueError("item %s allready in list"%item )
+        modeliter = self.model.insert(position, (item,))
+        self._id_to_iter[id(item)] = modeliter
+        if select:
+            self.selected_item = item
+        self.emit('item-inserted', item, position)
 
     def append(self, item, select=False):
         """Add an item to the end of the list.
