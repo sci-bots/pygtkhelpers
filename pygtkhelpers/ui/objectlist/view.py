@@ -31,6 +31,8 @@ class ObjectTreeViewBase(gtk.TreeView):
     gsignal('item-right-clicked', object, gtk.gdk.Event)
     gsignal('item-middle-clicked', object, gtk.gdk.Event)
     gsignal('item-double-clicked', object, gtk.gdk.Event)
+    gsignal('item-added', object)
+    gsignal('item-removed', object, int)
 
     def __init__(self, columns=(), **kwargs):
         gtk.TreeView.__init__(self)
@@ -99,8 +101,10 @@ class ObjectTreeViewBase(gtk.TreeView):
         """
         if item not in self:
             raise ValueError('objectlist.remove(item) failed, item not in list')
+        item_id = int(self._view_path_for(item))
         giter = self._iter_for(item)
         del self[giter]
+        self.emit('item-removed', item, item_id)
 
     def set_columns(self, columns):
         assert not self.columns
@@ -452,6 +456,7 @@ class ObjectList(ObjectTreeViewBase):
         self._id_to_iter[id(item)] = modeliter
         if select:
             self.selected_item = item
+        self.emit('item-added', item)
 
     def extend(self, iter):
         """Add a sequence of items to the end of the list
