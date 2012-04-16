@@ -130,7 +130,6 @@ class ObjectTreeViewBase(gtk.TreeView):
             return self._object_at_sort_iter(selected)
 
     def _set_selected_item(self, item):
-
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
@@ -174,6 +173,50 @@ class ObjectTreeViewBase(gtk.TreeView):
             fset=_set_selected_items,
             #XXX: fdel for deselect?
             doc=_get_selected_items.__doc__,
+            )
+
+    def _get_selected_id(self):
+        selected_item = self.selected_item
+        selected_id = [i for i, v in enumerate(self) if v == selected_item] 
+        if selected_id:
+            return selected_id[0]
+
+    def _set_selected_id(self, id):
+        self.selected_item = self[id]
+
+    selected_id = property(
+            fget=_get_selected_id,
+            fset=_set_selected_id,
+            #XXX: fdel for deselect?
+            doc=_get_selected_id.__doc__,
+            )
+    def _get_selected_ids(self):
+        """List of currently selected ids"""
+        selection = self.get_selection()
+        if selection.get_mode() != gtk.SELECTION_MULTIPLE:
+            raise AttributeError('selected_ids only valid for select_multiple')
+        model, selected_paths = selection.get_selected_rows()
+        if selected_paths:
+            return zip(*selected_paths)[0]
+        else:
+            return ()
+
+    def _set_selected_ids(self, new_selection):
+        selection = self.get_selection()
+        if selection.get_mode() != gtk.SELECTION_MULTIPLE:
+            raise AttributeError('selected_ids only valid for select_multiple')
+        selection.unselect_all()
+        if new_selection is None:
+            new_selection = ()
+        for row_id in new_selection:
+            giter = self._sort_iter_for(self[row_id])
+            selection.select_iter(giter)
+
+    selected_ids = property(
+            fget=_get_selected_ids,
+            fset=_set_selected_ids,
+            #XXX: fdel for deselect?
+            doc=_get_selected_ids.__doc__,
             )
 
     def clear(self):
