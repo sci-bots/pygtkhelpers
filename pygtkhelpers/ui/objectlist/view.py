@@ -405,7 +405,9 @@ class ObjectTreeViewBase(gtk.TreeView):
         self.connect('button-press-event', self._on_button_press_event)
         self.connect('query-tooltip', self._on_query_tooltip)
         self.connect('row-activated', self._on_row_activated)
-        self.get_selection().connect('changed', self._on_selection_changed)
+        self.selection = self.get_selection()
+        self.selection_connect = self.selection.connect(
+                'changed', self._on_selection_changed)
 
     def _emit_for_path(self, path, event):
         item = self._object_at_sort_path(path)
@@ -596,7 +598,44 @@ class ObjectTree(ObjectTreeViewBase):
         return self.row_expanded(self._path_for(item))
 
     def _on_row_expanded(self, objecttree, giter, path):
+        if self._object_at_sort_iter(giter) in self.selected_items:
+            self.emit('selection-changed')
         return self.emit('item-expanded', self._object_at_sort_iter(giter))
 
     def _on_row_collapsed(self, objecttree, giter, path):
+        if self._object_at_sort_iter(giter) in self.selected_items:
+            self.emit('selection-changed')
         return self.emit('item-collapsed', self._object_at_sort_iter(giter))
+
+    def item_view_iter(self, item):
+        return self.model_sort[self._view_path_for(item)].iter
+
+    def item_has_child(self, item):
+        if item not in self:
+            raise ValueError('objectlist.item_has_child(item) failed, item not in list')
+        return self.model_sort.iter_has_child(self.item_view_iter(item))
+
+    def _get_children(self, item):
+        items = [item]
+        if self.item_has_child(item):
+            row = self.model[self._path_for(item)]
+            items += [c for i in row.iterchildren()
+                    for c in self._get_children(i[0])]
+        return items
+
+    def _get_selected_items(self):
+        selected_items = super(ObjectTree, self)._get_selected_items()
+        all_items = []
+        for item in selected_items:
+            if self.item_expanded(item):
+                all_items.append(item)
+            else:
+                all_items += self._get_children(item)
+        return all_items
+
+    selected_items = property(
+            fget=_get_selected_items,
+            fset=ObjectTreeViewBase._set_selected_items,
+            #XXX: fdel for deselect?
+            doc=_get_selected_items.__doc__,
+            )
