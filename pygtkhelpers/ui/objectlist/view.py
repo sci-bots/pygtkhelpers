@@ -10,6 +10,9 @@
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
+import itertools
+import copy
+
 import gtk, gobject
 
 from pygtkhelpers.utils import gsignal
@@ -530,6 +533,24 @@ class ObjectList(ObjectTreeViewBase):
             self.append(item)
 
 
+class SubObjectTree(object):
+    def __init__(self, items, item_paths):
+        self.items = items
+        self.item_paths = item_paths
+
+    def copy(self):
+        return copy.copy(self)
+
+    def __iter__(self):
+        if self.item_paths:
+            for i in range(len(self.items)):
+                item_path = self.item_paths[i]
+                yield self.items[i], item_path
+
+    def __str__(self):
+        return str(zip(self.items, self.item_paths))
+
+
 class ObjectTree(ObjectTreeViewBase):
     """An object tree
     """
@@ -625,13 +646,24 @@ class ObjectTree(ObjectTreeViewBase):
             raise ValueError('objectlist.item_has_child(item) failed, item not in list')
         return self.model_sort.iter_has_child(self.item_view_iter(item))
 
-    def _get_children(self, item):
-        items = [item]
+    def _iter_siblings(self, item):
+        giter = self.item_view_iter(item)
+        while giter:
+            item = self[self.model_sort.get_path(giter)]
+            for c in self._iter_children(item):
+                yield c
+            giter = self.model_sort.iter_next(giter)
+
+    def _iter_children(self, item):
+        yield item
         if self.item_has_child(item):
             row = self.model[self._path_for(item)]
-            items += [c for i in row.iterchildren()
-                    for c in self._get_children(i[0])]
-        return items
+            for i in row.iterchildren():
+                for c in self._get_children(i[0]):
+                    yield c
+
+    def _get_children(self, item):
+        return [c for c in self._iter_children(item)]
 
     def _get_selected_items(self):
         selected_items = super(ObjectTree, self)._get_selected_items()
@@ -689,6 +721,61 @@ class ObjectTree(ObjectTreeViewBase):
         giter = self._iter_for(item)
         del self[giter]
         self.emit('item-removed', item, item_path)
+
+    def is_subtree(self, items):
+        if not items:
+            return True
+        siblings_iter = self._iter_siblings(items[0])
+        contiguous_check = (items == [i
+                for i in itertools.islice(siblings_iter, len(items))])
+        try:
+            next_item = siblings_iter.next() 
+            if len(self._path_for(next_item)) <= len(self._path_for(items[0])):
+                complete_check = True
+            else:
+                complete_check = False
+        except StopIteration:
+            complete_check = True
+        return contiguous_check and complete_check
+
+    def get_selected_subtree(self):
+        return self.get_subtree(self.selected_items)
+
+    def copy_selected_subtree(self):
+        return self.copy_subtree(self.selected_items)
+
+    def copy_subtree(self, items):
+        subtree = self.get_subtree(items)
+        if subtree is None:
+            return None
+        relative_subtree = subtree.copy()
+        base_path = subtree.item_paths[0][0]
+        for i, item_path in enumerate(subtree.item_paths):
+            new_path = list(item_path)
+            new_path[0] -= base_path
+            subtree.item_paths[i] = tuple(new_path)
+        return relative_subtree
+
+    def get_subtree(self, items):
+        if not items:
+            return None
+        
+        if not self.is_subtree(items):
+            raise ValueError, 'Items must make up a complete (and contiguous)'\
+                    'sub-tree.'
+
+        items = items[:]
+        item_paths = [self.model.get_path(self._iter_for(i))
+                for i in items]
+
+        return SubObjectTree(items, item_paths)
+
+    def __iter__(self):
+        """Iterable
+        """
+        if self:
+            for item in self._iter_siblings(self[0]):
+                yield item
 
     selected_items = property(
             fget=_get_selected_items,
