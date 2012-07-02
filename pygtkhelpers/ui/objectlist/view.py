@@ -32,8 +32,6 @@ class ObjectTreeViewBase(gtk.TreeView):
     gsignal('item-middle-clicked', object, gtk.gdk.Event)
     gsignal('item-double-clicked', object, gtk.gdk.Event)
     gsignal('item-added', object)
-    gsignal('item-inserted', object, int)
-    gsignal('item-removed', object, int)
 
     def __init__(self, columns=(), **kwargs):
         gtk.TreeView.__init__(self)
@@ -93,19 +91,6 @@ class ObjectTreeViewBase(gtk.TreeView):
         obj = self._object_at_iter(iter)
         del self._id_to_iter[id(obj)]
         self.model.remove(iter)
-
-    def remove(self, item):
-        """Remove an item from the list
-
-        :param item: The item to remove from the list.
-        :raises ValueError: If the item is not present in the list.
-        """
-        if item not in self:
-            raise ValueError('objectlist.remove(item) failed, item not in list')
-        item_id = int(self._view_path_for(item))
-        giter = self._iter_for(item)
-        del self[giter]
-        self.emit('item-removed', item, item_id)
 
     def set_columns(self, columns):
         assert not self.columns
@@ -487,6 +472,22 @@ class ObjectList(ObjectTreeViewBase):
 
     __gtype_name__ = "PyGTKHelpersObjectList"
 
+    gsignal('item-inserted', object, int)
+    gsignal('item-removed', object, int)
+
+    def remove(self, item):
+        """Remove an item from the list
+
+        :param item: The item to remove from the list.
+        :raises ValueError: If the item is not present in the list.
+        """
+        if item not in self:
+            raise ValueError('objectlist.remove(item) failed, item not in list')
+        item_id = int(self._view_path_for(item))
+        giter = self._iter_for(item)
+        del self[giter]
+        self.emit('item-removed', item, item_id)
+
     def create_model(self):
         return gtk.ListStore(object)
 
@@ -504,6 +505,7 @@ class ObjectList(ObjectTreeViewBase):
         if select:
             self.selected_item = item
         self.emit('item-inserted', item, position)
+
 
     def append(self, item, select=False):
         """Add an item to the end of the list.
@@ -536,6 +538,8 @@ class ObjectTree(ObjectTreeViewBase):
 
     gsignal('item-expanded', object)
     gsignal('item-collapsed', object)
+    gsignal('item-inserted', object, object)
+    gsignal('item-removed', object, object)
 
     def _connect_internal(self):
         ObjectTreeViewBase._connect_internal(self)
@@ -598,14 +602,20 @@ class ObjectTree(ObjectTreeViewBase):
         return self.row_expanded(self._path_for(item))
 
     def _on_row_expanded(self, objecttree, giter, path):
-        if self._object_at_sort_iter(giter) in self.selected_items:
-            self.emit('selection-changed')
+        item = self._object_at_sort_iter(giter) 
+        if item in self.selected_items:
+            # Since this item was selected before expanding, select all
+            # children.
+            self.selection.handler_block(self.selection_connect)
+            self.selected_items += self._get_children(item)
+            self.selection.handler_unblock(self.selection_connect)
         return self.emit('item-expanded', self._object_at_sort_iter(giter))
 
     def _on_row_collapsed(self, objecttree, giter, path):
-        if self._object_at_sort_iter(giter) in self.selected_items:
-            self.emit('selection-changed')
         return self.emit('item-collapsed', self._object_at_sort_iter(giter))
+
+    def item_iter(self, item):
+        return self.model[self._path_for(item)].iter
 
     def item_view_iter(self, item):
         return self.model_sort[self._view_path_for(item)].iter
@@ -632,6 +642,53 @@ class ObjectTree(ObjectTreeViewBase):
             else:
                 all_items += self._get_children(item)
         return all_items
+
+    def insert_before(self, sibling, item, select=False):
+        self._insert_sibling(self.model.insert_before, sibling, item, select)
+
+    def insert_after(self, sibling, item, select=False):
+        self._insert_sibling(self.model.insert_after, sibling, item, select)
+
+    def _insert_sibling(self, insert_func, sibling, item, select=False):
+        if item in self:
+            raise ValueError("item %s allready in list"%item )
+        modeliter = insert_func(None, self._iter_for(sibling), (item, ))
+        row = self.model[self._path_for(sibling)]
+        self._id_to_iter[id(item)] = modeliter
+        item_path = self._view_path_for(item)
+        if select:
+            self.selected_item = item
+        self.emit('item-inserted', item, item_path)
+
+    def insert(self, parent, position, item, select=False):
+        """Insert an item at the specified position in the list.
+
+        :param position: The position to insert the item at
+        :param item: The item to be added
+        :param select: Whether the item should be selected after adding
+        """
+        if item in self:
+            raise ValueError("item %s allready in list"%item )
+        modeliter = self.model.insert(parent, position, (item,))
+        self._id_to_iter[id(item)] = modeliter
+        if select:
+            self.selected_item = item
+        item_path = self._view_path_for(item)
+        self.emit('item-inserted', item, item_path)
+
+    def remove(self, item):
+        """Remove an item from the list
+
+        :param item: The item to remove from the list.
+        :raises ValueError: If the item is not present in the list.
+        """
+        if item not in self:
+            raise ValueError('objectlist.remove(item) failed, item not in list')
+        #item_id = int(self._view_path_for(item))
+        item_path = self._view_path_for(item)
+        giter = self._iter_for(item)
+        del self[giter]
+        self.emit('item-removed', item, item_path)
 
     selected_items = property(
             fget=_get_selected_items,
