@@ -113,7 +113,6 @@ class ObjectTreeViewBase(gtk.TreeView):
         if selection.get_mode() != gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
         model, selected = selection.get_selected()
-        #print model, selected
         if selected is not None:
             return self._object_at_sort_iter(selected)
 
@@ -524,6 +523,8 @@ class ObjectList(ObjectTreeViewBase):
             self.selected_item = item
         self.emit('item-added', item)
 
+
+
     def extend(self, iter):
         """Add a sequence of items to the end of the list
 
@@ -539,7 +540,7 @@ class SubObjectTree(object):
         self.item_paths = item_paths
 
     def copy(self):
-        return copy.copy(self)
+        return copy.deepcopy(self)
 
     def __iter__(self):
         if self.item_paths:
@@ -549,6 +550,45 @@ class SubObjectTree(object):
 
     def __str__(self):
         return str(zip(self.items, self.item_paths))
+
+
+class Node(object):
+    def __init__(self, parent, item=None):
+        self.item = item
+        self.children = []
+
+    def add_child(self, child):
+        self.children.append(child)
+
+
+class NodeTree(object):
+    gsignal('test-changed')
+
+    def __init__(self):
+        self.root = Node(None)
+
+    def _iter_children(self, node=None):
+        if node is None:
+            node = self.root
+        if node != self.root:
+            yield node
+        for child in node.children:
+            for child_node in self._iter_children(child):
+                yield child_node
+
+
+def get_node_tree(subtree):
+    node_tree = NodeTree()
+
+    nodes = {}
+    for item, item_path in zip(subtree.items, subtree.item_paths):
+        if len(item_path) == 1:
+            parent = node_tree.root
+        else:
+            parent = nodes[item_path[:-1]]
+        nodes[item_path] = Node(parent, item)
+        parent.add_child(nodes[item_path])
+    return node_tree
 
 
 class ObjectTree(ObjectTreeViewBase):
@@ -707,6 +747,38 @@ class ObjectTree(ObjectTreeViewBase):
             self.selected_item = item
         item_path = self._view_path_for(item)
         self.emit('item-inserted', item, item_path)
+        return modeliter
+
+    def insert_subtree(self, parent_iter, position, subtree):
+        node_tree = get_node_tree(subtree)
+        self._insert_subtree(parent_iter, node_tree.root, position=position)
+        return self.get_subtree(subtree.items)
+
+    def insert_subtree_before(self, item, subtree):
+        return self._insert_subtree_relative(item, subtree, before=True)
+
+    def insert_subtree_after(self, item, subtree):
+        return self._insert_subtree_relative(item, subtree, before=False)
+
+    def _insert_subtree_relative(self, item, subtree, before=False):
+        insert_path = self.model.get_path(self.item_iter(item))
+        parent = self.model[insert_path].parent
+        if parent is None:
+            parent_iter = None
+        else:
+            parent_iter = parent.iter
+        position = insert_path[-1]
+        if not before:
+            position += 1
+        return self.insert_subtree(parent_iter, position, subtree)
+
+    def _insert_subtree(self, parent_iter, parent_node, position=None):
+        if position is None:
+            position = self.model.iter_n_children(parent_iter)
+
+        for child in parent_node.children[::-1]:
+            child_iter = self.insert(parent_iter, position, child.item)
+            self._insert_subtree(child_iter, child)
 
     def remove(self, item):
         """Remove an item from the list
@@ -749,11 +821,15 @@ class ObjectTree(ObjectTreeViewBase):
         if subtree is None:
             return None
         relative_subtree = subtree.copy()
-        base_path = subtree.item_paths[0][0]
-        for i, item_path in enumerate(subtree.item_paths):
+        min_depth = min([len(item_path)
+                for item_path in relative_subtree.item_paths])
+        relative_subtree.item_paths = [item_path[min_depth - 1:]
+                for item_path in relative_subtree.item_paths] 
+        base_path = relative_subtree.item_paths[0][0]
+        for i, item_path in enumerate(relative_subtree.item_paths):
             new_path = list(item_path)
             new_path[0] -= base_path
-            subtree.item_paths[i] = tuple(new_path)
+            relative_subtree.item_paths[i] = tuple(new_path)
         return relative_subtree
 
     def get_subtree(self, items):
@@ -769,6 +845,15 @@ class ObjectTree(ObjectTreeViewBase):
                 for i in items]
 
         return SubObjectTree(items, item_paths)
+
+    def remove_subtree(self, subtree):
+        for item in subtree.items[::-1]:
+            self.remove(item)
+
+    def cut_subtree(self, items):
+        subtree = self.copy_subtree(items)
+        self.remove_subtree(self.get_subtree(items))
+        return subtree
 
     def __iter__(self):
         """Iterable
