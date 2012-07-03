@@ -750,17 +750,24 @@ class ObjectTree(ObjectTreeViewBase):
         return modeliter
 
     def insert_subtree(self, parent_iter, position, subtree):
+        # Disable selection-changed handler for insert
+        self.selection.handler_block(self.selection_connect)
         node_tree = get_node_tree(subtree)
         self._insert_subtree(parent_iter, node_tree.root, position=position)
-        return self.get_subtree(subtree.items)
+        new_subtree = self.get_subtree(subtree.items)
+        self.selection.handler_unblock(self.selection_connect)
+        return new_subtree
 
-    def insert_subtree_before(self, item, subtree):
-        return self._insert_subtree_relative(item, subtree, before=True)
+    def insert_subtree_before(self, subtree, item=None):
+        return self._insert_subtree_relative(subtree, item, before=True)
 
-    def insert_subtree_after(self, item, subtree):
-        return self._insert_subtree_relative(item, subtree, before=False)
+    def insert_subtree_after(self, subtree, item=None):
+        return self._insert_subtree_relative(subtree, item, before=False)
 
-    def _insert_subtree_relative(self, item, subtree, before=False):
+    def _insert_subtree_relative(self, subtree, item=None, before=False):
+        if item is None:
+            node_tree = get_node_tree(self.get_selected_subtree(relative=True))
+            item = node_tree.root.children[-1].item
         insert_path = self.model.get_path(self.item_iter(item))
         parent = self.model[insert_path].parent
         if parent is None:
@@ -810,29 +817,19 @@ class ObjectTree(ObjectTreeViewBase):
             complete_check = True
         return contiguous_check and complete_check
 
-    def get_selected_subtree(self):
-        return self.get_subtree(self.selected_items)
+    def get_selected_subtree(self, relative=False):
+        return self.get_subtree(self.selected_items, relative=relative)
 
     def copy_selected_subtree(self):
         return self.copy_subtree(self.selected_items)
 
     def copy_subtree(self, items):
-        subtree = self.get_subtree(items)
+        subtree = self.get_subtree(items, relative=True)
         if subtree is None:
             return None
-        relative_subtree = subtree.copy()
-        min_depth = min([len(item_path)
-                for item_path in relative_subtree.item_paths])
-        relative_subtree.item_paths = [item_path[min_depth - 1:]
-                for item_path in relative_subtree.item_paths] 
-        base_path = relative_subtree.item_paths[0][0]
-        for i, item_path in enumerate(relative_subtree.item_paths):
-            new_path = list(item_path)
-            new_path[0] -= base_path
-            relative_subtree.item_paths[i] = tuple(new_path)
-        return relative_subtree
+        return subtree.copy()
 
-    def get_subtree(self, items):
+    def get_subtree(self, items, relative=False):
         if not items:
             return None
         
@@ -843,6 +840,18 @@ class ObjectTree(ObjectTreeViewBase):
         items = items[:]
         item_paths = [self.model.get_path(self._iter_for(i))
                 for i in items]
+
+        if relative:
+            # Normalize item paths to root path (0, )
+            min_depth = min([len(item_path)
+                    for item_path in item_paths])
+            item_paths = [item_path[min_depth - 1:]
+                    for item_path in item_paths] 
+            base_path = item_paths[0][0]
+            for i, item_path in enumerate(item_paths):
+                new_path = list(item_path)
+                new_path[0] -= base_path
+                item_paths[i] = tuple(new_path)
 
         return SubObjectTree(items, item_paths)
 
@@ -855,6 +864,9 @@ class ObjectTree(ObjectTreeViewBase):
         # removed before removing the corresponding parent.
         for item in sorted_items[::-1]:
             self.remove(item)
+
+    def cut_selected_subtree(self):
+        return self.cut_subtree(self.selected_items)
 
     def cut_subtree(self, items):
         subtree = self.copy_subtree(items)
