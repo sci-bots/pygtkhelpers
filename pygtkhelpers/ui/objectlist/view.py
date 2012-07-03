@@ -846,13 +846,19 @@ class ObjectTree(ObjectTreeViewBase):
 
         return SubObjectTree(items, item_paths)
 
-    def remove_subtree(self, subtree):
-        for item in subtree.items[::-1]:
+    def remove_items(self, items):
+        # Get items sorted by model path
+        sorted_items = zip(*sorted([(self.model.get_path(self.item_iter(i)), i)
+                for i in items]))[1]
+
+        # Delete items in reverse order to ensure all children are
+        # removed before removing the corresponding parent.
+        for item in sorted_items[::-1]:
             self.remove(item)
 
     def cut_subtree(self, items):
         subtree = self.copy_subtree(items)
-        self.remove_subtree(self.get_subtree(items))
+        self.remove_items(items)
         return subtree
 
     def __iter__(self):
