@@ -114,9 +114,9 @@ class SimpleComboBox(gtk.ComboBox):
 
     def __init__(self, choices=None, default=None):
         gtk.ComboBox.__init__(self)
-        if choices and not default:
+        if choices and default is None:
             raise ValueError('default choice necessary')
-        self.store = gtk.ListStore(str, str)
+        self.store = gtk.ListStore(str, object)
         self.set_model(self.store)
         if choices is not None:
             self.set_choices(choices, default)
