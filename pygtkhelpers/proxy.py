@@ -257,11 +257,14 @@ class GtkComboBoxProxy(GObjectProxy):
 
     def get_row_value(self, row):
         row = list(row) #XXX: that sucks
+        '''
         value = row[1:]
         if not value:
             value = row[0]
         elif len(value) == 1:
             value = value[0]
+        '''
+        value = row[0]
         return value
 
 
