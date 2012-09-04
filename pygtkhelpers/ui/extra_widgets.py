@@ -3,13 +3,13 @@ import logging
 
 import gtk
 from path import path
-from pygtkhelpers.utils import gsignal
-from pygtkhelpers.forms import view_widgets, element_views, ElementBuilder,\
-        widget_for, FormView, IntegerBuilder
-from pygtkhelpers.proxy import widget_proxies, GObjectProxy, proxy_for
-from pygtkhelpers.ui.widgets import SimpleComboBox
 from flatland.schema import String, Form, Integer, Float, Enum
 
+from ..utils import gsignal
+from ..proxy import widget_proxies, GObjectProxy, proxy_for
+from ..forms import view_widgets, element_views, ElementBuilder,\
+        widget_for, FormView, IntegerBuilder
+from .widgets import SimpleComboBox
 from .form_view_dialog import FormViewDialog
 
 

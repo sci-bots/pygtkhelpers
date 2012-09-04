@@ -227,6 +227,3 @@ class EmptyTextViewFiller(GObjectPlugin):
         self.buffer.insert_with_tags_by_name(
             self.buffer.get_start_iter(),
             self.empty_text, 'empty-text')
-
-
-from .extra_widgets import *

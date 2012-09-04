@@ -19,7 +19,6 @@ import gtk
 
 from flatland import Dict, String, Integer, Boolean, Enum
 
-from pygtkhelpers.proxy import ProxyGroup, proxy_for
 from pygtkhelpers.delegates import SlaveView
 from pygtkhelpers.utils import gsignal
 
@@ -49,6 +48,7 @@ class Field(object):
     """
 
     def __init__(self, element, widget, label_widget=None):
+        from pygtkhelpers.proxy import ProxyGroup, proxy_for
         self.element = element
         self.widget = widget
         self.proxy = proxy_for(widget)
@@ -75,8 +75,8 @@ class Field(object):
 
 # XXX AA: Needs splitting into view component, and controller component
 class FieldSet(object):
-
     def __init__(self, delegate, schema_type):
+        from pygtkhelpers.proxy import ProxyGroup, proxy_for
         self.delegate = delegate
         self.schema = schema_type()
         self.proxies = ProxyGroup()
@@ -92,7 +92,8 @@ class FieldSet(object):
             widget = widget_for(element)
             setattr(self.delegate, name, widget)
         field = self.fields[name] = Field(element, widget=widget)
-        field.set_label(name.capitalize())
+        field_name = element.properties.get('label', name)
+        field.set_label(field_name.capitalize())
         self.proxies.add_proxy(name, field.proxy)
 
     def _on_proxies_changed(self, group, proxy, name, value):
@@ -119,7 +120,6 @@ class FormView(SlaveView):
     def create_ui(self):
         self.form = FieldSet(self, self.schema_type)
         self.widget.pack_start(self.form.layout_as_table())
-
 
 
 class WidgetBuilder(object):
