@@ -207,7 +207,9 @@ class IntegerBuilder(ElementBuilder):
                 min = v.minimum
             elif hasattr(v, 'maximum'):
                 max = v.maximum
-        adj.set_all(min, min, max, 1.0, 10.0)
+        step = element.properties.get('step', 1.0)
+        page_step = element.properties.get('page_step', step * 10)
+        adj.set_all(min, min, max, step, page_step)
         return widget
 
 
