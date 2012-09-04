@@ -229,3 +229,4 @@ class EmptyTextViewFiller(GObjectPlugin):
             self.empty_text, 'empty-text')
 
 
+from .extra_widgets import *

@@ -12,4 +12,4 @@
 
 from .column import PropertyMapper, Cell, Column
 from .view import ObjectList, ObjectTree
-
+from .combined_fields import *
