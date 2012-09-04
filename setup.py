@@ -34,4 +34,5 @@ setup(
         'pygtkhelpers.ui.objectlist',
         'pygtkhelpers.debug',
     ],
+    package_data={'pygtkhelpers': ['ui/glade/*.glade']},
 )
