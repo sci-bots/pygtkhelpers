@@ -1,5 +1,4 @@
 from functools import partial
-from logger import logger
 import os
 
 import gtk

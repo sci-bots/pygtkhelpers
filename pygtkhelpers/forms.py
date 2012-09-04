@@ -17,7 +17,7 @@
 import sys
 import gtk
 
-from flatland import Dict, String, Integer, Boolean
+from flatland import Dict, String, Integer, Boolean, Enum
 
 from pygtkhelpers.proxy import ProxyGroup, proxy_for
 from pygtkhelpers.delegates import SlaveView

@@ -28,6 +28,24 @@ from pygtkhelpers.proxy import proxy_for
 script_dir = path(__file__).abspath().parent
 
 
+def create_form_view(form, values=None, use_markup=True):
+    FormView.schema_type = form
+    form_view = FormView()
+    for name, field in form_view.form.fields.items():
+        if values:
+            value = values[name]
+        else:
+            value = field.element.default_value
+        if not field.element.set(value):
+            raise ValueError, '"%s" is not a valid value for field "%s"' % (
+                    value, name)
+        field.proxy.set_widget_value(value)
+        if hasattr(field.widget, 'set_activates_default'):
+            field.widget.set_activates_default(gtk.TRUE)
+        field.label_widget.set_use_markup(use_markup)
+    return form_view
+
+
 class FormViewDialog(object):
     default_parent = None
 
@@ -49,20 +67,7 @@ class FormViewDialog(object):
             parent = self.parent
         if parent is None:
             parent = self.default_parent
-        FormView.schema_type = form
-        form_view = FormView()
-        for name, field in form_view.form.fields.items():
-            if values:
-                value = values[name]
-            else:
-                value = field.element.default_value
-            if not field.element.set(value):
-                raise ValueError, '"%s" is not a valid value for field "%s"' % (
-                        value, name)
-            field.proxy.set_widget_value(value)
-            if hasattr(field.widget, 'set_activates_default'):
-                field.widget.set_activates_default(gtk.TRUE)
-            field.label_widget.set_use_markup(use_markup)
+        form_view = create_form_view(form, values=values, use_markup=use_markup)
         self.clear_form()
         self.vbox_form.pack_start(form_view.widget)
         self.window.set_default_response(gtk.RESPONSE_OK)
