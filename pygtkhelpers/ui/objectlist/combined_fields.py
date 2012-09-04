@@ -7,6 +7,7 @@ from flatland import Form, Integer
 
 from ...utils import gsignal
 from ..extra_widgets import get_type_from_schema
+from ..form_view_dialog import FormViewDialog
 from .uuid_minimal import uuid4
 from .column import Column
 from . import ObjectList
@@ -187,9 +188,6 @@ class CombinedFields(ObjectList):
         title_map = dict([(c.title, c.attr) for c in self.columns])
         attr = title_map.get(column_title)
         if prompt:
-            from .gui.form_view_dialog import FormViewDialog
-            from flatland import Form
-
             Fields = Form.of(self._full_field_to_field_def[attr])
             local_field = Fields.field_schema_mapping.keys()[0]
 
