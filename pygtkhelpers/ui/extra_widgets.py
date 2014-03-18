@@ -2,7 +2,7 @@ import sys
 import logging
 
 import gtk
-from path import path
+from path_helpers import path
 from flatland.schema import String, Form, Integer, Float, Enum
 
 from ..utils import gsignal

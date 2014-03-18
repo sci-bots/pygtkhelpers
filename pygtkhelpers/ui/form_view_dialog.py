@@ -20,7 +20,7 @@ import logging
 from functools import partial
 
 import gtk
-from path import path
+from path_helpers import path
 from pygtkhelpers.forms import FormView
 from pygtkhelpers.proxy import proxy_for
 
