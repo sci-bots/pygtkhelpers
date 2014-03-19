@@ -1,8 +1,0 @@
-.+\.pyc
-\..+\.swp
-MANIFEST
-dist/
-build/
-.coverage
-pygtkhelpers.egg-info
-\.tox

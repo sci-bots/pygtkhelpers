@@ -1,6 +1,7 @@
 Ali Afshar <aafshar@gmail.com>
 Ronny Pfannschmidt <Ronny.Pfannschmidt@gmx.de>
 Daniel Neuhäuser <dasdasich@gmail.com>
+Christian Fobel <christian@fobel.net>
 
 .. note::
     pygtkhelpers.utils.gsignal/gproperty are taken from kiwi
