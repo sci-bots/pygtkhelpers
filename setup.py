@@ -32,20 +32,14 @@ helpers and utilities to help debug PyGTK applications.
 [1]: https://pythonhosted.org/pygtkhelpers/
 """.strip()
 
-setup(
-    name='pygtk_helpers',
-    version=version.getVersion(),
-    author='Christian Fobel',
-    author_email='christian@fobel.net',
-    url='https://github.com/wheeler-microfluidics/pygtk_helpers',
-    description=short_description,
-    long_description=long_description,
-    license='LGPL-3.0',
-    packages=[
-        'pygtkhelpers',
-        'pygtkhelpers.ui',
-        'pygtkhelpers.ui.objectlist',
-        'pygtkhelpers.debug',
-    ],
-    package_data={'pygtkhelpers': ['ui/glade/*.glade']},
-)
+setup(name='wheeler.pygtkhelpers',
+      version=version.getVersion(),
+      author='Christian Fobel',
+      author_email='christian@fobel.net',
+      url='https://github.com/wheeler-microfluidics/pygtk_helpers',
+      description=short_description,
+      long_description=long_description,
+      license='LGPL-3.0',
+      packages=['pygtkhelpers', 'pygtkhelpers.ui',
+                'pygtkhelpers.ui.objectlist', 'pygtkhelpers.debug'],
+      package_data={'pygtkhelpers': ['ui/glade/*.glade']})
