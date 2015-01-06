@@ -46,29 +46,34 @@ class FilepathWidget(gtk.HBox):
         self.pack_start(self.browse_button, expand=False, fill=False)
         self.widget = proxy_for(self.filepath_entry)
         self.widget.connect_widget()
+        if self.mode == 'file':
+            self.action = gtk.FILE_CHOOSER_ACTION_OPEN
+        elif self.mode == 'directory':
+            self.action = gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER
+        self.starting_dir = None
         self.show_all()
 
     def on_button_clicked(self, widget, data=None):
-        if self.value:
-            try:
-                starting_dir = path(self.value)
-                if starting_dir.isdir():
-                    pass
-                elif starting_dir.isfile():
-                    starting_dir = starting_dir.abspath().parent
-                else:
-                    starting_dir = None
-            except:
-                starting_dir = None
+        if callable(self.starting_dir):
+            starting_dir = self.starting_dir()
         else:
-            starting_dir = None
+            starting_dir = self.starting_dir
+
+        if self.value:
+            if path(self.value).isdir():
+                starting_dir = path(self.value)
+            elif path(self.value).parent.isdir():
+                starting_dir = path(self.value).abspath().parent
         if self.mode == 'file':
             response, filepath = self.browse_for_file('Select file path',
-                        starting_dir=starting_dir)
+                                                      action=self.action,
+                                                      starting_dir=
+                                                      starting_dir)
         elif self.mode == 'directory':
             response, filepath = self.browse_for_file('Select directory',
-                        action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                        starting_dir=starting_dir)
+                                                      action=self.action,
+                                                      starting_dir=
+                                                      starting_dir)
         else:
             raise ValueError, '[Filepath] Invalid mode: %s' % self.mode
         if response == gtk.RESPONSE_OK:
@@ -76,20 +81,11 @@ class FilepathWidget(gtk.HBox):
             self.value = path(filepath).abspath()
             self.emit('content-changed')
 
-    def on_btn_data_dir_browse_clicked(self, widget, data=None):
-        app = get_app()
-        response, options_dir = self.browse_for_file('Select data directory',
-                    action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                    starting_dir=self.txt_data_dir.get_text())
-        if response == gtk.RESPONSE_OK:
-            logger.info('got new options_dir: %s' % options_dir)
-            self.txt_data_dir.set_text(options_dir)
-
     def browse_for_file(self, title='Select file',
-                            action=gtk.FILE_CHOOSER_ACTION_OPEN,
-                            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                                    gtk.STOCK_OPEN, gtk.RESPONSE_OK),
-                            starting_dir=None):
+                        action=gtk.FILE_CHOOSER_ACTION_SAVE,
+                        buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                 gtk.STOCK_OPEN, gtk.RESPONSE_OK),
+                        starting_dir=None):
         dialog = gtk.FileChooserDialog(title=title, action=action,
                                         buttons=buttons)
         if starting_dir:
@@ -128,6 +124,8 @@ class FilepathBuilder(ElementBuilder):
     def build(self, widget, style, element, options):
         if style == 'browse':
             widget.set_size_request(-1, -1)
+        for k, v in element.properties.iteritems():
+            setattr(widget, k, element.properties[k])
         return widget
 
 
