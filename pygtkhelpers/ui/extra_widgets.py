@@ -63,7 +63,7 @@ class FilepathWidget(gtk.HBox):
             if path(self.value).isdir():
                 starting_dir = path(self.value)
             elif path(self.value).parent.isdir():
-                starting_dir = path(self.value).abspath().parent
+                starting_dir = path(self.value).parent
         if self.mode == 'file':
             response, filepath = self.browse_for_file('Select file path',
                                                       action=self.action,
@@ -78,7 +78,7 @@ class FilepathWidget(gtk.HBox):
             raise ValueError, '[Filepath] Invalid mode: %s' % self.mode
         if response == gtk.RESPONSE_OK:
             logging.info('got new filepath: %s' % filepath)
-            self.value = path(filepath).abspath()
+            self.value = path(filepath)
             self.emit('content-changed')
 
     def browse_for_file(self, title='Select file',
