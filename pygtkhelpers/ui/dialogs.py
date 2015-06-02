@@ -53,13 +53,13 @@ button_types = {
     ),
 }
 
+
 def _destroy(obj):
     #XXX: util?
     obj.destroy()
     if not gtk.main_level():
         from pygtkhelpers.utils import refresh_gui
         refresh_gui()
-
 
 
 class AlertDialog(gtk.Dialog):
@@ -202,29 +202,9 @@ def simple(type, short, long=None,
                          default=default, **kw)
 
 
-#: Show an error dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
-error = partial(simple, gtk.MESSAGE_ERROR)
-
-
-#: Show an info dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
-info = partial(simple, gtk.MESSAGE_INFO)
-
-
-#: Show a warning dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
-warning = partial(simple, gtk.MESSAGE_WARNING)
-
-
-#:  A yes/no question dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
-yesno = partial(simple, gtk.MESSAGE_WARNING,
-                default=gtk.RESPONSE_YES,
-                buttons=gtk.BUTTONS_YES_NO,)
-
-
-
-def open_filechooser(
-    title, parent=None, patterns=None,
-    folder=None, filter=None, _before_run=None,
-    action=None):
+def open_filechooser(title, parent=None, patterns=None,
+                     folder=None, filter=None, multiple=False,
+                     _before_run=None, action=None):
     """An open dialog.
 
     :param parent: window or None
@@ -236,12 +216,21 @@ def open_filechooser(
     """
 
     assert not (patterns and filter)
-    assert action is not None
+    if multiple:
+        if action is not None and action != gtk.FILE_CHOOSER_ACTION_OPEN:
+            raise ValueError('`multiple` is only valid for the action '
+                             '`gtk.FILE_CHOOSER_ACTION_OPEN`.')
+        action = gtk.FILE_CHOOSER_ACTION_OPEN
+    else:
+        assert action is not None
     filechooser = gtk.FileChooserDialog(title,
                                         parent,
                                         action,
                                         (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                          gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+    if multiple:
+        filechooser.set_select_multiple(True)
+
     if patterns or filter:
         if not filter:
             filter = gtk.FileFilter()
@@ -261,36 +250,23 @@ def open_filechooser(
         if response not in (gtk.RESPONSE_OK, gtk.RESPONSE_NONE):
             return
 
-        path = filechooser.get_filename()
-        print path
-        if path and os.access(path, os.R_OK):
-            return path
-
+        if multiple:
+            return filechooser.get_filenames()
+        else:
+            return filechooser.get_filename()
     finally:
         _destroy(filechooser)
 
-
-open = partial(open_filechooser,
-               title='Open',
-               action=gtk.FILE_CHOOSER_ACTION_OPEN)
-
-select_folder = partial(open_filechooser,
-                        title='Select folder',
-                        action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER)
 
 def ask_overwrite(filename, parent=None, **kw):
     submsg1 = 'A file named "%s" already exists' % os.path.abspath(filename)
     submsg2 = 'Do you wish to replace it with the current one?'
     text = ('<span weight="bold" size="larger">%s</span>\n'
             '\n%s\n' % (submsg1, submsg2))
-    result = messagedialog(gtk.MESSAGE_ERROR, text, parent=parent,
-                           buttons=((gtk.STOCK_CANCEL,
-                                     gtk.RESPONSE_CANCEL),
-                                    (_("Replace"),
-                                     gtk.RESPONSE_YES)),
-                                    **kw)
+    result = _message_dialog(gtk.MESSAGE_ERROR, text, parent=parent,
+                             buttons=((gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL),
+                                      (_("Replace"), gtk.RESPONSE_YES)), **kw)
     return result == gtk.RESPONSE_YES
-
 
 
 def save(title='Save', parent=None, current_name='', folder=None,
@@ -328,7 +304,6 @@ def save(title='Save', parent=None, current_name='', folder=None,
     return path
 
 
-
 def input(title, value=None, label=None, parent=None, _before_run=None):
     d = gtk.Dialog(
         title=title,
@@ -362,3 +337,31 @@ def input(title, value=None, label=None, parent=None, _before_run=None):
     d.destroy()
     if r == gtk.RESPONSE_OK:
         return res
+
+
+open = partial(open_filechooser,
+               title='Open',
+               action=gtk.FILE_CHOOSER_ACTION_OPEN)
+
+
+select_folder = partial(open_filechooser,
+                        title='Select folder',
+                        action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER)
+
+
+#: Show an error dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
+error = partial(simple, gtk.MESSAGE_ERROR)
+
+
+#: Show an info dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
+info = partial(simple, gtk.MESSAGE_INFO)
+
+
+#: Show a warning dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
+warning = partial(simple, gtk.MESSAGE_WARNING)
+
+
+#:  A yes/no question dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
+yesno = partial(simple, gtk.MESSAGE_WARNING,
+                default=gtk.RESPONSE_YES,
+                buttons=gtk.BUTTONS_YES_NO,)
