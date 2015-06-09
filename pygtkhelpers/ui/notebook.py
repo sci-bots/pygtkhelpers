@@ -1,6 +1,8 @@
 import sys
 import os
 import collections
+import types
+import webbrowser
 
 import gtk
 from path_helpers import path
@@ -109,20 +111,97 @@ class NotebookManagerView(SlaveView):
         self.stop()
 
 
+class NotebookManagerList(SlaveView):
+    '''
+    Display list of running sessions with open button and stop button for each
+    session.
+    '''
+    def __init__(self, notebook_manager):
+        self.notebook_manager = notebook_manager
+        super(NotebookManagerList, self).__init__()
+
+    def create_ui(self):
+        # Only list sessions that are currently running.
+        sessions = collections.OrderedDict([(k, v)
+                                            for k, v in self.notebook_manager
+                                            .sessions.iteritems()
+                                            if v.is_alive()])
+        scroll_window = gtk.ScrolledWindow()
+        scroll_window.set_size_request(480, 360)
+
+        table = gtk.Table(len(sessions) + 1, 4)
+
+        header_y_padding = 5
+        x_padding = 20
+        y_padding = 2
+
+        for k, header in enumerate(['Directory', 'URL']):
+            label = gtk.Label()
+            label.set_markup('<b>%s</b>' % header)
+            table.attach(label, k, k + 1, 0, 1,
+                         xoptions=gtk.SHRINK,
+                         yoptions=gtk.SHRINK,
+                         xpadding=x_padding,
+                         ypadding=header_y_padding)
+
+        for i, (root, session) in enumerate(sessions.iteritems()):
+            i += 1
+            root = path(root)
+            name_label = gtk.Label(root.name)
+            name_label.set_tooltip_text(str(root))
+            url_label = gtk.Label(session.address)
+
+            stop_button = gtk.Button('Stop')
+            stop_button.set_tooltip_text('Stop IPython notebook for directory %s'
+                                         % root)
+            open_button = gtk.Button('Open')
+            open_button.set_tooltip_text('Open IPython notebook for directory %s'
+                                         % root)
+
+            def open_session(button, session):
+                webbrowser.open_new_tab(session.address)
+
+            def stop_session(button, session, widgets):
+                session.stop()
+                for widget in widgets:
+                    table.remove(widget)
+
+            open_button.connect('clicked', open_session, session)
+            stop_button.connect('clicked', stop_session, session,
+                                (name_label, url_label, open_button,
+                                 stop_button))
+
+            for k, widget in enumerate((name_label, url_label, open_button,
+                                        stop_button)):
+                if isinstance(widget, gtk.Button):
+                    x_padding_k = 0
+                else:
+                    x_padding_k = x_padding
+                table.attach(widget, k, k + 1, i, i + 1,
+                             xoptions=gtk.SHRINK,
+                             yoptions=gtk.SHRINK,
+                             xpadding=x_padding_k,
+                             ypadding=y_padding)
+        self.table = table
+        scroll_window.add_with_viewport(table)
+        self.widget.pack_start(scroll_window, False, False, 0)
+
+
 def add_filters(dialog, filters):
     for f in filters:
         filter_text = gtk.FileFilter()
         filter_text.set_name(f['name'])
         if 'mime_type' in f:
             mime_types = f['mime_type']
-            if not isinstance(mime_types, collections.Iterable):
+            if isinstance(mime_types, types.StringTypes):
                 mime_types = [mime_types]
             for mime_type in mime_types:
                 filter_text.add_mime_type(mime_type)
         elif 'pattern' in f:
             patterns = f['pattern']
-            if not isinstance(patterns, collections.Iterable):
+            if isinstance(patterns, types.StringTypes):
                 patterns = [patterns]
             for pattern in patterns:
+                print 'add pattern: "%s"' % pattern
                 filter_text.add_pattern(pattern)
         dialog.add_filter(filter_text)
