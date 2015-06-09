@@ -25,18 +25,30 @@ class NotebookManagerView(SlaveView):
         self.template_dir = template_dir
         self.notebook_manager = SessionManager(daemon=True)
 
+    def sessions_dialog(self):
+        session_list = NotebookManagerList(self.notebook_manager)
+        dialog = gtk.Dialog(title='Notebook session manager',
+                            parent=self.parent,
+                            flags=gtk.DIALOG_MODAL |
+                            gtk.DIALOG_DESTROY_WITH_PARENT,
+                            buttons=(gtk.STOCK_OK, gtk.RESPONSE_OK))
+        dialog.set_transient_for(self.parent)
+        dialog.get_content_area().pack_start(session_list.widget)
+        return dialog
+
     def create_ui(self):
         box = gtk.HBox()
 
         new_button = gtk.Button('New...')
         open_button = gtk.Button('Open...')
+        manager_button = gtk.Button('Manage sessions...')
         new_button.connect('clicked', self.on_new)
         open_button.connect('clicked', self.on_open)
-        new_button.show()
-        open_button.show()
+        manager_button.connect('clicked', self.on_manager)
 
         box.pack_end(new_button, False, False, 0)
         box.pack_end(open_button, False, False, 0)
+        box.pack_end(manager_button, False, False, 0)
         self.widget.pack_start(box, False, False, 0)
 
         self.parent = None
@@ -44,6 +56,26 @@ class NotebookManagerView(SlaveView):
         while parent is not None:
             self.parent = parent
             parent = parent.get_parent()
+        self.widget.show_all()
+
+    def get_parent(self):
+        self.parent = None
+        parent = self.widget.get_parent()
+        while parent is not None:
+            self.parent = parent
+            parent = parent.get_parent()
+        return self.parent
+
+    def on_manager(self, button):
+        parent = self.get_parent()
+        dialog = self.sessions_dialog()
+        dialog.show_all()
+        if parent is not None:
+            parent.set_sensitive(False)
+        dialog.run()
+        dialog.destroy()
+        if parent is not None:
+            parent.set_sensitive(True)
 
     def on_open(self, button):
         buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
