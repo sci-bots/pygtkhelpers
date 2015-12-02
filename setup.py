@@ -40,6 +40,6 @@ setup(name='wheeler.pygtkhelpers',
       description=short_description,
       long_description=long_description,
       license='LGPL-3.0',
-      packages=['pygtkhelpers', 'pygtkhelpers.ui',
-                'pygtkhelpers.ui.objectlist', 'pygtkhelpers.debug'],
+      packages=['pygtkhelpers', 'pygtkhelpers.ui', 'pygtkhelpers.debug',
+                'pygtkhelpers.ui.objectlist', 'pygtkhelpers.ui.views'],
       package_data={'pygtkhelpers': ['ui/glade/*.glade']})
