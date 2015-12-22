@@ -1,3 +1,6 @@
 *.pyc
 RELEASE-VERSION
 MANIFEST
+.project
+.pydevproject
+*.egg-info
