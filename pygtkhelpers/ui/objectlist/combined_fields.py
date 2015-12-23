@@ -15,7 +15,7 @@ from . import ObjectList
 
 class RowFields(object):
     '''
-    Expose all key/value pairs specified through kwargs as object attributes. 
+    Expose all key/value pairs specified through kwargs as object attributes.
     This is convenient for use in combination with a pygtkhelpers ObjectList,
     since an ObjectList object uses attribute access to read/write field values.
 
@@ -44,7 +44,7 @@ class RowFields(object):
 
     @property
     def attrs(self):
-        return dict([(k, v) for k, v in self.__dict__.items() 
+        return dict([(k, v) for k, v in self.__dict__.items()
                 if k not in ('__members__', '__methods__',
                         '_getAttributeNames')])
 
@@ -144,12 +144,14 @@ class CombinedFields(ObjectList):
                 if not form_name == '__DefaultFields' and not enabled(form_name,
                         field_name):
                     continue
-                title = re.sub(r'_', ' ', field_name.name).capitalize()
-                prefix = self.field_set_prefix % self.uuid_mapping[form_name] 
+                default_title = re.sub(r'_', ' ', field_name.name).capitalize()
+                # Use custom column heading/title, if available.
+                title = field_name.properties.get('title', default_title)
+                prefix = self.field_set_prefix % self.uuid_mapping[form_name]
                 name = '%s%s' % (prefix, field_name.name)
                 val_type = get_type_from_schema(field_name)
                 d = dict(attr=name, type=val_type, title=title, resizable=True,
-                        editable=True, sorted=False)
+                         editable=True, sorted=False)
                 if field_name.properties.get('mappers', None):
                     d['mappers'] = deepcopy(field_name.properties['mappers'])
                     for m in d['mappers']:
@@ -397,13 +399,13 @@ class CombinedRow(object):
 
     def set_row_fields_attr(self, form_name, attr, value):
         return setattr(self.attributes[form_name], attr, value)
-    
+
     def get_row_fields(self, form_name):
         return self.attributes[form_name]
-    
+
     def decode_form_name(self, mangled_form_name):
         return mangled_form_name.split('__')[-1]
-    
+
     def set_row_id(self, row_id):
         if '__DefaultFields' in self.combined_fields._forms\
                 and row_id is not None:
