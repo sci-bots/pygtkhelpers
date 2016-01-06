@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
+import logging
+
+from svg_model import svg_polygons_to_df
+from svg_model.shapes_canvas import ShapesCanvas
 import cairo
 import gtk
-from svg_model import svg_polygons_to_df
 import pandas as pd
-from svg_model.shapes_canvas import ShapesCanvas
+
 from .cairo_view import GtkCairoView
+
+logger = logging.getLogger(__name__)
 
 
 class GtkShapesCanvasView(GtkCairoView):
@@ -32,6 +37,19 @@ class GtkShapesCanvasView(GtkCairoView):
                                gtk.gdk.BUTTON_RELEASE_MASK |
                                gtk.gdk.POINTER_MOTION_MASK)
 
+    def reset_canvas(self, width, height):
+        canvas_shape = pd.Series([width, height], index=['width', 'height'])
+        self.canvas = ShapesCanvas(self.df_shapes, self.shape_i_columns,
+                                   canvas_shape=canvas_shape,
+                                   padding_fraction=self.padding_fraction)
+
+    def reset_cairo_surface(self):
+        # Render shapes to off-screen Cairo surface.
+        self.cairo_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32,
+                                                self.canvas.canvas_shape.width,
+                                                self.canvas.canvas_shape
+                                                .height)
+
     def render_shapes(self, df_shapes=None, cairo_context=None, clip=False):
         if cairo_context is None:
             cairo_context = self.widget.window.cairo_create()
@@ -49,11 +67,19 @@ class GtkShapesCanvasView(GtkCairoView):
             cairo_context.set_source_rgb(0, 0, 1)
             cairo_context.fill()
 
-    def reset_canvas(self, width, height):
-        canvas_shape = pd.Series([width, height], index=['width', 'height'])
-        self.canvas = ShapesCanvas(self.df_shapes, self.shape_i_columns,
-                                   canvas_shape=canvas_shape,
-                                   padding_fraction=self.padding_fraction)
+    def render(self):
+        self.reset_cairo_surface()
+        cairo_context = cairo.Context(self.cairo_surface)
+        self.render_shapes(cairo_context=cairo_context)
+
+    def draw(self):
+        if self.cairo_surface is not None:
+            logger.debug('Paint canvas on widget Cairo surface.')
+            cairo_context = self.widget.window.cairo_create()
+            cairo_context.set_source_surface(self.cairo_surface, 0, 0)
+            cairo_context.paint()
+        else:
+            logger.debug('No Cairo surface to paint to.')
 
     def on_canvas_reset_tick(self, width, height):
         self.reset_canvas(width, height)
@@ -61,18 +87,6 @@ class GtkShapesCanvasView(GtkCairoView):
         self._canvas_reset_request = False
         gtk.idle_add(self.widget.queue_draw)
         return False
-
-    def reset_cairo_surface(self):
-        # Render shapes to off-screen Cairo surface.
-        self.cairo_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32,
-                                                self.canvas.canvas_shape.width,
-                                                self.canvas.canvas_shape
-                                                .height)
-
-    def render(self):
-        self.reset_cairo_surface()
-        cairo_context = cairo.Context(self.cairo_surface)
-        self.render_shapes(cairo_context=cairo_context)
 
     def on_widget__configure_event(self, widget, event):
         '''
@@ -98,15 +112,6 @@ class GtkShapesCanvasView(GtkCairoView):
         '''
         # Paint pre-rendered off-screen Cairo surface to drawing area widget.
         self.draw()
-
-    def draw(self):
-        print '[draw]'
-        if self.cairo_surface is not None:
-            cairo_context = self.widget.window.cairo_create()
-            cairo_context.set_source_surface(self.cairo_surface, 0, 0)
-            cairo_context.paint()
-        else:
-            print '    No cairo surface'
 
 
 def parse_args(args=None):
