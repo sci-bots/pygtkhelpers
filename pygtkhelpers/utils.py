@@ -281,3 +281,45 @@ class MarkupMixin(object):
     def markup(self):
         formatter = XFormatter(self, **self.markup_converters)
         return formatter.vformat(self.format, (), self.markup_kwargs())
+
+def dict_to_form(dict):
+    '''
+    Generate a flatland form based on a pandas Series.
+    '''
+    from flatland import Boolean, Form, String, Integer, Float
+
+    def is_float(v):
+        try: return (float(str(v)), True)[1]
+        except (ValueError, TypeError), e: return False
+    
+    def is_int(v):
+        try: return (int(str(v)), True)[1]
+        except (ValueError, TypeError), e: return False
+    
+    def is_bool(v):
+        return v in (True, False)
+     
+    schema_entries = []
+    for k, v in dict.iteritems():
+        if is_int(v):
+            schema_entries.append(
+                Integer.named(k).using(
+                    default=v, optional=True),
+            )
+        elif is_float(v):
+            schema_entries.append(
+                Float.named(k).using(
+                    default=v, optional=True),
+            )
+        elif is_bool(v):
+            schema_entries.append(
+                Boolean.named(k).using(
+                    default=v, optional=True),
+            )
+        elif type(v) == str:
+            schema_entries.append(
+                String.named(k).using(
+                    default=v, optional=True),
+            )
+            
+    return Form.of(*schema_entries)
