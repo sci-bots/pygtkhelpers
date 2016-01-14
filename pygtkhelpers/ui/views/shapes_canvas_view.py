@@ -65,14 +65,14 @@ class GtkShapesCanvasView(GtkCairoView):
             width, height = self._canvas_reset_request
         else:
             width, height = shape
-        logger.info('on_canvas_reset_tick')
+        logger.debug('on_canvas_reset_tick')
         self.reset_canvas(width, height)
-        logger.info('on_canvas_reset_tick [canvas reset]')
+        logger.debug('on_canvas_reset_tick [canvas reset]')
         def update_gui():
             self.render()
-            logger.info('on_canvas_reset_tick [render complete]')
+            logger.debug('on_canvas_reset_tick [render complete]')
             self.draw()
-            logger.info('on_canvas_reset_tick [draw complete]')
+            logger.debug('on_canvas_reset_tick [draw complete]')
             self._canvas_reset_request = None
         gtk.idle_add(update_gui)
 
@@ -83,7 +83,7 @@ class GtkShapesCanvasView(GtkCairoView):
         if event.x < 0 and event.y < 0:
             # Widget has not been allocated a size yet, so do nothing.
             return
-        logger.info('on_widget__configure_event')
+        logger.debug('on_widget__configure_event')
         # Use `self._canvas_reset_request` latch to throttle configure event
         # handling.
         # This makes the UI more responsive when resizing the drawing area, for
@@ -98,7 +98,7 @@ class GtkShapesCanvasView(GtkCairoView):
         Called when drawing area is first displayed and, for example, when part
         of drawing area is uncovered after being covered up by another window.
         '''
-        logger.info('on_widget__expose_event')
+        logger.debug('on_widget__expose_event')
         # Paint pre-rendered off-screen Cairo surface to drawing area widget.
         self.draw()
 
