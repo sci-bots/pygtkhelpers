@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from collections import OrderedDict
 import logging
 
 from cairo_helpers.surface import flatten_surfaces
+from cairo_helpers.font import aspect_fit_font_size
 from svg_model import svg_polygons_to_df
 from svg_model.shapes_canvas import ShapesCanvas
 import cairo
@@ -127,11 +127,55 @@ class GtkShapesCanvasView(GtkCairoView):
             cairo_context.fill()
         return surface
 
-    def flatten_surfaces(self, **kwargs):
+    def render_label(self, cairo_context, shape_id, text=None, label_scale=.9):
         '''
-        Flatten all surfaces into a single Cairo surface.
-        '''
+        Draw label on specified shape.
 
+        Args:
+
+            cairo_context (cairo.Context) : Cairo context to draw text width.  Can
+                be preconfigured, for example, to set font style, etc.
+            shape_id (str) : Shape identifier.
+            text (str) : Label text.  If not specified, shape identifier is used.
+            label_scale (float) : Fraction of limiting dimension of shape bounding
+                box to scale text to.
+
+        Returns:
+
+            None
+        '''
+        text = shape_id if text is None else text
+        shape = self.canvas.df_bounding_shapes.ix[shape_id]
+        shape_center = self.canvas.df_shape_centers.ix[shape_id]
+        font_size, text_shape = aspect_fit_font_size(text, shape * label_scale,
+                                                     cairo_context=cairo_context)
+        cairo_context.set_font_size(font_size)
+        cairo_context.move_to(shape_center[0] - .5 * text_shape.width,
+                              shape_center[1] + .5 * text_shape.height)
+        cairo_context.show_text(text)
+
+    def render_labels(self, labels, color_rgba=None):
+        surface = self.get_surface()
+        cairo_context = cairo.Context(surface)
+
+        color_rgba = (1, 1, 1, 1) if color_rgba is None else color_rgba
+
+        if not isinstance(color_rgba, pd.Series):
+            shape_rgba_colors = pd.Series([color_rgba],
+                                          index=self.canvas.df_shape_centers
+                                          .index)
+        else:
+            shape_rgba_colors = color_rgba
+
+        font_options = cairo.FontOptions()
+        font_options.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
+        cairo_context.set_font_options(font_options)
+
+        for shape_id, label_i in labels.iteritems():
+            cairo_context.set_source_rgba(*shape_rgba_colors.ix[shape_id])
+            self.render_label(cairo_context, shape_id, label_i,
+                              label_scale=0.6)
+        return surface
 
 def parse_args(args=None):
     """Parses arguments, returns (options, args)."""
