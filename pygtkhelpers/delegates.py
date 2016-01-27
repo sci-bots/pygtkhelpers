@@ -140,7 +140,7 @@ class BaseDelegate(gobject.GObject):
 
     def _load_builder(self):
         builder = gtk.Builder()
-        self.__builder = builder
+        self._builder = builder
         if self.builder_path:
             if not os.path.exists(self.builder_path):
                 raise LookupError(self.__class__, self.builder_path)
@@ -167,6 +167,10 @@ class BaseDelegate(gobject.GObject):
         self._toplevel = self.get_builder_toplevel(builder)
         for obj in builder.get_objects():
             try:
+                # Need to use `gtk.Buildable.get_name` instead of `get_name`
+                # method directly due to [bug][1].
+                #
+                # [1]: http://mailman.daa.com.au/cgi-bin/pipermail/pygtk/2010-December/019255.html
                 obj_name = gtk.Buildable.get_name(obj)
             except TypeError:
                 pass #XXX: maybe warn?
@@ -176,7 +180,7 @@ class BaseDelegate(gobject.GObject):
     def _connect_signals(self):
         for name in self._get_all_handlers():
             self._connect_signal(name)
-        self.__builder.connect_signals(self)
+        self._builder.connect_signals(self)
 
     def _parse_signal_handler(self, name):
         signal_type, widget_signal = name.split('_', 1)
