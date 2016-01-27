@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from collections import OrderedDict
 import os
+import types
 
 import gtk
-from pygtkhelpers.delegates import SlaveView
+from ...delegates import SlaveView
 
 
 class GtkCairoView(SlaveView):

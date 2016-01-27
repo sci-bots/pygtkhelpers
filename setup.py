@@ -40,6 +40,7 @@ setup(name='wheeler.pygtkhelpers',
       description=short_description,
       long_description=long_description,
       license='LGPL-3.0',
+      install_requires=['cairo-helpers>=0.2.post1'],
       packages=['pygtkhelpers', 'pygtkhelpers.ui', 'pygtkhelpers.debug',
                 'pygtkhelpers.ui.objectlist', 'pygtkhelpers.ui.views'],
       package_data={'pygtkhelpers': ['ui/glade/*.glade']})

@@ -2,15 +2,14 @@
 from collections import OrderedDict
 import logging
 
+from cairo_helpers.surface import flatten_surfaces
 from svg_model import svg_polygons_to_df
 from svg_model.shapes_canvas import ShapesCanvas
 import cairo
 import gtk
 import pandas as pd
 
-from ...utils import refresh_gui
 from .cairo_view import GtkCairoView
-from . import composite_surface
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +23,7 @@ class GtkShapesCanvasView(GtkCairoView):
         self.padding_fraction = padding_fraction
         self._canvas_reset_request = None
         self.cairo_surface = None
+        self.df_surfaces = pd.DataFrame(None, columns=['name', 'surface'])
         super(GtkShapesCanvasView, self).__init__(**kwargs)
 
     @classmethod
@@ -56,9 +56,9 @@ class GtkShapesCanvasView(GtkCairoView):
             logger.debug('No Cairo surface to paint to.')
 
     def render(self):
-        self.surfaces = OrderedDict()
-        self.surfaces['shapes'] = self.render_shapes()
-        self.cairo_surface = self.flatten_surfaces()
+        self.df_surfaces = pd.DataFrame([['shapes', self.render_shapes()]],
+                                        columns=['name', 'surface'])
+        self.cairo_surface = flatten_surfaces(self.df_surfaces)
 
     def on_canvas_reset_tick(self, shape=None):
         if shape is None:
@@ -104,9 +104,13 @@ class GtkShapesCanvasView(GtkCairoView):
 
     ###########################################################################
     # Render methods
-    def render_shapes(self, df_shapes=None, clip=False):
+    def get_surface(self, format_=cairo.FORMAT_ARGB32):
         x, y, width, height = self.widget.get_allocation()
-        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+        surface = cairo.ImageSurface(format_, width, height)
+        return surface
+
+    def render_shapes(self, df_shapes=None, clip=False):
+        surface = self.get_surface()
         cairo_context = cairo.Context(surface)
 
         if df_shapes is None:
@@ -127,7 +131,6 @@ class GtkShapesCanvasView(GtkCairoView):
         '''
         Flatten all surfaces into a single Cairo surface.
         '''
-        return composite_surface(self.surfaces.values(), **kwargs)
 
 
 def parse_args(args=None):
