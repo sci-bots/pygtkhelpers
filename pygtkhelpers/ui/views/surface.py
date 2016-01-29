@@ -12,12 +12,16 @@ from ..objectlist import (get_list_store, add_columns,
 class LayerAlphaController(SlaveView):
     # Emit signal when layer alpha has changed (layer name, alpha).
     gsignal('alpha-changed', str, float)
+    # Emit signal when order of layers has changed (list of reordered row
+    # indices).
+    gsignal('layers-reordered', object)
 
     builder_path = os.path.join(os.path.dirname(__file__), 'glade',
                                 'layers.glade')
 
     def create_ui(self):
         super(LayerAlphaController, self).create_ui()
+        self.treeview_layers.set_reorderable(True)
         self.adjustment_alpha = self._builder.get_object('adjustment_alpha')
 
     def on_edited(self, cell_renderer, iter, new_value, column, df_py_dtypes,
@@ -86,6 +90,8 @@ class LayerAlphaController(SlaveView):
         self.df_py_dtypes, self.list_store = get_list_store(self.df_surfaces)
         add_columns(self.treeview_layers, self.df_py_dtypes, self.list_store)
 
+        self._inserted_row_path = None
+
         # Adjustment for alpha multiplier for each surface.
         adjustment = gtk.Adjustment(1, 0, 1, .01, .1, 0)
         column = [c for c in self.treeview_layers.get_columns()
@@ -98,6 +104,30 @@ class LayerAlphaController(SlaveView):
                               self.df_surfaces)
         set_column_format(column, self.df_py_dtypes.ix['alpha'].i,
                           '{value:.2f}', cell_renderer=cell_renderer)
+        # Bind handlers for reordering of surface layers.
+        for k in ('inserted', 'deleted'):
+            self.list_store.connect('row-' + k, getattr(self, 'on_row_' + k))
+
+    def on_row_inserted(self, list_store, row_path, row_iter):
+        self._inserted_row_path = row_path[0]
+
+    def on_row_deleted(self, list_store, row_path):
+        rows_index = range(self.df_surfaces.shape[0])
+        if self._inserted_row_path is not None:
+            source_index = row_path[0]
+            target_index = self._inserted_row_path
+            if source_index > target_index:
+                source_index -= 1
+            elif source_index < target_index:
+                target_index -= 1
+        else:
+            source_index = row_path[0]
+            target_index = None
+        rows_index.remove(source_index)
+        if target_index is not None:
+            rows_index.insert(target_index, source_index)
+        self.df_surfaces = self.df_surfaces.take(rows_index, is_copy=False)
+        self.emit('layers-reordered', rows_index)
 
     def set_scale_alpha_from_selection(self):
         '''
