@@ -24,6 +24,7 @@ class GtkShapesCanvasView(GtkCairoView):
         self._canvas_reset_request = None
         self.cairo_surface = None
         self.df_surfaces = pd.DataFrame(None, columns=['name', 'surface'])
+
         super(GtkShapesCanvasView, self).__init__(**kwargs)
 
     @classmethod
@@ -156,6 +157,10 @@ class GtkShapesCanvasView(GtkCairoView):
 
     def render_labels(self, labels, color_rgba=None):
         surface = self.get_surface()
+        if self.canvas is None or not hasattr(self.canvas, 'df_shape_centers'):
+            # Canvas is not initialized, so return empty cairo surface.
+            return surface
+
         cairo_context = cairo.Context(surface)
 
         color_rgba = (1, 1, 1, 1) if color_rgba is None else color_rgba
