@@ -1,6 +1,7 @@
 import os
 
 import gtk
+import pandas as pd
 
 from ...utils import gsignal
 from ...delegates import SlaveView
@@ -58,12 +59,12 @@ class LayerAlphaController(SlaveView):
     def set_surfaces(self, df_surfaces):
         '''
         Reset the contents of the tree view to show one row per surface, with
-        the first column containing the surface name and the second column
-        containing the alpha multiplier for the surface (in the range [0, 1]).
+        a column containing the alpha multiplier for the corresponding surface
+        (in the range [0, 1]), indexed by surface name.
 
         For example:
 
-            | name   | alpha  |
+            | index  | alpha  |
             |--------|--------|
             | layer1 | 1.00   |
             | layer2 | 0.65   |
@@ -72,7 +73,10 @@ class LayerAlphaController(SlaveView):
         for column in self.treeview_layers.get_columns():
             self.treeview_layers.remove_column(column)
 
-        self.df_surfaces = df_surfaces[['name']].copy()
+        self.df_surfaces = pd.DataFrame(df_surfaces.index.values,
+                                        columns=[df_surfaces.index.name or
+                                                 'index'],
+                                        index=df_surfaces.index)
 
         if 'alpha' in df_surfaces:
             self.df_surfaces['alpha'] = df_surfaces.alpha.copy()
@@ -80,8 +84,7 @@ class LayerAlphaController(SlaveView):
             self.df_surfaces['alpha'] = 1.
 
         self.df_py_dtypes, self.list_store = get_list_store(self.df_surfaces)
-        add_columns(self.treeview_layers, self.df_py_dtypes.ix[['name', 'alpha']],
-                    self.list_store)
+        add_columns(self.treeview_layers, self.df_py_dtypes, self.list_store)
 
         # Adjustment for alpha multiplier for each surface.
         adjustment = gtk.Adjustment(1, 0, 1, .01, .1, 0)
@@ -135,11 +138,10 @@ class LayerAlphaController(SlaveView):
 
     def set_alpha(self, surface_name, alpha):
         #  1. Set alpha in `self.df_surfaces`.
-        self.df_surfaces.loc[self.df_surfaces.name == surface_name,
-                             'alpha'] = alpha
+        self.df_surfaces.loc[surface_name, 'alpha'] = alpha
 
         #  2. Set alpha in list store model.
-        store_name_column_index = self.df_py_dtypes.ix['name'].i
+        store_name_column_index = self.df_py_dtypes.iloc[0].i
         store_alpha_column_index = self.df_py_dtypes.ix['alpha'].i
 
         for row in self.list_store:

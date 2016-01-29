@@ -200,5 +200,5 @@ def on_edited_dataframe_sync(cell_renderer, iter, new_value, column,
         return False
     list_store[iter][i] = value
     # Update the data frame with the new value.
-    df_data.loc[int(iter), column_name] = value
+    df_data[column_name].values[int(iter)] = value
     return True
