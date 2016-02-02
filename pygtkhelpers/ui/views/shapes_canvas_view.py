@@ -25,6 +25,13 @@ class GtkShapesCanvasView(GtkCairoView):
         self.cairo_surface = None
         self.df_surfaces = pd.DataFrame(None, columns=['name', 'surface'])
 
+        # Markers to indicate whether drawing needs to be resized, re-rendered,
+        # and/or redrawn.
+        self._dirty_size = None  # Either `None` or `(width, height)`
+        self._dirty_render = False
+        self._dirty_draw = False
+        self._dirty_check_timeout_id = None  # Periodic callback identifier
+
         super(GtkShapesCanvasView, self).__init__(**kwargs)
 
     @classmethod
@@ -40,6 +47,7 @@ class GtkShapesCanvasView(GtkCairoView):
                                gtk.gdk.BUTTON_PRESS_MASK |
                                gtk.gdk.BUTTON_RELEASE_MASK |
                                gtk.gdk.POINTER_MOTION_MASK)
+        self._dirty_check_timeout_id = gtk.timeout_add(750, self.check_dirty)
 
     def reset_canvas(self, width, height):
         canvas_shape = pd.Series([width, height], index=['width', 'height'])
@@ -61,47 +69,44 @@ class GtkShapesCanvasView(GtkCairoView):
                                         columns=['name', 'surface'])
         self.cairo_surface = flatten_surfaces(self.df_surfaces)
 
-    def on_canvas_reset_tick(self, shape=None):
-        if shape is None:
-            width, height = self._canvas_reset_request
-        else:
-            width, height = shape
-        logger.debug('on_canvas_reset_tick')
+    def check_dirty(self):
+        if self._dirty_size is None:
+            if self._dirty_render:
+                self.render()
+                self._dirty_render = False
+            if self._dirty_draw:
+                self.draw()
+                self._dirty_draw = False
+            return True
+        #logger.info('[check_dirty] %s', self._dirty_size)
+        width, height = self._dirty_size
+        self._dirty_size = None
         self.reset_canvas(width, height)
-        logger.debug('on_canvas_reset_tick [canvas reset]')
-        def update_gui():
-            self.render()
-            logger.debug('on_canvas_reset_tick [render complete]')
-            self.draw()
-            logger.debug('on_canvas_reset_tick [draw complete]')
-            self._canvas_reset_request = None
-        gtk.idle_add(update_gui)
+        self._dirty_render = True
+        self._dirty_draw = True
+        return True
 
     def on_widget__configure_event(self, widget, event):
         '''
         Called when size of drawing area changes.
         '''
+        #logger.info('on_widget__configure_event')
         if event.x < 0 and event.y < 0:
             # Widget has not been allocated a size yet, so do nothing.
             return
-        logger.debug('on_widget__configure_event')
-        # Use `self._canvas_reset_request` latch to throttle configure event
-        # handling.
-        # This makes the UI more responsive when resizing the drawing area, for
-        # example, by dragging the window border.
-        request_pending = (self._canvas_reset_request is not None)
-        self._canvas_reset_request = (event.width, event.height)
-        if not request_pending:
-            gtk.timeout_add(500, self.on_canvas_reset_tick)
+        self._dirty_size = event.width, event.height
 
     def on_widget__expose_event(self, widget, event):
         '''
         Called when drawing area is first displayed and, for example, when part
         of drawing area is uncovered after being covered up by another window.
         '''
-        logger.debug('on_widget__expose_event')
-        # Paint pre-rendered off-screen Cairo surface to drawing area widget.
+        logger.info('on_widget__expose_event')
+        # Request immediate paint of pre-rendered off-screen Cairo surface to
+        # drawing area widget, but also mark as dirty to redraw after next
+        # render.
         self.draw()
+        self._dirty_draw = True
 
     ###########################################################################
     # Render methods
