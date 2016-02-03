@@ -9,8 +9,6 @@
     :copyright: 2005-2008 by pygtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
-import types
-
 from si_prefix import si_format, si_parse
 import numpy as np
 
@@ -127,6 +125,26 @@ def add_columns(tree_view, df_py_dtypes, list_store):
 
 def set_column_format(tree_column, model_column_index, format_str,
                       cell_renderer=None):
+    '''
+    Set the text of a cell according to a [format][1] string.
+
+    [1]: https://docs.python.org/2/library/string.html#formatstrings
+
+    Args:
+
+        tree_column (gtk.TreeViewColumn) : Tree view to append columns to.
+        model_column_index (int) : Index in list store model corresponding to
+            tree view column.
+        format_str (str) : Format string as accepted by Python string `format`
+            method (e.g., `'{value}'`).  N.B., the value of a cell is passed to
+            the `format` method as a keyword argument.
+        cell_renderer (gtk.CellRenderer) : Cell renderer for column.  If
+            `None`, defaults to all cell renderers for column.
+
+    Returns:
+
+        None
+    '''
     def set_property(column, cell_renderer, list_store, iter, store_i):
         value = list_store[iter][store_i]
         cell_renderer.set_property('text', format_str.format(value=value))
@@ -141,6 +159,26 @@ def set_column_format(tree_column, model_column_index, format_str,
 
 def set_column_si_format(tree_column, model_column_index, cell_renderer=None,
                          digits=2):
+    '''
+    Set the text of a numeric cell according to [SI prefixes][1]
+
+    For example, `1000 -> '1.00k'`.
+
+    [1]: https://en.wikipedia.org/wiki/Metric_prefix#List_of_SI_prefixes
+
+    Args:
+
+        tree_column (gtk.TreeViewColumn) : Tree view to append columns to.
+        model_column_index (int) : Index in list store model corresponding to
+            tree view column.
+        cell_renderer (gtk.CellRenderer) : Cell renderer for column.  If
+            `None`, defaults to all cell renderers for column.
+        digits (int) : Number of digits after decimal (default=2).
+
+    Returns:
+
+        None
+    '''
     def set_property(column, cell_renderer, list_store, iter, store_i):
         cell_renderer.set_property('text', si_format(list_store[iter][store_i],
                                                      digits))
