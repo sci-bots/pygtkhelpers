@@ -47,13 +47,16 @@ class GtkShapesCanvasView(GtkCairoView):
                                gtk.gdk.BUTTON_PRESS_MASK |
                                gtk.gdk.BUTTON_RELEASE_MASK |
                                gtk.gdk.POINTER_MOTION_MASK)
-        self._dirty_check_timeout_id = gtk.timeout_add(750, self.check_dirty)
+        self._dirty_check_timeout_id = gtk.timeout_add(30, self.check_dirty)
 
     def reset_canvas(self, width, height):
         canvas_shape = pd.Series([width, height], index=['width', 'height'])
-        self.canvas = ShapesCanvas(self.df_shapes, self.shape_i_columns,
-                                   canvas_shape=canvas_shape,
-                                   padding_fraction=self.padding_fraction)
+        if self.canvas is None or self.canvas.df_shapes.shape[0] == 0:
+            self.canvas = ShapesCanvas(self.df_shapes, self.shape_i_columns,
+                                       canvas_shape=canvas_shape,
+                                       padding_fraction=self.padding_fraction)
+        else:
+            self.canvas.reset_shape(canvas_shape)
 
     def draw(self):
         if self.cairo_surface is not None:
@@ -78,7 +81,7 @@ class GtkShapesCanvasView(GtkCairoView):
                 self.draw()
                 self._dirty_draw = False
             return True
-        #logger.info('[check_dirty] %s', self._dirty_size)
+        logger.info('[check_dirty] %s', self._dirty_size)
         width, height = self._dirty_size
         self._dirty_size = None
         self.reset_canvas(width, height)
