@@ -46,7 +46,7 @@ class GtkShapesCanvasView(GtkCairoView):
                                gtk.gdk.BUTTON_MOTION_MASK |
                                gtk.gdk.BUTTON_PRESS_MASK |
                                gtk.gdk.BUTTON_RELEASE_MASK |
-                               gtk.gdk.POINTER_MOTION_MASK)
+                               gtk.gdk.POINTER_MOTION_HINT_MASK)
         self._dirty_check_timeout_id = gtk.timeout_add(30, self.check_dirty)
 
     def reset_canvas(self, width, height):
