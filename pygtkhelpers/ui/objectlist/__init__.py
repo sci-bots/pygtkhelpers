@@ -107,19 +107,23 @@ def add_columns(tree_view, df_py_dtypes, list_store):
         tree_column_i = gtk.TreeViewColumn(column_i)
         tree_column_i.set_name(column_i)
         if dtype_i in (int, long):
+            property_name = 'text'
             cell_renderer_i = gtk.CellRendererSpin()
         elif dtype_i == float:
+            property_name = 'text'
             cell_renderer_i = gtk.CellRendererSpin()
         elif dtype_i in (bool, ):
+            property_name = 'active'
             cell_renderer_i = gtk.CellRendererToggle()
         elif dtype_i in (str, ):
+            property_name = 'text'
             cell_renderer_i = gtk.CellRendererText()
         else:
             raise ValueError('No cell renderer for dtype: %s' % dtype_i)
         cell_renderer_i.set_data('column_i', i)
         cell_renderer_i.set_data('column', tree_column_i)
         tree_column_i.pack_start(cell_renderer_i, True)
-        tree_column_i.add_attribute(cell_renderer_i, 'text', i)
+        tree_column_i.add_attribute(cell_renderer_i, property_name, i)
         tree_view.append_column(tree_column_i)
 
 
@@ -231,8 +235,9 @@ def on_edited_dataframe_sync(cell_renderer, iter, new_value, column,
     # Update the list store with the new value.
     if dtype == float:
         value = si_parse(new_value)
-    else:
-        value = dtype(new_value)
+    elif dtype == bool:
+        value = not list_store[iter][i]
+
     if value == list_store[iter][i]:
         # Value has not changed.
         return False
