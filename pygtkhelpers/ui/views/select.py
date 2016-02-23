@@ -43,7 +43,7 @@ class ListSelect(SlaveView):
 
     def set_all(self, value):
         column_i = self.df_py_dtypes.ix[self.select_column].i
-        select_column = self.treeview_select.get_column(column_i)
+        select_column = self.treeview_select.get_column(column_i).get_name()
 
         self.df_data.loc[:, select_column] = value
         for i in xrange(len(self.list_store)):
