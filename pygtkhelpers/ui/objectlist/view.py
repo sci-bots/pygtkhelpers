@@ -35,6 +35,12 @@ class ObjectTreeViewBase(gtk.TreeView):
     gsignal('item-middle-clicked', object, gtk.gdk.Event)
     gsignal('item-double-clicked', object, gtk.gdk.Event)
     gsignal('item-added', object)
+    # editing-started(cellrenderer, editable, path, column)
+    gsignal('editing-started', object, object, object, object)
+    # editing-canceled(cellrenderer, column)
+    gsignal('editing-canceled', object, object)
+    # editing-done(editable, cellrenderer, path, column)
+    gsignal('editing-done', object, object, object, object)
 
     def __init__(self, columns=(), **kwargs):
         gtk.TreeView.__init__(self)
@@ -106,6 +112,27 @@ class ObjectTreeViewBase(gtk.TreeView):
             if col.expander:
                 self.set_expander_column(view_col)
         self._id_to_iter = {}
+        self._attach_edited_signals()
+
+    def _attach_edited_signals(self):
+        def register_done(treeview, cellrenderer, editable, path, column):
+            def on_done(editable, cellrenderer, path, column):
+                self.emit('editing-done', editable, cellrenderer, path, column)
+            editable.connect('editing-done', on_done, cellrenderer, path,
+                             column)
+
+        def on_started(cellrenderer, editable, path, column):
+            self.emit('editing-started', cellrenderer, editable, path, column)
+
+        def on_canceled(cellrenderer, column):
+            self.emit('editing-canceled', cellrenderer, column)
+
+        for column_i in self.get_columns():
+            for cell_i in column_i.get_cells():
+                cell_i.connect('editing-started', on_started, column_i)
+                cell_i.connect('editing-canceled', on_canceled, column_i)
+
+        self.connect('editing-started', register_done)
 
     def _get_selected_item(self):
         """The currently selected item"""
@@ -164,7 +191,7 @@ class ObjectTreeViewBase(gtk.TreeView):
 
     def _get_selected_id(self):
         selected_item = self.selected_item
-        selected_id = [i for i, v in enumerate(self) if v == selected_item] 
+        selected_id = [i for i, v in enumerate(self) if v == selected_item]
         if selected_id:
             return selected_id[0]
 
@@ -663,7 +690,7 @@ class ObjectTree(ObjectTreeViewBase):
         return self.row_expanded(self._path_for(item))
 
     def _on_row_expanded(self, objecttree, giter, path):
-        item = self._object_at_sort_iter(giter) 
+        item = self._object_at_sort_iter(giter)
         if item in self.selected_items:
             # Since this item was selected before expanding, select all
             # children.
@@ -808,7 +835,7 @@ class ObjectTree(ObjectTreeViewBase):
         contiguous_check = (items == [i
                 for i in itertools.islice(siblings_iter, len(items))])
         try:
-            next_item = siblings_iter.next() 
+            next_item = siblings_iter.next()
             if len(self._path_for(next_item)) <= len(self._path_for(items[0])):
                 complete_check = True
             else:
@@ -832,7 +859,7 @@ class ObjectTree(ObjectTreeViewBase):
     def get_subtree(self, items, relative=False):
         if not items:
             return None
-        
+
         if not self.is_subtree(items):
             raise ValueError, 'Items must make up a complete (and contiguous)'\
                     'sub-tree.'
@@ -846,7 +873,7 @@ class ObjectTree(ObjectTreeViewBase):
             min_depth = min([len(item_path)
                     for item_path in item_paths])
             item_paths = [item_path[min_depth - 1:]
-                    for item_path in item_paths] 
+                    for item_path in item_paths]
             base_path = item_paths[0][0]
             for i, item_path in enumerate(item_paths):
                 new_path = list(item_path)

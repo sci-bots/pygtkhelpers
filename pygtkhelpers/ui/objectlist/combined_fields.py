@@ -10,7 +10,7 @@ from ..extra_widgets import get_type_from_schema
 from ..form_view_dialog import FormViewDialog
 from .uuid_minimal import uuid4
 from .column import Column
-from . import ObjectList
+from .view import ObjectList
 
 
 class RowFields(object):
