@@ -246,7 +246,6 @@ def open_filechooser(title, parent=None, patterns=None,
         if _before_run is not None:
             _before_run(filechooser)
         response = filechooser.run()
-        print gtk.ResponseType(response)
         if response not in (gtk.RESPONSE_OK, gtk.RESPONSE_NONE):
             return
 
