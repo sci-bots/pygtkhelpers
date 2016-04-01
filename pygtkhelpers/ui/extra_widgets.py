@@ -34,7 +34,15 @@ class FilepathWidget(gtk.HBox):
     gsignal('content-changed')
     mode = 'file'
 
-    def __init__(self):
+    def __init__(self, patterns=None):
+        '''
+        Args
+        ----
+
+            patterns (list) : List of tuples, where each tuple contains two
+                items: 1) label to show in file filter drop-down, and 2) list
+                of glob file patterns to match.
+        '''
         gtk.HBox.__init__(self, spacing=3)
         self.set_border_width(6)
         self.set_size_request(250, -1)
@@ -52,6 +60,7 @@ class FilepathWidget(gtk.HBox):
             self.action = gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER
         self.starting_dir = None
         self.show_all()
+        self.patterns = patterns
 
     def on_button_clicked(self, widget, data=None):
         if callable(self.starting_dir):
@@ -87,10 +96,24 @@ class FilepathWidget(gtk.HBox):
                                  gtk.STOCK_OPEN, gtk.RESPONSE_OK),
                         starting_dir=None):
         dialog = gtk.FileChooserDialog(title=title, action=action,
-                                        buttons=buttons)
+                                       buttons=buttons)
         if starting_dir:
             dialog.set_current_folder(starting_dir)
         dialog.set_default_response(gtk.RESPONSE_OK)
+
+        if self.patterns is not None:
+            for i, (name_i, patterns_i) in enumerate(self.patterns):
+                #     name_i (str) : Label to show in file filter drop-down.
+                #     patterns_i (list) : List of glob file patterns to match.
+                filter_i = gtk.FileFilter()
+                filter_i.set_name(name_i)
+                for pattern_j in patterns_i:
+                    filter_i.add_pattern(pattern_j)
+
+                dialog.add_filter(filter_i)
+                if i == 0:
+                    # Set first pattern as default.
+                    dialog.set_filter(filter_i)
         response = dialog.run()
 
         if response == gtk.RESPONSE_OK:
