@@ -16,13 +16,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Microdrop.  If not, see <http://www.gnu.org/licenses/>.
 """
-import logging
-from functools import partial
+from collections import OrderedDict
 
-import gtk
 from path_helpers import path
-from pygtkhelpers.forms import FormView
-from pygtkhelpers.proxy import proxy_for
+import gtk
+
+from ..forms import FormView
 
 
 script_dir = path(__file__).abspath().parent
@@ -51,33 +50,43 @@ def create_form_view(form, values=None, use_markup=True):
 class FormViewDialog(object):
     default_parent = None
 
-    def __init__(self, title=None, parent=None):
+    def __init__(self, form_class, title=None, parent=None):
+        self.title = title
+        self.parent = parent
+        self.form_class = form_class
+
+    def create_ui(self):
         builder = gtk.Builder()
         builder.add_from_file(script_dir.joinpath('glade',
-                'form_view_dialog.glade'))
+                                                  'form_view_dialog.glade'))
         self.window = builder.get_object('form_view_dialog')
         self.vbox_form = builder.get_object('vbox_form')
-        if title:
-            self.window.set_title(title)
-        self.parent = parent
-
-    def clear_form(self):
-        self.vbox_form.foreach(lambda x: self.vbox_form.remove(x))
-
-    def run(self, form, values=None, parent=None, use_markup=True):
-        if parent is None:
-            parent = self.parent
-        if parent is None:
-            parent = self.default_parent
-        form_view = create_form_view(form, values=values, use_markup=use_markup)
-        self.clear_form()
-        self.vbox_form.pack_start(form_view.widget)
+        if self.title:
+            self.window.set_title(self.title)
+        if self.parent is None:
+            self.parent = self.default_parent
         self.window.set_default_response(gtk.RESPONSE_OK)
-        self.window.set_position(gtk.WIN_POS_CENTER_ON_PARENT)        
-        if parent:
-            self.window.set_transient_for(parent)
+        self.window.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
+        if self.parent:
+            self.window.set_transient_for(self.parent)
         self.window.show_all()
+
+    def create_form_view(self, values=None, use_markup=True):
+        self.form_view = create_form_view(self.form_class, values=values,
+                                          use_markup=use_markup)
+
+    def run(self, values=None, parent=None, use_markup=True):
+        self.create_ui()
+        self.create_form_view(values=values, use_markup=use_markup)
+        self.form_view.connect('changed', self.on_changed)
+        self.form_view.widget.show_all()
+        self.vbox_form.pack_start(self.form_view.widget)
         response = self.window.run()
-        self.window.hide()
-        return (response == 0), {name: f.element.value
-                for name, f in form_view.form.fields.items()}
+        self.window.destroy()
+        return ((response == 0),
+                OrderedDict([(name, f.element.value)
+                             for name, f in
+                             self.form_view.form.fields.items()]))
+
+    def on_changed(self, form_view, proxy_group, proxy, field_name, new_value):
+        pass

@@ -258,8 +258,8 @@ if __name__ == '__main__':
                                 '''don't check for updates''')\
         .using(default=1, optional=True)
     )
-    dialog = FormViewDialog()
-    print dialog.run(form)
+    dialog = FormViewDialog(form)
+    print dialog.run()
     #FormView.schema_type = form
     #view = FormViewDialog()
     #for field in view.form.fields.values():

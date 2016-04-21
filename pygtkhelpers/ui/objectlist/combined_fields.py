@@ -193,9 +193,8 @@ class CombinedFields(ObjectList):
             Fields = Form.of(self._full_field_to_field_def[attr])
             local_field = Fields.field_schema_mapping.keys()[0]
 
-            temp = FormViewDialog(title='Set %s' % local_field)
-            response_ok, values = temp.run(Fields,
-                    {local_field: value})
+            temp = FormViewDialog(Fields, title='Set %s' % local_field)
+            response_ok, values = temp.run({local_field: value})
             if not response_ok:
                 return
             value = values.values()[0]
