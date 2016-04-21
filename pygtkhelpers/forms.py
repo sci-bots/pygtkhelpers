@@ -49,35 +49,36 @@ class Field(object):
     """
 
     def __init__(self, element, widget, label_widget=None):
-        from pygtkhelpers.proxy import ProxyGroup, proxy_for
         self.element = element
         self.widget = widget
         self.proxy = proxy_for(widget)
+        self.label_event_box = gtk.EventBox()
         self.label_widget = gtk.Label()
+        self.label_event_box.add(self.label_widget)
+        self.widget.set_data('pygtkhelpers::label_widget', self.label_widget)
 
     def set_label(self, text):
         self.label_widget.set_text(text)
 
     def _unparent(self):
         self.widget.unparent()
-        self.label_widget.unparent()
+        self.label_event_box.unparent()
 
     def layout_as_table(self, table, row):
         # XXX: turn to utility function
         self._unparent()
         self.label_widget.set_alignment(1.0, 0.5)
-        table.attach(self.label_widget, 0, 1, row, row+1,
-            xoptions=gtk.SHRINK|gtk.FILL, yoptions=gtk.SHRINK)
+        table.attach(self.label_event_box, 0, 1, row, row+1,
+                     xoptions=gtk.SHRINK|gtk.FILL, yoptions=gtk.SHRINK)
         table.attach(self.widget, 1, 2, row, row+1,
-            xoptions=gtk.EXPAND|gtk.FILL, yoptions=gtk.SHRINK)
-
-
+                     xoptions=gtk.EXPAND|gtk.FILL, yoptions=gtk.SHRINK)
 
 
 # XXX AA: Needs splitting into view component, and controller component
 class FieldSet(object):
     def __init__(self, delegate, schema_type):
         from pygtkhelpers.proxy import ProxyGroup, proxy_for
+
         self.delegate = delegate
         self.schema = schema_type()
         self.proxies = ProxyGroup()
