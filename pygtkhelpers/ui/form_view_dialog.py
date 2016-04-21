@@ -31,18 +31,20 @@ script_dir = path(__file__).abspath().parent
 def create_form_view(form, values=None, use_markup=True):
     FormView.schema_type = form
     form_view = FormView()
-    for name, field in form_view.form.fields.items():
+    for field_i in form_view.form.schema.field_schema:
+        name_i = field_i.name
+        form_field_i = form_view.form.fields[name_i]
         if values:
-            value = values[name]
+            value = values[name_i]
         else:
-            value = field.element.default_value
-        if not field.element.set(value):
-            raise ValueError, '"%s" is not a valid value for field "%s"' % (
-                    value, name)
-        field.proxy.set_widget_value(value)
-        if hasattr(field.widget, 'set_activates_default'):
-            field.widget.set_activates_default(gtk.TRUE)
-        field.label_widget.set_use_markup(use_markup)
+            value = form_field_i.element.default_value
+        if not form_field_i.element.set(value):
+            raise ValueError('"%s" is not a valid value for field "%s"' %
+                             (value, name_i))
+        form_field_i.proxy.set_widget_value(value)
+        if hasattr(form_field_i.widget, 'set_activates_default'):
+            form_field_i.widget.set_activates_default(gtk.TRUE)
+        form_field_i.label_widget.set_use_markup(use_markup)
     return form_view
 
 

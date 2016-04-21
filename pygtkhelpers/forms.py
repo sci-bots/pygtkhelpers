@@ -13,14 +13,15 @@
     :copyright: 2005-2008 by pygtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
-
+from collections import OrderedDict
 import sys
 import gtk
 
 from flatland import Dict, String, Integer, Boolean, Enum
 
-from pygtkhelpers.delegates import SlaveView
-from pygtkhelpers.utils import gsignal
+from .delegates import SlaveView
+from .proxy import proxy_for
+from .utils import gsignal
 
 
 def _view_type_for_element(element):
@@ -80,7 +81,7 @@ class FieldSet(object):
         self.delegate = delegate
         self.schema = schema_type()
         self.proxies = ProxyGroup()
-        self.fields = {}
+        self.fields = OrderedDict()
         self.proxies.connect('changed', self._on_proxies_changed)
         for name, element in self.schema.items():
             self._setup_widget(name, element)
@@ -105,8 +106,8 @@ class FieldSet(object):
         table.set_row_spacings(6)
         table.set_col_spacings(6)
         table.set_border_width(6)
-        for row, name in enumerate(self.fields):
-            self.fields[name].layout_as_table(table, row)
+        for i, field_i in enumerate(self.fields.itervalues()):
+            field_i.layout_as_table(table, i)
         return table
 
 
