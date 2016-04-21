@@ -3,6 +3,7 @@ import os
 
 import gtk
 from flatland.schema import String, Form, Integer
+from flatland.validation import ValueAtLeast, ValueAtMost
 
 from .form_view_dialog import FormViewDialog
 from .dialogs import simple, yesno as _yesno
@@ -27,7 +28,7 @@ DEFAULTS = Defaults()
 
 def combobox_set_model_from_list(cb, items):
     """Setup a ComboBox or ComboBoxEntry based on a list of strings."""
-    cb.clear()           
+    cb.clear()
     model = gtk.ListStore(str)
     for i in items:
         model.append([i])
