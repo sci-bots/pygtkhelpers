@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-from collections import OrderedDict
+import logging
 import os
-import types
 
 import gtk
 from ...delegates import SlaveView
+
+logger = logging.getLogger(__name__)
 
 
 class GtkCairoView(SlaveView):
@@ -50,9 +51,4 @@ class GtkCairoView(SlaveView):
             self.window_xid = self.widget.window.handle
         else:
             self.window_xid = self.widget.window.xid
-        # Copy window xid to clipboard
-        clipboard = gtk.Clipboard()
-        clipboard.set_text(str(self.window_xid))
-        if self._set_window_title:
-            self.widget.parent.set_title('[window_xid] %s' % self.window_xid)
-        print '[window_xid] %s' % self.window_xid
+        logger.info('window_xid=%s', self.window_xid)
