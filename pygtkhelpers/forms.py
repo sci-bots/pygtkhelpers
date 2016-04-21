@@ -113,6 +113,8 @@ class FieldSet(object):
 
 
 class FormView(SlaveView):
+    # Emitted on form change `(proxy_group, proxy, field_name, new_value)`
+    gsignal('changed', object, object, str, object)
     #XXX: helper, dont use for complex
     """A specialized delegate that adds widget proxying and schema support
     """
@@ -121,6 +123,8 @@ class FormView(SlaveView):
 
     def create_ui(self):
         self.form = FieldSet(self, self.schema_type)
+        self.form.proxies.connect('changed', lambda *args: self.emit('changed',
+                                                                     *args))
         self.widget.pack_start(self.form.layout_as_table())
 
 
