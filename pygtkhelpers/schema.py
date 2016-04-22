@@ -3,6 +3,7 @@ import logging
 
 from flatland import Boolean, Enum, Float, Form, Integer, String
 from flatland.validation import ValueAtLeast, ValueAtMost
+from redirect_io import nostderr
 import gtk
 import jsonschema
 import pandas as pd
@@ -310,7 +311,6 @@ class MetaDataDialog(SchemaDialog):
 
         # Attach callback for when scan dialog is closed.
         def on_scanner_view__delete_event(window, event, row_i):
-            print '[on_scanner_view__delete_event]', event
             '''
             When scanner view is closed, stop the scan, hide the window and
             re-enable the button that initiated the scan.
@@ -395,3 +395,53 @@ class MetaDataDialog(SchemaDialog):
             self.scanner.stop()
         finally:
             return result
+
+
+def schema_dialog(schema, device_name=None, max_width=None, max_fps=None):
+    '''
+    Args
+    ----
+
+        schema (dict) : jsonschema definition.  Each property *must* have a
+            default value.
+        device_name (str or list-like) : GStreamer video source device name.
+        max_width (int) : Maximum video frame width.
+        max_fps (float) : Maximum video frame rate (frames/second).
+
+    Returns
+    -------
+
+        (dict) : json-encodable dictionary containing validated values for
+            properties included in the specified schema.
+
+    Raises `KeyError` if no video configuration is found that matches the
+    specified parameters, and `ValueError` if values to not validate.
+    '''
+    with nostderr():
+        import pygst_utils as pu
+
+    gtk.threads_init()
+    df_modes = pu.get_available_video_source_configs()
+    query = (df_modes.width == df_modes.width)
+    if device_name is not None:
+        if isinstance(device_name, str):
+            query &= (df_modes.device_name == device_name)
+        else:
+            query &= (df_modes.device_name.isin(device_name))
+    if max_width is not None:
+        query &= (df_modes.width <= max_width)
+    if max_fps is not None:
+        query &= (df_modes.framerate <= max_fps)
+    df_modes = df_modes.loc[query]
+    if not df_modes.shape[0]:
+        raise KeyError('No compatible video mode found.')
+    config = df_modes.sort_values(['width', 'framerate'],
+                                  ascending=False).iloc[0]
+    print config
+    pipeline_command = pu.pipeline_command_from_json(config, colorspace='rgb')
+    dialog = MetaDataDialog(schema, pipeline_command)
+    with nostderr():
+        valid, results = dialog.run()
+    if not valid:
+        raise ValueError('Invalid values.')
+    return results
