@@ -33,7 +33,7 @@ def create_form_view(form, values=None, use_markup=True):
     for field_i in form_view.form.schema.field_schema:
         name_i = field_i.name
         form_field_i = form_view.form.fields[name_i]
-        if values:
+        if values and name_i in values:
             value = values[name_i]
         else:
             value = form_field_i.element.default_value
