@@ -251,16 +251,9 @@ class SchemaDialog(FormViewDialog):
 
 
 class MetaDataDialog(SchemaDialog):
-    def __init__(self, pipeline_command=None):
+    def __init__(self, schema, pipeline_command=None):
         from barcode_scanner.scanner import BarcodeScanner
 
-        schema = {'type': 'object',
-                  'properties': {'device_id': {'type': 'string',
-                                               'default': '',
-                                               'pattern': r'[a-zA-Z0-9\-]+'},
-                                 'patient_id': {'type': 'string',
-                                               'default': '',
-                                                'pattern': r'[a-zA-Z0-9\-]+'}}}
         super(MetaDataDialog, self).__init__(schema)
         self.scanner = BarcodeScanner(pipeline_command)
 
