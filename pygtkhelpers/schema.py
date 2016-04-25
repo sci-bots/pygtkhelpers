@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import logging
+import types
 
 from flatland import Boolean, Enum, Float, Form, Integer, String
 from flatland.validation import ValueAtLeast, ValueAtMost
@@ -195,11 +196,11 @@ def get_types(root, func, parents=None):
 class SchemaDialog(FormViewDialog):
     default_parent = None
 
-    def __init__(self, schema):
+    def __init__(self, schema, **kwargs):
         self.validator = jsonschema.Draft4Validator(schema)
         self.df_fields = get_fields_frame(schema)
         form_class = fields_frame_to_flatland_form_class(self.df_fields)
-        super(SchemaDialog, self).__init__(form_class)
+        super(SchemaDialog, self).__init__(form_class, **kwargs)
 
     def create_ui(self):
         super(SchemaDialog, self).create_ui()
@@ -252,10 +253,10 @@ class SchemaDialog(FormViewDialog):
 
 
 class MetaDataDialog(SchemaDialog):
-    def __init__(self, schema, pipeline_command=None):
+    def __init__(self, schema, pipeline_command=None, **kwargs):
         from barcode_scanner.scanner import BarcodeScanner
 
-        super(MetaDataDialog, self).__init__(schema)
+        super(MetaDataDialog, self).__init__(schema, **kwargs)
         self.scanner = BarcodeScanner(pipeline_command)
 
     def create_ui(self):
@@ -298,7 +299,7 @@ class MetaDataDialog(SchemaDialog):
             else:
                 # Make system bell sound to indicate a scan has
                 # completed.
-                print '\a\a'
+                print '\a\a',
 
             # Re-enable the scan button.
             row_i['button'].set_sensitive(True)
@@ -397,7 +398,8 @@ class MetaDataDialog(SchemaDialog):
             return result
 
 
-def schema_dialog(schema, device_name=None, max_width=None, max_fps=None):
+def schema_dialog(schema, data=None, device_name=None, max_width=None,
+                  max_fps=None, title=None, parent=None):
     '''
     Args
     ----
@@ -424,7 +426,7 @@ def schema_dialog(schema, device_name=None, max_width=None, max_fps=None):
     df_modes = pu.get_available_video_source_configs()
     query = (df_modes.width == df_modes.width)
     if device_name is not None:
-        if isinstance(device_name, str):
+        if isinstance(device_name, types.StringTypes):
             query &= (df_modes.device_name == device_name)
         else:
             query &= (df_modes.device_name.isin(device_name))
@@ -437,11 +439,11 @@ def schema_dialog(schema, device_name=None, max_width=None, max_fps=None):
         raise KeyError('No compatible video mode found.')
     config = df_modes.sort_values(['width', 'framerate'],
                                   ascending=False).iloc[0]
-    print config
     pipeline_command = pu.pipeline_command_from_json(config, colorspace='rgb')
-    dialog = MetaDataDialog(schema, pipeline_command)
+    dialog = MetaDataDialog(schema, pipeline_command, title=title,
+                            parent=parent)
     with nostderr():
-        valid, results = dialog.run()
+        valid, results = dialog.run(values=data)
     if not valid:
         raise ValueError('Invalid values.')
     return results
