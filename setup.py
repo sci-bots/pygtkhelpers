@@ -2,6 +2,7 @@ try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
+import platform
 
 import version
 
@@ -32,6 +33,21 @@ helpers and utilities to help debug PyGTK applications.
 [1]: https://pythonhosted.org/pygtkhelpers/
 """.strip()
 
+
+install_requires = ['cairo-helpers>=0.2.post1', 'flatland-fork>=0.4.post2',
+                    'si-prefix>=0.4', 'svg-model>=0.5.post18']
+
+# Platform-specific package requirements.
+if platform.system() == 'Windows':
+    install_requires += ['pygtk2-win', 'pycairo-gtk2-win']
+else:
+    try:
+        import gtk
+    except ImportError:
+        print >> sys.err, ('Please install Python bindings for Gtk 2 using '
+                           'your systems package manager.')
+
+
 setup(name='wheeler.pygtkhelpers',
       version=version.getVersion(),
       author='Christian Fobel',
@@ -40,8 +56,7 @@ setup(name='wheeler.pygtkhelpers',
       description=short_description,
       long_description=long_description,
       license='LGPL-3.0',
-      install_requires=['cairo-helpers>=0.2.post1', 'flatland-fork>=0.4.post2',
-                        'si-prefix>=0.4', 'svg-model>=0.5.post18'],
+      install_requires=install_requires,
       packages=['pygtkhelpers', 'pygtkhelpers.ui', 'pygtkhelpers.debug',
                 'pygtkhelpers.ui.objectlist', 'pygtkhelpers.ui.views'],
       package_data={'pygtkhelpers': ['ui/glade/*.glade',
