@@ -50,8 +50,11 @@ class FilepathWidget(gtk.HBox):
         self.filepath_entry.set_editable(False)
         self.browse_button = gtk.Button(label='Browse...')
         self.browse_button.connect('clicked', self.on_button_clicked)
+        self.clear_button = gtk.Button(label='Clear')
+        self.clear_button.connect('clicked', self.on_clear_button_clicked)
         self.pack_start(self.filepath_entry, expand=True, fill=True)
         self.pack_start(self.browse_button, expand=False, fill=False)
+        self.pack_start(self.clear_button, expand=False, fill=False)
         self.widget = proxy_for(self.filepath_entry)
         self.widget.connect_widget()
         if self.mode == 'file':
@@ -61,6 +64,10 @@ class FilepathWidget(gtk.HBox):
         self.starting_dir = None
         self.show_all()
         self.patterns = patterns
+
+    def on_clear_button_clicked(self, widget, data=None):
+        self.value = path('')
+        self.emit('content-changed')
 
     def on_button_clicked(self, widget, data=None):
         if callable(self.starting_dir):
@@ -208,8 +215,6 @@ class EnumBuilder(ElementBuilder):
 
 
 class FilepathProxy(GObjectProxy):
-    """Proxy for a pygtkhelpers.ui.widgets.StringList.
-    """
     signal_name = 'content-changed'
 
     def get_widget_value(self):
@@ -253,10 +258,6 @@ if __name__ == '__main__':
         Float.named('float_value').using(default=10.37, optional=True),
         Filepath.named('log_filepath').using(default='', optional=True),
         Directory.named('devices_directory').using(default='', optional=True),
-        Enum.named('test_enum').valued('auto-update',
-                'check for updates, but ask before installing',
-                                '''don't check for updates''')\
-        .using(default=1, optional=True)
     )
     dialog = FormViewDialog(form)
     print dialog.run()
