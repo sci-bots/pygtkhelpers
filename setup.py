@@ -36,7 +36,7 @@ helpers and utilities to help debug PyGTK applications.
 
 install_requires = ['cairo-helpers>=0.2.post1', 'flatland-fork>=0.4.post2',
                     'si-prefix>=0.4', 'svg-model>=0.5.post18',
-                    'redirect_io']
+                    'redirect_io', 'jsonschema']
 
 # Platform-specific package requirements.
 if platform.system() == 'Windows':
