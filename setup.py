@@ -3,6 +3,7 @@ try:
 except ImportError:
     from distutils.core import setup
 import platform
+import sys
 
 import version
 
@@ -45,8 +46,8 @@ else:
     try:
         import gtk
     except ImportError:
-        print >> sys.err, ('Please install Python bindings for Gtk 2 using '
-                           'your systems package manager.')
+        print >> sys.stderr, ('Please install Python bindings for Gtk 2 using '
+                              'your systems package manager.')
 
 
 setup(name='wheeler.pygtkhelpers',
