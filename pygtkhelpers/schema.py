@@ -394,49 +394,62 @@ class MetaDataDialog(SchemaDialog):
 
 
 def schema_dialog(schema, data=None, device_name=None, max_width=None,
-                  max_fps=None, title=None, parent=None):
+                  max_fps=None, **kwargs):
     '''
-    Args
-    ----
+    Parameters
+    ----------
+    schema : dict
+        jsonschema definition.  Each property *must* have a default value.
+    device_name : False or None or str or list_like, optional
+        GStreamer video source device name(s).
 
-        schema (dict) : jsonschema definition.  Each property *must* have a
-            default value.
-        device_name (str or list-like) : GStreamer video source device name.
-        max_width (int) : Maximum video frame width.
-        max_fps (float) : Maximum video frame rate (frames/second).
+        If `None` (default), first available video device is used.
+
+        If `False`, video is disabled.
+    max_width : int
+        Maximum video frame width.
+    max_fps : float
+        Maximum video frame rate (frames/second).
 
     Returns
     -------
+    dict
+        json-encodable dictionary containing validated values for properties
+        included in the specified schema.
 
-        (dict) : json-encodable dictionary containing validated values for
-            properties included in the specified schema.
-
-    Raises `KeyError` if no video configuration is found that matches the
-    specified parameters, and `ValueError` if values to not validate.
+    Raises
+    ------
+    KeyError
+        If no video configuration is found that matches the specified
+        parameters.
+    ValueError
+        If values to not validate.
     '''
-    with nostderr():
-        import pygst_utils as pu
+    if not device_name and device_name is not None:
+        dialog = SchemaDialog(schema, **kwargs)
+    else:
+        with nostderr():
+            import pygst_utils as pu
 
-    gtk.threads_init()
-    df_modes = pu.get_available_video_source_configs()
-    query = (df_modes.width == df_modes.width)
-    if device_name is not None:
-        if isinstance(device_name, types.StringTypes):
-            query &= (df_modes.device_name == device_name)
-        else:
-            query &= (df_modes.device_name.isin(device_name))
-    if max_width is not None:
-        query &= (df_modes.width <= max_width)
-    if max_fps is not None:
-        query &= (df_modes.framerate <= max_fps)
-    df_modes = df_modes.loc[query]
-    if not df_modes.shape[0]:
-        raise KeyError('No compatible video mode found.')
-    config = df_modes.sort_values(['width', 'framerate'],
-                                  ascending=False).iloc[0]
-    pipeline_command = pu.pipeline_command_from_json(config, colorspace='rgb')
-    dialog = MetaDataDialog(schema, pipeline_command, title=title,
-                            parent=parent)
+        gtk.threads_init()
+        df_modes = pu.get_available_video_source_configs()
+        query = (df_modes.width == df_modes.width)
+        if device_name is not None:
+            if isinstance(device_name, types.StringTypes):
+                query &= (df_modes.device_name == device_name)
+            else:
+                query &= (df_modes.device_name.isin(device_name))
+        if max_width is not None:
+            query &= (df_modes.width <= max_width)
+        if max_fps is not None:
+            query &= (df_modes.framerate <= max_fps)
+        df_modes = df_modes.loc[query]
+        if not df_modes.shape[0]:
+            raise KeyError('No compatible video mode found.')
+        config = df_modes.sort_values(['width', 'framerate'],
+                                    ascending=False).iloc[0]
+        pipeline_command = pu.pipeline_command_from_json(config, colorspace='rgb')
+        dialog = MetaDataDialog(schema, pipeline_command, **kwargs)
     with nostderr():
         valid, results = dialog.run(values=data)
     if not valid:
