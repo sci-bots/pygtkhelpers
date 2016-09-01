@@ -50,7 +50,8 @@ def create_form_view(form, values=None, use_markup=True):
 class FormViewDialog(object):
     default_parent = None
 
-    def __init__(self, form_class, title=None, short_desc=None, parent=None):
+    def __init__(self, form_class, title=None, short_desc=None, long_desc=None,
+                 parent=None):
         '''
         Parameters
         ----------
@@ -58,11 +59,14 @@ class FormViewDialog(object):
             The short description
         short_desc : str, optional
             The short description
+        long_desc : str, optional
+            The long description
         parent : gtk.Window, optional
             The parent window to make this dialog transient to
         '''
         self.title = title
         self.short_desc = short_desc
+        self.long_desc = long_desc
         self.parent = parent
         self.form_class = form_class
 
@@ -79,6 +83,15 @@ class FormViewDialog(object):
             self.short_label.set_text(self.short_desc)
             self.short_label.set_alignment(0, .5)
             self.vbox_form.pack_start(self.short_label, expand=True, fill=True)
+        if self.long_desc:
+            self.long_label = gtk.Label()
+            self.long_label.set_text(self.long_desc)
+            self.long_label.set_alignment(.1, .5)
+            self.long_expander = gtk.Expander(label='Details')
+            self.long_expander.set_spacing(5)
+            self.long_expander.add(self.long_label)
+            self.vbox_form.pack_start(self.long_expander, expand=True,
+                                      fill=True)
         if self.parent is None:
             self.parent = self.default_parent
         self.window.set_default_response(gtk.RESPONSE_OK)
