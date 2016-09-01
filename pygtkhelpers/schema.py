@@ -20,19 +20,19 @@ class Skip(Exception):
 
 def expand_items(form_values, sep='.'):
     '''
-    Args
-    ----
-
-        form_values (list) : List of `(key, value)` tuples, where `key`
-            corresponds to the ancestor keys of the respective value
-            joined by `'.'`.  For example, the key `'a.b.c'` would be
-            expanded to the dictionary `{'a': {'b': {'c': 'foo'}}}`.
+    Parameters
+    ----------
+    form_values : list
+        List of ``(key, value)`` tuples, where ``key`` corresponds to the
+        ancestor keys of the respective value joined by ``'.'``.  For example,
+        the key ``'a.b.c'`` would be expanded to the dictionary
+        ``{'a': {'b': {'c': 'foo'}}}``.
 
     Returns
     -------
-
-        (dict) : Nested dictionary, where levels are inferred from each
-            key by splitting on `'.'`.
+    dict
+        Nested dictionary, where levels are inferred from each key by splitting
+        on ``'.'``.
     '''
     output = {}
     for keys_str_i, value_i in form_values:
@@ -56,21 +56,20 @@ def fields_frame_to_flatland_form_class(df_fields, sep='.'):
 
 def flatten_dict(root, parents=None, sep='.'):
     '''
-    Args
-    ----
+    Args:
 
         root (dict) : Nested dictionary (e.g., JSON object).
         parents (list) : List of ancestor keys.
 
     Returns
     -------
+    list
+        List of ``(key, value)`` tuples, where ``key`` corresponds to the
+        ancestor keys of the respective value joined by ``'.'``.  For example,
+        for the item in the dictionary ``{'a': {'b': {'c': 'foo'}}}``, the
+        joined key would be ``'a.b.c'``.
 
-        (list) : List of `(key, value)` tuples, where `key`
-            corresponds to the ancestor keys of the respective value
-            joined by `'.'`.  For example, for the item in the dictionary
-            `{'a': {'b': {'c': 'foo'}}}`, the joined key would be `'a.b.c'`.
-
-    See also `expand_items`.
+    See also :func:`expand_items`.
     '''
     if parents is None:
         parents = []
@@ -96,13 +95,9 @@ def flatten_form(form_instance):
 
 def get_fields_frame(schema):
     '''
-    Args
-    ----
+    Args:
 
-        schema (dict) : [JSON schema][1].
-
-
-    [1]: http://spacetelescope.github.io/understanding-json-schema/
+        schema (dict) : `JSON schema <http://spacetelescope.github.io/understanding-json-schema/>`_.
     '''
     fields = []
 
