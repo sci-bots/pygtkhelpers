@@ -6,10 +6,13 @@ import gtk
 import trollius as asyncio
 
 from ...delegates import SlaveView
-from ...utils import refresh_gui
+from ...utils import gsignal, refresh_gui
 
 
 class CommandTextView(SlaveView):
+    # Emit signal when data is written `(fd, data)`.
+    gsignal('data-written', int, str)
+
     def create_ui(self):
         self.scroll = gtk.ScrolledWindow()
         self.scroll.props.hscrollbar_policy = gtk.POLICY_AUTOMATIC
@@ -67,6 +70,8 @@ class CommandTextView(SlaveView):
             loop.close()
 
     def _write(self, fd, data):
+        self.emit('data-written', fd, data)
+
         if fd == 1:
             sys.stdout.write(data)
         elif fd == 2:
