@@ -1,0 +1,35 @@
+# source will be downloaded prior to filling in jinja templates
+# Example assumes that this folder has setup.py in it
+source:
+  git_url: ../
+
+package:
+  name: wheeler.pygtkhelpers
+{% if GIT_DESCRIBE_NUMBER > '0' %}
+  version: {{ GIT_DESCRIBE_TAG[1:] }}.post{{ GIT_DESCRIBE_NUMBER }}
+{% else %}
+  version: {{ GIT_DESCRIBE_TAG[1:] }}
+{% endif %}
+
+requirements:
+  build:
+    - python 2.7*
+    - cairo-helpers
+    - flatland-fork
+    - jsonschema
+    - pycairo-gtk2
+    - redirect-io
+    - si-prefix >=0.4
+    - svg-model >=0.5.post18
+    - trollius
+
+  run:
+    - blinker
+    - cairo-helpers
+    - flatland-fork
+    - jsonschema
+    - pycairo-gtk2
+    - redirect-io
+    - si-prefix >=0.4
+    - svg-model >=0.5.post18
+    - trollius
