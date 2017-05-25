@@ -82,7 +82,7 @@ class NotebookManagerView(SlaveView):
                    gtk.STOCK_OPEN, gtk.RESPONSE_OK)
         dialog = gtk.FileChooserDialog("Open notebook", self.parent,
                                        gtk.FILE_CHOOSER_ACTION_OPEN, buttons)
-        add_filters(dialog, [{'name': 'IPython notebook (*.ipynb)',
+        add_filters(dialog, [{'name': 'Jupyter notebook (*.ipynb)',
                               'pattern': '*.ipynb'}])
         dialog.set_current_folder(self.notebook_dir)
         response = dialog.run()
@@ -107,7 +107,7 @@ class NotebookManagerView(SlaveView):
                    gtk.STOCK_OPEN, gtk.RESPONSE_OK)
         dialog = gtk.FileChooserDialog("Select notebook template", self.parent,
                                        gtk.FILE_CHOOSER_ACTION_OPEN, buttons)
-        add_filters(dialog, [{'name': 'IPython notebook (*.ipynb)',
+        add_filters(dialog, [{'name': 'Jupyter notebook (*.ipynb)',
                               'pattern': '*.ipynb'}])
         if self.template_dir is not None:
             dialog.set_current_folder(self.template_dir)
@@ -184,10 +184,10 @@ class NotebookManagerList(SlaveView):
             url_label = gtk.Label(session.address)
 
             stop_button = gtk.Button('Stop')
-            stop_button.set_tooltip_text('Stop IPython notebook for directory %s'
+            stop_button.set_tooltip_text('Stop Jupyter notebook for directory %s'
                                          % root)
             open_button = gtk.Button('Open')
-            open_button.set_tooltip_text('Open IPython notebook for directory %s'
+            open_button.set_tooltip_text('Open Jupyter notebook for directory %s'
                                          % root)
 
             def open_session(button, session):
