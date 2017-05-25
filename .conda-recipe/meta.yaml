@@ -16,7 +16,7 @@ requirements:
     - python 2.7*
     - cairo-helpers
     - flatland-fork
-    - jupyter-helpers
+    - jupyter-helpers >=0.10
     - jsonschema
     - pycairo-gtk2
     - redirect-io
@@ -28,7 +28,7 @@ requirements:
     - blinker
     - cairo-helpers
     - flatland-fork
-    - jupyter-helpers
+    - jupyter-helpers >=0.10
     - jsonschema
     - pycairo-gtk2
     - redirect-io
