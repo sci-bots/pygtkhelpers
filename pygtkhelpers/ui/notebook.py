@@ -7,10 +7,10 @@ import webbrowser
 import gtk
 from path_helpers import path
 try:
-    from ipython_helpers.notebook import SessionManager
+    from jupyter_helpers.notebook import SessionManager
 except ImportError:
     print >> sys.stderr, ('The NotebookManagerView requires the '
-                          '`ipython-helpers` package.')
+                          '`jupyter-helpers` package.')
     raise
 from ..delegates import SlaveView
 from .dialogs import yesno
