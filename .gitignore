@@ -4,3 +4,5 @@ MANIFEST
 .project
 .pydevproject
 *.egg-info
+dist
+build
