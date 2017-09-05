@@ -14,15 +14,17 @@
     :copyright: 2005-2010 by pygtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
-
-
 from __future__ import with_statement
+import functools
 import threading
 import thread
 import Queue as queue
 import gobject
 import sys
+import warnings
+
 from gtk import gdk
+import gtk
 
 
 def initial_setup():
@@ -30,9 +32,18 @@ def initial_setup():
     * set up gdk threading
     * enter it
     * set up glib mainloop threading
+
+    .. versionchanged:: 0.18
+        Do not execute ``gdk.threads_enter()``.
+
+        ``gdk.threads_enter()/gdk.threads_leave()`` should only be used to wrap
+        GTK code blocks.
+
+        See `What are the general tips for using threads with PyGTK?
+        <http://faq.pygtk.org/index.py?req=show&file=faq20.001.htp>`_.
     """
+    warnings.warn('Use ', DeprecationWarning)
     gdk.threads_init()
-    gdk.threads_enter()
     gobject.threads_init()  # the glib mainloop doesn't love us else
 
 
@@ -212,3 +223,25 @@ def invoke_in_mainloop(func, *args, **kwargs):
     else:
         tp, val, tb = results.get()
         raise tp, val, tb
+
+
+def gtk_threadsafe(func):
+    '''
+    Decorator to make wrapped function threadsafe by forcing it to execute
+    within the GTK main thread.
+
+    .. versionadded:: 0.18
+
+    Parameters
+    ----------
+    func : function
+    '''
+    # Set up GDK threading.
+    # XXX This must be done to support running multiple threads in GTK
+    # applications.
+    gtk.gdk.threads_init()
+
+    @functools.wraps(func)
+    def _gtk_threadsafe(*args):
+        gobject.idle_add(func, *args)
+    return _gtk_threadsafe
