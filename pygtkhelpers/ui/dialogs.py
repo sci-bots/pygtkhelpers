@@ -12,18 +12,18 @@
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
-#XXX: i18n
+# XXX: i18n
 import os
 
 import gtk
 from functools import partial
 
+
 image_types = {
     gtk.MESSAGE_INFO: gtk.STOCK_DIALOG_INFO,
-    gtk.MESSAGE_WARNING : gtk.STOCK_DIALOG_WARNING,
-    gtk.MESSAGE_QUESTION : gtk.STOCK_DIALOG_QUESTION,
-    gtk.MESSAGE_ERROR : gtk.STOCK_DIALOG_ERROR,
-}
+    gtk.MESSAGE_WARNING: gtk.STOCK_DIALOG_WARNING,
+    gtk.MESSAGE_QUESTION: gtk.STOCK_DIALOG_QUESTION,
+    gtk.MESSAGE_ERROR: gtk.STOCK_DIALOG_ERROR}
 
 button_types = {
     gtk.BUTTONS_NONE: (),
@@ -55,7 +55,7 @@ button_types = {
 
 
 def _destroy(obj):
-    #XXX: util?
+    # XXX: util?
     obj.destroy()
     if not gtk.main_level():
         from pygtkhelpers.utils import refresh_gui
@@ -67,7 +67,7 @@ class AlertDialog(gtk.Dialog):
                  type=gtk.MESSAGE_INFO,
                  buttons=gtk.BUTTONS_NONE,
                  ):
-        #XXX: better errors
+        # XXX: better errors
         assert type in image_types, 'not a valid type'
         assert buttons in button_types, 'not a valid set of buttons'
 
@@ -113,12 +113,11 @@ class AlertDialog(gtk.Dialog):
         self._buttons = button_types[buttons]
         self.add_buttons(*self._buttons)
 
-
     def set_primary(self, text):
-        #XXX: escape
-        self.primary.set_markup(
-                '<span weight="bold" size="larger">%s</span>'%(text,)
-                )
+        # XXX: escape
+        self.primary.set_markup('<span weight="bold" size="larger">%s</span>' %
+                                (text, ))
+
     def set_secondary(self, text):
         self.set_secondary.set_markup(text)
 
@@ -137,10 +136,9 @@ def _message_dialog(type, short,
                     long=None,
                     parent=None,
                     buttons=gtk.BUTTONS_OK,
-                    default=None, #XXX: kiwi had -1 there, why?
+                    default=None,  # XXX: kiwi had -1 there, why?
                     alt_button_order=None,
-                    _before_run=None): # for unittests
-
+                    _before_run=None):  # for unittests
     if buttons in button_types:
         dialog_buttons = buttons
         buttons = []
@@ -150,23 +148,18 @@ def _message_dialog(type, short,
 
     assert parent is None or isinstance(parent, gtk.Window)
 
-
-    dialog = AlertDialog(
-                parent=parent,
-                flags=gtk.DIALOG_MODAL,
-                type=type,
-                buttons = dialog_buttons,
-                )
+    dialog = AlertDialog(parent=parent, flags=gtk.DIALOG_MODAL, type=type,
+                         buttons=dialog_buttons)
     dialog.set_primary(short)
 
     if long:
-        #XXX: test all cases
+        # XXX: test all cases
         if isinstance(long, gtk.Widget):
             dialog.set_details_widget(long)
         elif isinstance(long, basestring):
             dialog.set_details(long)
         else:
-            raise TypeError('long must be a string or a Widget, not %r'%long)
+            raise TypeError('long must be a string or a Widget, not %r' % long)
 
     if default is not None:
         dialog.set_default_response(default)
@@ -197,9 +190,8 @@ def simple(type, short, long=None,
     """
     if buttons == gtk.BUTTONS_OK:
         default = gtk.RESPONSE_OK
-    return _message_dialog(type, short, long,
-                         parent=parent, buttons=buttons,
-                         default=default, **kw)
+    return _message_dialog(type, short, long, parent=parent, buttons=buttons,
+                           default=default, **kw)
 
 
 def open_filechooser(title, parent=None, patterns=None,
@@ -269,7 +261,7 @@ def ask_overwrite(filename, parent=None, **kw):
 
 
 def save(title='Save', parent=None, current_name='', folder=None,
-        _before_run=None, _before_overwrite=None):
+         _before_run=None, _before_overwrite=None):
     """Displays a save dialog."""
     filechooser = gtk.FileChooserDialog(title, parent,
                                         gtk.FILE_CHOOSER_ACTION_SAVE,
@@ -286,7 +278,7 @@ def save(title='Save', parent=None, current_name='', folder=None,
     while True:
         if _before_run:
             _before_run(filechooser)
-            _before_run = None #XXX: find better implications
+            _before_run = None  # XXX: find better implications
         response = filechooser.run()
         if response != gtk.RESPONSE_OK:
             path = None
@@ -298,16 +290,13 @@ def save(title='Save', parent=None, current_name='', folder=None,
 
         if ask_overwrite(path, parent, _before_run=_before_overwrite):
             break
-        _before_overwrite = None #XXX: same
+        _before_overwrite = None  # XXX: same
     _destroy(filechooser)
     return path
 
 
 def input(title, value=None, label=None, parent=None, _before_run=None):
-    d = gtk.Dialog(
-        title=title,
-        buttons=button_types[gtk.BUTTONS_OK_CANCEL]
-    )
+    d = gtk.Dialog(title=title, buttons=button_types[gtk.BUTTONS_OK_CANCEL])
 
     e = gtk.Entry()
     if value:
@@ -348,19 +337,20 @@ select_folder = partial(open_filechooser,
                         action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER)
 
 
-#: Show an error dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
+# Show an error dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
 error = partial(simple, gtk.MESSAGE_ERROR)
 
 
-#: Show an info dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
+# Show an info dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
 info = partial(simple, gtk.MESSAGE_INFO)
 
 
-#: Show a warning dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
+# Show a warning dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
 warning = partial(simple, gtk.MESSAGE_WARNING)
 
 
-#:  A yes/no question dialog, see :func:`~pygtkhelpers.ui.dialogs.simple` parameters
+#  A yes/no question dialog, see :func:`~pygtkhelpers.ui.dialogs.simple`
+#  parameters
 yesno = partial(simple, gtk.MESSAGE_WARNING,
                 default=gtk.RESPONSE_YES,
                 buttons=gtk.BUTTONS_YES_NO,)

@@ -13,7 +13,7 @@
 import itertools
 import copy
 
-import gtk, gobject
+import gtk
 
 from pygtkhelpers.utils import gsignal
 
@@ -44,7 +44,7 @@ class ObjectTreeViewBase(gtk.TreeView):
 
     def __init__(self, columns=(), **kwargs):
         gtk.TreeView.__init__(self)
-        #XXX: make replacable
+        # XXX: make replacable
         self.model = self.create_model()
         self.model_base = self.model
         self.model_filter = self.model.filter_new()
@@ -53,7 +53,6 @@ class ObjectTreeViewBase(gtk.TreeView):
         self.set_model(self.model_sort)
         # setup sorting
         self.sortable = kwargs.pop('sortable', True)
-        #sort_func = kwargs.pop('sort_func', self._default_sort_func)
         self.searchable = kwargs.pop('searchable', True)
         self.set_enable_search(self.searchable)
         if self.searchable:
@@ -96,7 +95,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         # index can be an integer or an iter
         return self._object_at_iter(index)
 
-    def __delitem__(self, iter): #XXX
+    def __delitem__(self, iter):  # XXX
         obj = self._object_at_iter(iter)
         del self._id_to_iter[id(obj)]
         self.model.remove(iter)
@@ -157,7 +156,7 @@ class ObjectTreeViewBase(gtk.TreeView):
     selected_item = property(
             fget=_get_selected_item,
             fset=_set_selected_item,
-            #XXX: fdel for deselect?
+            # XXX: fdel for deselect?
             doc=_get_selected_item.__doc__,
             )
 
@@ -165,7 +164,8 @@ class ObjectTreeViewBase(gtk.TreeView):
         """List of currently selected items"""
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_MULTIPLE:
-            raise AttributeError('selected_items only valid for select_multiple')
+            raise AttributeError('selected_items only valid for '
+                                 'select_multiple')
         model, selected_paths = selection.get_selected_rows()
         result = []
         for path in selected_paths:
@@ -175,7 +175,8 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _set_selected_items(self, new_selection):
         selection = self.get_selection()
         if selection.get_mode() != gtk.SELECTION_MULTIPLE:
-            raise AttributeError('selected_items only valid for select_multiple')
+            raise AttributeError('selected_items only valid for '
+                                 'select_multiple')
         selection.unselect_all()
         if new_selection is None:
             new_selection = ()
@@ -185,7 +186,7 @@ class ObjectTreeViewBase(gtk.TreeView):
     selected_items = property(
             fget=_get_selected_items,
             fset=_set_selected_items,
-            #XXX: fdel for deselect?
+            # XXX: fdel for deselect?
             doc=_get_selected_items.__doc__,
             )
 
@@ -201,9 +202,10 @@ class ObjectTreeViewBase(gtk.TreeView):
     selected_id = property(
             fget=_get_selected_id,
             fset=_set_selected_id,
-            #XXX: fdel for deselect?
+            # XXX: fdel for deselect?
             doc=_get_selected_id.__doc__,
             )
+
     def _get_selected_ids(self):
         """List of currently selected ids"""
         selection = self.get_selection()
@@ -229,7 +231,7 @@ class ObjectTreeViewBase(gtk.TreeView):
     selected_ids = property(
             fget=_get_selected_ids,
             fset=_set_selected_ids,
-            #XXX: fdel for deselect?
+            # XXX: fdel for deselect?
             doc=_get_selected_ids.__doc__,
             )
 
@@ -283,7 +285,6 @@ class ObjectTreeViewBase(gtk.TreeView):
         prev_iter = self._prev_iter_for(item)
         if prev_iter is not None:
             return self._object_at_iter(prev_iter)
-
 
     def set_visible_func(self, visible_func):
         """Set the function to decide visibility of an item
@@ -463,7 +464,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         self.emit('item-activated', self._object_at_sort_iter(path))
 
     def _visible_func(self, obj):
-        #XXX: this one gets dynamically replaced
+        # XXX: this one gets dynamically replaced
         return True
 
     def _internal_visible_func(self, model, iter, visible_func):
@@ -488,7 +489,6 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _test_search_func(self, model, column, key, iter, test):
         obj = model[iter][0]
         return not test(obj, key)
-
 
     def scroll_to(self, obj):
         path = self._view_path_for(obj)
@@ -528,13 +528,12 @@ class ObjectList(ObjectTreeViewBase):
         :param select: Whether the item should be selected after adding
         """
         if item in self:
-            raise ValueError("item %s allready in list"%item )
+            raise ValueError("item %s already in list" % item)
         modeliter = self.model.insert(position, (item,))
         self._id_to_iter[id(item)] = modeliter
         if select:
             self.selected_item = item
         self.emit('item-inserted', item, position)
-
 
     def append(self, item, select=False):
         """Add an item to the end of the list.
@@ -543,14 +542,12 @@ class ObjectList(ObjectTreeViewBase):
         :param select: Whether the item should be selected after adding
         """
         if item in self:
-            raise ValueError("item %s allready in list"%item )
+            raise ValueError("item %s already in list" % item)
         modeliter = self.model.append((item,))
         self._id_to_iter[id(item)] = modeliter
         if select:
             self.selected_item = item
         self.emit('item-added', item)
-
-
 
     def extend(self, iter):
         """Add a sequence of items to the end of the list
@@ -646,7 +643,7 @@ class ObjectTree(ObjectTreeViewBase):
         :param select: Whether the item should be selected after adding
         """
         if item in self:
-            raise ValueError("item %s allready in list"%item )
+            raise ValueError("item %s already in list" % item)
         if parent is not None:
             giter = self._iter_for(parent)
         else:
@@ -710,7 +707,8 @@ class ObjectTree(ObjectTreeViewBase):
 
     def item_has_child(self, item):
         if item not in self:
-            raise ValueError('objectlist.item_has_child(item) failed, item not in list')
+            raise ValueError('objectlist.item_has_child(item) failed, item not'
+                             ' in list')
         return self.model_sort.iter_has_child(self.item_view_iter(item))
 
     def _iter_siblings(self, item):
@@ -750,9 +748,8 @@ class ObjectTree(ObjectTreeViewBase):
 
     def _insert_sibling(self, insert_func, sibling, item, select=False):
         if item in self:
-            raise ValueError("item %s allready in list"%item )
+            raise ValueError("item %s already in list" % item)
         modeliter = insert_func(None, self._iter_for(sibling), (item, ))
-        row = self.model[self._path_for(sibling)]
         self._id_to_iter[id(item)] = modeliter
         item_path = self._view_path_for(item)
         if select:
@@ -767,7 +764,7 @@ class ObjectTree(ObjectTreeViewBase):
         :param select: Whether the item should be selected after adding
         """
         if item in self:
-            raise ValueError("item %s allready in list"%item )
+            raise ValueError("item %s already in list" % item)
         modeliter = self.model.insert(parent, position, (item,))
         self._id_to_iter[id(item)] = modeliter
         if select:
@@ -822,7 +819,6 @@ class ObjectTree(ObjectTreeViewBase):
         """
         if item not in self:
             raise ValueError('objectlist.remove(item) failed, item not in list')
-        #item_id = int(self._view_path_for(item))
         item_path = self._view_path_for(item)
         giter = self._iter_for(item)
         del self[giter]
@@ -832,8 +828,9 @@ class ObjectTree(ObjectTreeViewBase):
         if not items:
             return True
         siblings_iter = self._iter_siblings(items[0])
-        contiguous_check = (items == [i
-                for i in itertools.islice(siblings_iter, len(items))])
+        contiguous_check = (items == [i for i in
+                                      itertools.islice(siblings_iter,
+                                                       len(items))])
         try:
             next_item = siblings_iter.next()
             if len(self._path_for(next_item)) <= len(self._path_for(items[0])):
@@ -861,19 +858,17 @@ class ObjectTree(ObjectTreeViewBase):
             return None
 
         if not self.is_subtree(items):
-            raise ValueError, 'Items must make up a complete (and contiguous)'\
-                    'sub-tree.'
+            raise ValueError('Items must make up a complete (and contiguous)'
+                             'sub-tree.')
 
         items = items[:]
-        item_paths = [self.model.get_path(self._iter_for(i))
-                for i in items]
+        item_paths = [self.model.get_path(self._iter_for(i)) for i in items]
 
         if relative:
             # Normalize item paths to root path (0, )
-            min_depth = min([len(item_path)
-                    for item_path in item_paths])
+            min_depth = min([len(item_path) for item_path in item_paths])
             item_paths = [item_path[min_depth - 1:]
-                    for item_path in item_paths]
+                          for item_path in item_paths]
             base_path = item_paths[0][0]
             for i, item_path in enumerate(item_paths):
                 new_path = list(item_path)
@@ -885,7 +880,7 @@ class ObjectTree(ObjectTreeViewBase):
     def remove_items(self, items):
         # Get items sorted by model path
         sorted_items = zip(*sorted([(self.model.get_path(self.item_iter(i)), i)
-                for i in items]))[1]
+                                    for i in items]))[1]
 
         # Delete items in reverse order to ensure all children are
         # removed before removing the corresponding parent.
@@ -910,6 +905,6 @@ class ObjectTree(ObjectTreeViewBase):
     selected_items = property(
             fget=_get_selected_items,
             fset=ObjectTreeViewBase._set_selected_items,
-            #XXX: fdel for deselect?
+            # XXX: fdel for deselect?
             doc=_get_selected_items.__doc__,
             )

@@ -1,4 +1,3 @@
-from functools import partial
 import os
 
 import gtk
@@ -6,8 +5,7 @@ from flatland.schema import String, Form, Integer
 from flatland.validation import ValueAtLeast, ValueAtMost
 
 from .form_view_dialog import FormViewDialog
-from .dialogs import simple, yesno as _yesno
-
+from .dialogs import yesno as _yesno
 
 
 class Defaults(object):
@@ -66,12 +64,12 @@ def field_entry_dialog(field, value=None, title='Input value', parent=None,
         values = {field.name: value}
     else:
         values = None
-    valid, response =  dialog.run(values, use_markup=use_markup)
+    valid, response = dialog.run(values, use_markup=use_markup)
     return valid, response.values()[0]
 
 
 def integer_entry_dialog(name, value=0, title='Input value', min_value=None,
-        max_value=None, parent=None, use_markup=True):
+                         max_value=None, parent=None, use_markup=True):
     if parent is None:
         parent = DEFAULTS.parent_widget
     validators = []
@@ -90,9 +88,9 @@ def integer_entry_dialog(name, value=0, title='Input value', min_value=None,
 
 
 def text_entry_dialog(name, value='', title='Input value', parent=None,
-        use_markup=True):
+                      use_markup=True):
     valid, response = field_entry_dialog(String.named(name), value, title,
-            parent=parent, use_markup=use_markup)
+                                         parent=parent, use_markup=use_markup)
     if parent is None:
         parent = DEFAULTS.parent_widget
     if valid:
@@ -105,8 +103,9 @@ if os.name == 'nt':
         parent = kwargs.get('parent', None)
         if parent is None:
             parent = DEFAULTS.parent_widget
-        return _yesno(*args, parent=parent,
-                alt_button_order=(gtk.RESPONSE_YES, gtk.RESPONSE_NO), **kwargs)
+        return _yesno(*args, parent=parent, alt_button_order=(gtk.RESPONSE_YES,
+                                                              gtk.RESPONSE_NO),
+                      **kwargs)
 else:
     def yesno(*args, **kwargs):
         parent = kwargs.get('parent', None)

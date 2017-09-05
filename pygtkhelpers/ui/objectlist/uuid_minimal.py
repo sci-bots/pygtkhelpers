@@ -50,6 +50,7 @@ RESERVED_NCS, RFC_4122, RESERVED_MICROSOFT, RESERVED_FUTURE = [
     'reserved for NCS compatibility', 'specified in RFC 4122',
     'reserved for Microsoft compatibility', 'reserved for future definition']
 
+
 class UUID(object):
     """Instances of the UUID class represent UUIDs as specified in RFC 4122.
     UUID objects are immutable, hashable, and usable as dictionary keys.
@@ -99,7 +100,7 @@ class UUID(object):
     """
 
     def __init__(self, hex=None, bytes=None, bytes_le=None, fields=None,
-                       int=None, version=None):
+                 int=None, version=None):
         r"""Create a UUID from either a string of 32 hexadecimal digits,
         a string of 16 bytes as the 'bytes' argument, a string of 16 bytes
         in little-endian order as the 'bytes_le' argument, a tuple of six
@@ -148,17 +149,17 @@ class UUID(object):
                 raise ValueError('fields is not a 6-tuple')
             (time_low, time_mid, time_hi_version,
              clock_seq_hi_variant, clock_seq_low, node) = fields
-            if not 0 <= time_low < 1<<32L:
+            if not 0 <= time_low < 1 << 32L:
                 raise ValueError('field 1 out of range (need a 32-bit value)')
-            if not 0 <= time_mid < 1<<16L:
+            if not 0 <= time_mid < 1 << 16L:
                 raise ValueError('field 2 out of range (need a 16-bit value)')
-            if not 0 <= time_hi_version < 1<<16L:
+            if not 0 <= time_hi_version < 1 << 16L:
                 raise ValueError('field 3 out of range (need a 16-bit value)')
-            if not 0 <= clock_seq_hi_variant < 1<<8L:
+            if not 0 <= clock_seq_hi_variant < 1 << 8L:
                 raise ValueError('field 4 out of range (need an 8-bit value)')
-            if not 0 <= clock_seq_low < 1<<8L:
+            if not 0 <= clock_seq_low < 1 << 8L:
                 raise ValueError('field 5 out of range (need an 8-bit value)')
-            if not 0 <= node < 1<<48L:
+            if not 0 <= node < 1 << 48L:
                 raise ValueError('field 6 out of range (need a 48-bit value)')
             clock_seq = (clock_seq_hi_variant << 8L) | clock_seq_low
             int = ((time_low << 96L) | (time_mid << 80L) |
@@ -298,10 +299,11 @@ def uuid4():
     try:
         import os
         return UUID(bytes=os.urandom(16), version=4)
-    except:
+    except Exception:
         import random
         bytes = [chr(random.randrange(256)) for i in range(16)]
         return UUID(bytes=bytes, version=4)
+
 
 def uuid5(namespace, name):
     """Generate a UUID from the SHA-1 hash of a namespace UUID and a name."""
@@ -309,8 +311,8 @@ def uuid5(namespace, name):
     hash = sha1(namespace.bytes + name).digest()
     return UUID(bytes=hash[:16], version=5)
 
-# The following standard UUIDs are for use with uuid3() or uuid5().
 
+# The following standard UUIDs are for use with uuid3() or uuid5().
 NAMESPACE_DNS = UUID('6ba7b810-9dad-11d1-80b4-00c04fd430c8')
 NAMESPACE_URL = UUID('6ba7b811-9dad-11d1-80b4-00c04fd430c8')
 NAMESPACE_OID = UUID('6ba7b812-9dad-11d1-80b4-00c04fd430c8')

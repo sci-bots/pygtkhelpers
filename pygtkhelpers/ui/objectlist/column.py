@@ -9,7 +9,7 @@
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
-import gtk, gobject
+import gtk
 
 
 class PropertyMapper(object):
@@ -34,7 +34,8 @@ class CellMapper(object):
     def __init__(self, map_spec):
         self.mappers = []
         for prop, attr in map_spec.items():
-            # the user may either specify a function to compute the attribute or a fixed attribute.
+            # The user may either specify a function to compute the attribute
+            # or a fixed attribute.
             if callable(attr):
                 self.mappers.append(PropertyMapper(prop, format_func=attr))
             else:
@@ -46,7 +47,6 @@ class CellMapper(object):
 
 
 class Cell(object):
-
     def __init__(self, attr, type=str, **kw):
         # ok this is evil, but let the individual cells use it without it
         # being tagged on the cell.
@@ -77,13 +77,14 @@ class Cell(object):
         # attribute/property mapping
         self.mappers = kw.get('mappers', [])
         self.mapped = kw.get('mapped', {})
-        
-        #XXX: cellmapper needs to die
+
+        # XXX: cellmapper needs to die
         if self.mapped:
             self.mappers.append(CellMapper(self.mapped))
         if self.attr:
             default_prop = self._calculate_default_prop()
-            self.mappers.append(PropertyMapper(default_prop, attr=self.attr, format_func=self.format_data))
+            self.mappers.append(PropertyMapper(default_prop, attr=self.attr,
+                                               format_func=self.format_data))
 
     def render(self, object, cell):
         for mapper in self.mappers:
@@ -101,7 +102,7 @@ class Cell(object):
         return data
 
     def create_renderer(self, column, objectlist):
-        #XXX: extend to more types
+        # XXX: extend to more types
         if self.use_stock or self.type == gtk.gdk.Pixbuf:
             cell = gtk.CellRendererPixbuf()
         elif self.use_checkbox or self.use_radio:
@@ -111,7 +112,7 @@ class Cell(object):
         elif self.use_spin:
             cell = CellRendererSpin(self, objectlist)
         elif self.choices:
-            #XXX: a mapping?
+            # XXX: a mapping?
             cell = CellRendererCombo(self, objectlist, self.choices)
         else:
             cell = CellRendererText(self, objectlist)
@@ -123,7 +124,7 @@ class Cell(object):
     def _calculate_default_prop(self):
         if self.use_stock:
             primary_prop = 'stock-id'
-        elif self.type==gtk.gdk.Pixbuf:
+        elif self.type == gtk.gdk.Pixbuf:
             primary_prop = 'pixbuf'
         elif self.use_checkbox or self.use_radio:
             primary_prop = 'active'
@@ -137,8 +138,7 @@ class Cell(object):
         return primary_prop
 
     def __repr__(self):
-        return '<Cell %s %r>'%(self.attr, self.type)
-
+        return '<Cell %s %r>' % (self.attr, self.type)
 
 
 class Column(object):
@@ -173,11 +173,11 @@ class Column(object):
     :param tooltip_image_size: The size of an image tooltip
 
     """
-    #XXX: handle cells properly
+    # XXX: handle cells properly
 
     def __init__(self, attr=None, type=str, title=None, **kwargs):
 
-        #XXX: better error messages
+        # XXX: better error messages
         assert title or attr, "Columns need a title or an attribute to infer it"
 
         self.title = title or attr.capitalize()
@@ -197,7 +197,7 @@ class Column(object):
         if 'cells' in kwargs:
             self.cells = kwargs['cells']
         else:
-            #XXX: sane arg filter
+            # XXX: sane arg filter
             self.cells = [Cell(attr, type, **kwargs)]
 
     def create_treecolumn(self, objectlist):
@@ -217,7 +217,7 @@ class Column(object):
         for cell in self.cells:
             view_cell = cell.create_renderer(self, objectlist)
             view_cell.set_data('pygtkhelpers::column', self)
-            #XXX: better control over packing
+            # XXX: better control over packing
             col.pack_start(view_cell)
             col.set_cell_data_func(view_cell, cell.cell_data_func)
         col.set_reorderable(True)
@@ -229,7 +229,6 @@ class Column(object):
             objectlist.model_sort.set_sort_func(idx, sort_func, objectlist)
             col.set_sort_column_id(idx)
         if objectlist and objectlist.searchable and self.searchable:
-            ###
             self.search_by(objectlist)
         col.connect('clicked', self._on_viewcol_clicked)
         return col
@@ -284,10 +283,7 @@ class Column(object):
         return not (key.lower() in str(val).lower())
 
     def _on_viewcol_clicked(self, view_col):
-        return #
-        print view_col
-        print view_col.get_sort_order()
-
+        return
 
 
 class EditableCellMixin(object):
@@ -302,8 +298,8 @@ class EditableCellMixin(object):
 
     def _on_edited(self, cellrenderer, path, text):
         obj = self.objectlist._object_at_sort_path(path)
-        #XXX: full converter
-        #XXX: breaks if attr is None
+        # XXX: full converter
+        # XXX: breaks if attr is None
         value = self.cell.type(text)
         original_value = getattr(obj, self.cell.attr)
         if value != original_value:
@@ -344,7 +340,6 @@ class CellRendererSpin(EditableCellMixin, gtk.CellRendererSpin):
 
 
 class CellRendererToggle(gtk.CellRendererToggle):
-
     def __init__(self, cell, objectlist):
         gtk.CellRendererToggle.__init__(self)
         self.cell = cell
@@ -360,8 +355,8 @@ class CellRendererToggle(gtk.CellRendererToggle):
         setattr(obj, self.cell.attr, value)
         self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
-class CellRendererProgress(gtk.CellRendererProgress):
 
+class CellRendererProgress(gtk.CellRendererProgress):
     def __init__(self, cell, objectlist):
         gtk.CellRendererProgress.__init__(self)
         self.cell = cell
@@ -370,8 +365,8 @@ class CellRendererProgress(gtk.CellRendererProgress):
         if text is not None:
             self.set_property('text', text)
 
-class CellRendererCombo(gtk.CellRendererCombo):
 
+class CellRendererCombo(gtk.CellRendererCombo):
     def __init__(self, cell, objectlist, choices):
         gtk.CellRendererCombo.__init__(self)
         self.cell = cell
@@ -385,7 +380,7 @@ class CellRendererCombo(gtk.CellRendererCombo):
         self.props.editable = True
         self.connect('changed', self._on_changed)
 
-    def _on_changed(self, _, path, new_iter):#XXX:
+    def _on_changed(self, _, path, new_iter):  # XXX:
         obj = self.objectlist[path]
         value = self.props.model[new_iter][0]
         original_value = getattr(obj, self.cell.attr)
@@ -416,4 +411,3 @@ TOOLTIP_TYPES = set(TOOLTIP_SETTERS)
 TOOLTIP_SIZED_TYPES = set([
     TOOLTIP_STOCK, TOOLTIP_ICONNAME
 ])
-

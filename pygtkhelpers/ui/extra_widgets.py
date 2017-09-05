@@ -7,8 +7,8 @@ from flatland.schema import String, Form, Integer, Float, Enum
 
 from ..utils import gsignal
 from ..proxy import widget_proxies, GObjectProxy, proxy_for
-from ..forms import view_widgets, element_views, ElementBuilder,\
-        widget_for, FormView, IntegerBuilder
+from ..forms import (view_widgets, element_views, ElementBuilder,
+                     IntegerBuilder)
 from .widgets import SimpleComboBox
 from .form_view_dialog import FormViewDialog
 
@@ -81,17 +81,15 @@ class FilepathWidget(gtk.HBox):
             elif path(self.value).parent.isdir():
                 starting_dir = path(self.value).parent
         if self.mode == 'file':
-            response, filepath = self.browse_for_file('Select file path',
-                                                      action=self.action,
-                                                      starting_dir=
-                                                      starting_dir)
+            response, filepath =\
+                self.browse_for_file('Select file path', action=self.action,
+                                     starting_dir=starting_dir)
         elif self.mode == 'directory':
-            response, filepath = self.browse_for_file('Select directory',
-                                                      action=self.action,
-                                                      starting_dir=
-                                                      starting_dir)
+            response, filepath =\
+                self.browse_for_file('Select directory', action=self.action,
+                                     starting_dir=starting_dir)
         else:
-            raise ValueError, '[Filepath] Invalid mode: %s' % self.mode
+            raise ValueError('[Filepath] Invalid mode: %s' % self.mode)
         if response == gtk.RESPONSE_OK:
             logging.info('got new filepath: %s' % filepath)
             self.value = path(filepath)
@@ -205,8 +203,8 @@ class EnumBuilder(ElementBuilder):
             # Assume value is index of choice
             default_value = element.default_value
             if default_value >= len(choices):
-                raise IndexError, 'Default index must be less than the number'\
-                        ' of choices (%d)' % len(choices)
+                raise IndexError('Default index must be less than the number '
+                                 'of choices (%d)' % len(choices))
         else:
             # Assume the default is the actual value
             default_value = zip(*choices)[1].index(element.default_value)
@@ -261,11 +259,3 @@ if __name__ == '__main__':
     )
     dialog = FormViewDialog(form)
     print dialog.run()
-    #FormView.schema_type = form
-    #view = FormViewDialog()
-    #for field in view.form.fields.values():
-        #field.proxy.set_widget_value(field.element.default_value)
-    #expander = gtk.Expander()
-    #expander.add(view.widget)
-    #window.add(expander)
-    #window.show_all()

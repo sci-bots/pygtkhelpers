@@ -32,7 +32,7 @@ class StringList(gtk.VBox):
         self.view = gtk.TreeView()
         self.view.set_headers_visible(False)
         self.view.set_model(self.store)
-        #XXX: scrollable?
+        # XXX: scrollable?
         self.pack_start(self.view, expand=True)
 
         self.tv_col = gtk.TreeViewColumn()
@@ -58,7 +58,7 @@ class StringList(gtk.VBox):
         self.rem_button.set_sensitive(False)
         hb.pack_start(self.rem_button, expand=False)
         self.pack_start(hb, expand=False)
-        self._current =  None
+        self._current = None
         self._block = False
 
     def _on_add(self, button):
@@ -86,16 +86,16 @@ class StringList(gtk.VBox):
             self.value_entry.set_text('')
 
     def _on_value_changed(self, entry):
-        if self._current is  not None:
+        if self._current is not None:
             self._block = True
             self.store.set(self._current, 0, entry.get_text())
             self._emit_changed()
 
-    def _emit_changed(self) :
+    def _emit_changed(self):
         self.emit('content-changed')
 
     def update(self, value):
-        if not self._block: 
+        if not self._block:
             self.store.clear()
             for item in value:
                 self.store.append([item])
@@ -134,7 +134,9 @@ class SimpleComboBox(gtk.ComboBox):
 
 
 class AttrSortCombo(gtk.HBox):
-    """A evil utility class that hijacks a objectlist and forces ordering onto its model
+    """
+    A evil utility class that hijacks a objectlist and forces ordering onto its
+    model.
     """
     def __init__(self, objectlist, attribute_list, default):
         gtk.HBox.__init__(self, spacing=3)
@@ -174,7 +176,7 @@ class AttrSortCombo(gtk.HBox):
             model.set_sort_column_id(-1, order)
 
 
-def _attr_sort_func(model, iter1, iter2 , attribute):
+def _attr_sort_func(model, iter1, iter2, attribute):
     """Internal helper
     """
     attr1 = getattr(model[iter1][0], attribute, None)
@@ -201,7 +203,7 @@ class EmptyTextViewFiller(GObjectPlugin):
         self.buffer = self.widget.get_buffer()
         self.empty = not len(self.buffer.props.text)
         self.buffer.create_tag('empty-text', foreground='#666',
-                                style=STYLE_ITALIC)
+                               style=STYLE_ITALIC)
         self.widget.connect('focus-in-event', self._on_view_focus_in)
         self.widget.connect('focus-out-event', self._on_view_focus_out)
         if self.empty:
