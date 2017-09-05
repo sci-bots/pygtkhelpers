@@ -37,7 +37,8 @@
 """
 
 
-import gobject, gtk
+import gobject
+import gtk
 
 from pygtkhelpers.utils import gsignal
 from pygtkhelpers.ui.widgets import StringList, SimpleComboBox
@@ -130,7 +131,6 @@ class GObjectProxy(gobject.GObject):
             # None for read only widgets
             sid = self.widget.connect(self.signal_name, self.widget_changed)
             self.connections.append(sid)
-
 
 
 class SinglePropertyGObjectProxy(GObjectProxy):
@@ -256,7 +256,7 @@ class GtkComboBoxProxy(GObjectProxy):
         return self.widget.get_model()
 
     def get_row_value(self, row):
-        row = list(row) #XXX: that sucks
+        row = list(row)  # XXX: that sucks
         '''
         value = row[1:]
         if not value:
@@ -300,7 +300,6 @@ class GtkProgressBarProxy(SinglePropertyGObjectProxy):
     prop_name = 'fraction'
 
 
-
 widget_proxies = {
     gtk.Entry: GtkEntryProxy,
     gtk.ToggleButton: GtkToggleButtonProxy,
@@ -325,6 +324,7 @@ widget_proxies = {
     StringList: StringListProxy,
     SimpleComboBox: GtkComboBoxProxy,
 }
+
 
 def proxy_for(widget):
     """Create a proxy for a Widget
@@ -381,7 +381,6 @@ class ProxyGroup(gobject.GObject):
     def _on_proxy_changed(self, proxy, value, name):
         self.emit('changed', proxy, name, value)
 
-    #XXX namespacing
+    # XXX namespacing
     def _on_group_changed(self, group, proxy, value, name):
         self.emit('changed', proxy, name, value)
-

@@ -38,15 +38,15 @@ class RowFields(object):
         return self.__dict__
 
     def __getattr__(self, name):
-        if not name in dir(self):
+        if name not in dir(self):
             setattr(self, name, None)
         return object.__getattribute__(self, name)
 
     @property
     def attrs(self):
         return dict([(k, v) for k, v in self.__dict__.items()
-                if k not in ('__members__', '__methods__',
-                        '_getAttributeNames')])
+                     if k not in ('__members__', '__methods__',
+                                  '_getAttributeNames')])
 
 
 class CombinedFields(ObjectList):
@@ -114,7 +114,7 @@ class CombinedFields(ObjectList):
     @property
     def forms(self):
         return dict([(k, v) for k, v in self._forms.iteritems()
-                if k != '__DefaultFields'])
+                     if k != '__DefaultFields'])
 
     def __init__(self, forms, enabled_attrs, show_ids=True, **kwargs):
         self.first_selected = True
@@ -122,27 +122,29 @@ class CombinedFields(ObjectList):
         row_id_properties = dict(editable=False)
         if not show_ids:
             row_id_properties['show_in_gui'] = False
-        self._forms['__DefaultFields'] = Form.of(Integer.named('id')\
-                .using(default=0, properties=row_id_properties))
+        self._forms['__DefaultFields'] = \
+            Form.of(Integer.named('id').using(default=0,
+                                              properties=row_id_properties))
 
         self.uuid_mapping = dict([(name, uuid4().get_hex()[:10])
-                for name in self._forms])
-        self.uuid_reverse_mapping = dict([(v, k)
-                for k, v in self.uuid_mapping.items()])
+                                  for name in self._forms])
+        self.uuid_reverse_mapping = dict([(v, k) for k, v in
+                                          self.uuid_mapping.items()])
         self._columns = []
         self._full_field_to_field_def = {}
         if not enabled_attrs:
-            enabled = lambda form_name, field: True
+            def enabled(form_name, field):
+                return True
         else:
-            enabled = lambda form_name, field:\
-                    field.name in enabled_attrs.get(form_name, {})
+            def enabled(form_name, field):
+                return field.name in enabled_attrs.get(form_name, {})
         # Make __DefaultFields.id the first column
         form_names = ['__DefaultFields'] + sorted(forms.keys())
         for form_name in form_names:
             form = self._forms[form_name]
             for field_name in form.field_schema:
-                if not form_name == '__DefaultFields' and not enabled(form_name,
-                        field_name):
+                if all([not form_name == '__DefaultFields', not
+                        enabled(form_name, field_name)]):
                     continue
                 default_title = re.sub(r'_', ' ', field_name.name).capitalize()
                 # Use custom column heading/title, if available.
@@ -204,8 +206,8 @@ class CombinedFields(ObjectList):
 
         for i in row_ids:
             setattr(self[i], attr, value)
-        logging.debug('Set rows attr: row_ids=%s column_title=%s value=%s'\
-            % (row_ids, column_title, value))
+        logging.debug('Set rows attr: row_ids=%s column_title=%s value=%s',
+                      row_ids, column_title, value)
         self._on_multiple_changed(attr)
         return True
 
@@ -223,16 +225,21 @@ class CombinedFields(ObjectList):
         for i in row_ids:
             s.unselect_path(i)
 
-    def _get_popup_menu(self, item, column_title, value, row_ids, menu_items=None):
+    def _get_popup_menu(self, item, column_title, value, row_ids,
+                        menu_items=None):
         popup = gtk.Menu()
+
         def set_attr_value(*args, **kwargs):
-            logging.debug('[set_attr_value] args=%s kwargs=%s' % (args, kwargs))
+            logging.debug('[set_attr_value] args=%s kwargs=%s', args, kwargs)
             self._set_rows_attr(row_ids, column_title, value)
+
         def set_attr(*args, **kwargs):
             logging.debug('[set_attr] args=%s kwargs=%s' % (args, kwargs))
             self._set_rows_attr(row_ids, column_title, value, prompt=True)
+
         def invert_rows(*args, **kwargs):
             self._invert_rows(row_ids)
+
         if menu_items is None:
             # Use list of tuples (menu label, callback) rather than a dict to
             # allow ordering.
@@ -241,16 +248,18 @@ class CombinedFields(ObjectList):
             menu_items += [('Select all rows', self._select_all)]
         if len(row_ids) > 0:
             menu_items += [('Deselect all rows', self._deselect_all),
-                    ('Invert row selection', invert_rows)]
+                           ('Invert row selection', invert_rows)]
 
         item_id = [r for r in self].index(item)
         if item_id not in row_ids:
-            logging.debug('[ProtocolGridController] _on_right_clicked(): '\
-                            'clicked item is not selected')
+            logging.debug('[ProtocolGridController] _on_right_clicked(): '
+                          'clicked item is not selected')
         elif len(row_ids) > 1:
-            menu_items += [('Set selected [%s] to "%s"' % (column_title, value),
-                    set_attr_value), ('Set selected [%s] to...'''\
-                            % column_title, set_attr)]
+            menu_items += [('Set selected [%s] to "%s"' % (column_title,
+                                                           value),
+                            set_attr_value),
+                           ('Set selected [%s] to...''' % column_title,
+                            set_attr)]
 
         for label, callback in menu_items:
             if label is None:
@@ -292,8 +301,7 @@ class CombinedFields(ObjectList):
         -get row values for (form_name, row_id)
         -set affected objectlist item attributes based on row values
         '''
-        if form_name not in self._forms\
-            or row_id >= len(self):
+        if form_name not in self._forms or row_id >= len(self):
             return
         combined_row = self[row_id]
         form_row = combined_row.get_row_fields(form_name)
@@ -306,14 +314,14 @@ class CombinedFields(ObjectList):
         selection = self.get_selection()
         model, rows = selection.get_selected_rows()
         row_ids = zip(*rows)[0]
-        logging.debug('[CombinedFields] _on_multiple_changed(): attr=%s '\
-                'selected_rows=%s' % (attr, row_ids))
+        logging.debug('[CombinedFields] _on_multiple_changed(): attr=%s '
+                      'selected_rows=%s', attr, row_ids)
         self.emit('rows-changed', row_ids, rows, attr)
 
     def _on_item_changed(self, widget, row_data, attr, value, **kwargs):
         row_id = [r for r in self].index(row_data)
-        logging.debug('[CombinedFields] _on_item_changed(): name=%s value=%s'\
-                % (attr, value))
+        logging.debug('[CombinedFields] _on_item_changed(): name=%s value=%s',
+                      attr, value)
         self.emit('row-changed', row_id, row_data, attr, value)
 
     def reset_row_ids(self):
@@ -411,17 +419,17 @@ class CombinedRow(object):
             self.attributes['__DefaultFields'].id = row_id
 
     def __getattr__(self, name):
-        if not name in ['attributes', 'combined_fields']:
+        if name not in ['attributes', 'combined_fields']:
             for form_name, uuid_code in self.combined_fields.uuid_mapping\
                     .iteritems():
                 field_set_prefix = self.field_set_prefix % uuid_code
                 if name.startswith(field_set_prefix):
                     return getattr(self.attributes[form_name],
-                            name[len(field_set_prefix):])
+                                   name[len(field_set_prefix):])
         return object.__getattribute__(self, name)
 
     def __setattr__(self, name, value):
-        if not name in ['attributes', 'combined_fields']:
+        if name not in ['attributes', 'combined_fields']:
             for form_name, uuid_code in self.combined_fields.uuid_mapping\
                     .iteritems():
                 field_set_prefix = self.field_set_prefix % uuid_code
@@ -429,11 +437,11 @@ class CombinedRow(object):
                     # Update value
                     setattr(self.attributes[form_name],
                             name[len(field_set_prefix):], value)
-                    logging.debug('[CombinedRow] setattr %s=%s' % (name, value))
+                    logging.debug('[CombinedRow] setattr %s=%s', name, value)
                     break
         else:
             self.__dict__[name] = value
 
     def __str__(self):
-        return '<CombinedRow attributes=%s>' % [(k, v.attrs)
-                for k, v in self.attributes.iteritems()]
+        return '<CombinedRow attributes=%s>' % [(k, v.attrs) for k, v in
+                                                self.attributes.iteritems()]

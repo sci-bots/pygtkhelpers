@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
     pygtkhelpers.utils
     ~~~~~~~~~~~~~~~~~~
@@ -12,9 +11,13 @@
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
-import sys, struct, time, string
+import string
+import struct
+import sys
+import time
 
-import gobject, gtk
+import gobject
+import gtk
 
 from cgi import escape as _xml_escape
 
@@ -67,14 +70,16 @@ def gsignal(name, *args, **kwargs):
 
         dict[name] = (flags, retval, args)
 
+
 def _max(c):
     # Python 2.3 does not like bitshifting here
     return 2 ** ((8 * struct.calcsize(c)) - 1) - 1
 
-_MAX_VALUES = {int : _max('i'),
+
+_MAX_VALUES = {int: _max('i'),
                float: float(2**1024 - 2**971),
-               long : _max('l') }
-_DEFAULT_VALUES = {str : '', float : 0.0, int : 0, long : 0L}
+               long: _max('l')}
+_DEFAULT_VALUES = {str: '', float: 0.0, int: 0, long: 0L}
 
 
 def gproperty(name, ptype, default=None, nick='', blurb='',
@@ -120,16 +125,13 @@ def gproperty(name, ptype, default=None, nick='', blurb='',
                    kwargs.get('maximum', _MAX_VALUES[ptype]),
                    default)
     elif ptype == bool:
-        if (default is not True and
-            default is not False):
-            raise TypeError("default must be True or False, not %r" % (
-                default))
+        if default is not True and default is not False:
+            raise TypeError("default must be True or False, not %r" % default)
         default = default,
     elif gobject.type_is_a(ptype, gobject.GEnum):
         if default is None:
             raise TypeError("enum properties needs a default value")
         elif not isinstance(default, ptype):
-
             raise TypeError("enum value %s must be an instance of %r" %
                             (default, ptype))
         default = default,
@@ -169,7 +171,6 @@ def refresh_gui(delay=0.0001, wait=0.0001):
     while gtk.events_pending():
         gtk.main_iteration_do(block=False)
         time.sleep(wait)
-
 
 
 def _get_in_window(widget):
@@ -239,7 +240,6 @@ class XFormatter(string.Formatter):
         self.extra_converters = extra_converters
         self.lookup_objects = lookup_objects
 
-
     def get_value(self, key, args, kwargs):
         try:
             return super(XFormatter, self).get_value(key, args, kwargs)
@@ -248,7 +248,7 @@ class XFormatter(string.Formatter):
                 for obj in self.lookup_objects:
                     if hasattr(obj, key):
                         return getattr(obj, key)
-            raise # reraise the lookup error
+            raise  # reraise the lookup error
 
     def convert_field(self, value, conversion):
         if conversion in self.extra_converters:
@@ -263,6 +263,7 @@ class XFormatter(string.Formatter):
 
 def eformat(format, *k, **kw):
     return XFormatter().vformat(format, k, kw)
+
 
 class MarkupMixin(object):
     """
@@ -282,6 +283,7 @@ class MarkupMixin(object):
         formatter = XFormatter(self, **self.markup_converters)
         return formatter.vformat(self.format, (), self.markup_kwargs())
 
+
 def dict_to_form(dict):
     '''
     Generate a flatland form based on a pandas Series.
@@ -289,37 +291,33 @@ def dict_to_form(dict):
     from flatland import Boolean, Form, String, Integer, Float
 
     def is_float(v):
-        try: return (float(str(v)), True)[1]
-        except (ValueError, TypeError), e: return False
-    
+        try:
+            return (float(str(v)), True)[1]
+        except (ValueError, TypeError):
+            return False
+
     def is_int(v):
-        try: return (int(str(v)), True)[1]
-        except (ValueError, TypeError), e: return False
-    
+        try:
+            return (int(str(v)), True)[1]
+        except (ValueError, TypeError):
+            return False
+
     def is_bool(v):
         return v in (True, False)
-     
+
     schema_entries = []
     for k, v in dict.iteritems():
         if is_int(v):
-            schema_entries.append(
-                Integer.named(k).using(
-                    default=v, optional=True),
-            )
+            schema_entries.append(Integer.named(k).using(default=v,
+                                                         optional=True))
         elif is_float(v):
-            schema_entries.append(
-                Float.named(k).using(
-                    default=v, optional=True),
-            )
+            schema_entries.append(Float.named(k).using(default=v,
+                                                       optional=True))
         elif is_bool(v):
-            schema_entries.append(
-                Boolean.named(k).using(
-                    default=v, optional=True),
-            )
+            schema_entries.append(Boolean.named(k).using(default=v,
+                                                         optional=True))
         elif type(v) == str:
-            schema_entries.append(
-                String.named(k).using(
-                    default=v, optional=True),
-            )
-            
+            schema_entries.append(String.named(k).using(default=v,
+                                                        optional=True))
+
     return Form.of(*schema_entries)

@@ -12,10 +12,10 @@
 """
 
 import os
-import sys
 import pkgutil
 
-import gobject, gtk
+import gobject
+import gtk
 
 from .utils import gsignal
 
@@ -51,12 +51,11 @@ class BaseDelegate(gobject.GObject):
         2. How it creates a default toplevel widget if one was not found in the
            ui file, or no ui file is specified.
     """
-
     builder_file = None
     builder_path = None
     toplevel_name = 'main'
     builder_file_patterns = [
-        #this should be the default
+        # this should be the default
         'ui/%s.ui',
         'ui/%s',
         # commonly used in applications like for example pida
@@ -64,13 +63,13 @@ class BaseDelegate(gobject.GObject):
         'glade/%s',
     ]
 
-
-    #XXX: should those get self.model as extra parameter?
+    # XXX: should those get self.model as extra parameter?
     # they get the delegate, so its there as delegate.model
     gsignal('model-set')
 
+    # Emit signal when changing the models
     # (attribute, value)
-    gsignal('model-updated', object, object) # one should emit that when changing the models
+    gsignal('model-updated', object, object)
 
     def __init__(self, model=None):
         gobject.GObject.__init__(self)
@@ -84,7 +83,7 @@ class BaseDelegate(gobject.GObject):
         self._model = model
         self.create_ui()
         self._connect_signals()
-        #re-set the model to emit the signal XXX: potentially confusing
+        # re-set the model to emit the signal XXX: potentially confusing
         self.model = self.model
 
     # Public API
@@ -146,8 +145,7 @@ class BaseDelegate(gobject.GObject):
                 raise LookupError(self.__class__, self.builder_path)
             builder.add_from_file(self.builder_path)
         elif self.builder_file:
-
-            #XXX: more sensible selection!!
+            # XXX: more sensible selection!!
             data = None
             for type in self.__class__.__mro__:
                 for pattern in self.builder_file_patterns:
@@ -159,11 +157,12 @@ class BaseDelegate(gobject.GObject):
                         continue
                 if data:
                     break
-            if not data: #XXX: better debugging of the causes?
+            if not data:  # XXX: better debugging of the causes?
                 raise LookupError(self.__class__, self.builder_file)
 
             builder.add_from_string(data)
-        else: return
+        else:
+            return
         self._toplevel = self.get_builder_toplevel(builder)
         for obj in builder.get_objects():
             try:
@@ -173,7 +172,7 @@ class BaseDelegate(gobject.GObject):
                 # [1]: http://mailman.daa.com.au/cgi-bin/pipermail/pygtk/2010-December/019255.html
                 obj_name = gtk.Buildable.get_name(obj)
             except TypeError:
-                pass #XXX: maybe warn?
+                pass  # XXX: maybe warn?
             else:
                 setattr(self, obj_name, obj)
 
@@ -192,7 +191,7 @@ class BaseDelegate(gobject.GObject):
         signal_type, widget_name, signal_name = self._parse_signal_handler(name)
         widget = getattr(self, widget_name, None)
         if widget is None:
-            raise LookupError('Widget named %s is not available.'%widget_name )
+            raise LookupError('Widget named %s is not available.' % widget_name)
         if signal_type == 'on':
             widget.connect(signal_name, method)
         elif signal_type == 'after':
@@ -200,9 +199,8 @@ class BaseDelegate(gobject.GObject):
 
     def _get_all_handlers(self):
         for name in dir(self):
-            if ((name.startswith('on_') or
-                    name.startswith('after_')) and
-                    '__' in  name):
+            if all([name.startswith('on_') or name.startswith('after_'),
+                    '__' in name]):
                 yield name
 
     def _get_prop_handler(self, propname, action):
@@ -217,7 +215,6 @@ class BaseDelegate(gobject.GObject):
         return self._model
 
     model = property(get_model, set_model)
-
 
     # Private glib API for simple property handling
     def do_get_property(self, prop):
@@ -250,7 +247,7 @@ class SlaveView(BaseDelegate):
         if toplevel is None:
             toplevel = get_first_builder_window(builder).child
         if toplevel is not None:
-            #XXX: what to do if a developer
+            # XXX: what to do if a developer
             #     gave the name of a window instead of its child
             toplevel.get_parent().remove(toplevel)
         return toplevel
@@ -264,6 +261,7 @@ class SlaveView(BaseDelegate):
         self.display_widget.add(self.widget)
         self.display_widget.show()
         BaseDelegate.show_and_run(self)
+
 
 class ToplevelView(BaseDelegate):
     """A View that is a toplevel widget"""
@@ -291,4 +289,3 @@ class WindowView(ToplevelView):
     """A View that is a Window"""
     def set_title(self, title):
         self.widget.set_title(title)
-

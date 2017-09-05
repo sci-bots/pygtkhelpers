@@ -118,7 +118,8 @@ class NotebookManagerView(SlaveView):
 
             overwrite = False
             if output_path.isfile():
-                response = yesno('%s already exists. Overwrite?' % output_path.name)
+                response = yesno('%s already exists. Overwrite?' %
+                                 output_path.name)
                 if response == gtk.RESPONSE_YES:
                     overwrite = True
                 else:
@@ -130,10 +131,10 @@ class NotebookManagerView(SlaveView):
                         renamed_path = output_path.parent.joinpath(new_name)
                         counter += 1
                     output_path = renamed_path
-            self.notebook_manager.launch_from_template(selected_path,
-                                                       overwrite=overwrite,
-                                                       output_name=output_path.name,
-                                                       notebook_dir=self.notebook_dir)
+            self.notebook_manager\
+                .launch_from_template(selected_path, overwrite=overwrite,
+                                      output_name=output_path.name,
+                                      notebook_dir=self.notebook_dir)
         dialog.destroy()
 
     def stop(self):
@@ -184,11 +185,11 @@ class NotebookManagerList(SlaveView):
             url_label = gtk.Label(session.address)
 
             stop_button = gtk.Button('Stop')
-            stop_button.set_tooltip_text('Stop Jupyter notebook for directory %s'
-                                         % root)
+            stop_button.set_tooltip_text('Stop Jupyter notebook for directory '
+                                         '%s' % root)
             open_button = gtk.Button('Open')
-            open_button.set_tooltip_text('Open Jupyter notebook for directory %s'
-                                         % root)
+            open_button.set_tooltip_text('Open Jupyter notebook for directory '
+                                         '%s' % root)
 
             def open_session(button, session):
                 webbrowser.open_new_tab(session.address)

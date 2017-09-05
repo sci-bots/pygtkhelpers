@@ -8,7 +8,7 @@
 
     .. warning::
 
-        in order to get well-behaved threading, run :function:`initial_setup` 
+        in order to get well-behaved threading, run :function:`initial_setup`
         as early as possible (befor doing any gui operations
 
     :copyright: 2005-2010 by pygtkhelpers Authors
@@ -17,11 +17,10 @@
 
 
 from __future__ import with_statement
-import threading, thread
+import threading
+import thread
 import Queue as queue
-import subprocess
 import gobject
-import time
 import sys
 from gtk import gdk
 
@@ -34,7 +33,7 @@ def initial_setup():
     """
     gdk.threads_init()
     gdk.threads_enter()
-    gobject.threads_init() #the glib mainloop doesn't love us else
+    gobject.threads_init()  # the glib mainloop doesn't love us else
 
 
 class AsyncTask(object):
@@ -63,7 +62,7 @@ class AsyncTask(object):
     should stick code that affects the UI.
     """
     def __init__(self, work_callback=None, loop_callback=None, daemon=True):
-        gobject.threads_init() #the glib mainloop doesn't love us else
+        gobject.threads_init()  # the glib mainloop doesn't love us else
         self.counter = 0
         self.daemon = daemon
 
@@ -95,7 +94,7 @@ class AsyncTask(object):
 
     def _work_callback(self, counter, *args, **kwargs):
         ret = self.work_callback(*args, **kwargs)
-        #tuple necessary cause idle_add wont allow more args
+        # tuple necessary cause idle_add wont allow more args
         gobject.idle_add(self._loop_callback, (counter, ret))
 
     def _loop_callback(self, vargs):
@@ -153,7 +152,7 @@ class GeneratorTask(AsyncTask):
             kwargs = kwargs.copy()
             kwargs['generator_task'] = self
         for ret in self.work_callback(*args, **kwargs):
-            #XXX: what about checking self.counter?
+            # XXX: what about checking self.counter?
             if self._stopped:
                 thread.exit()
             gobject.idle_add(self._loop_callback, (counter, ret),
@@ -193,22 +192,23 @@ def invoke_in_mainloop(func, *args, **kwargs):
     Invoke a function in the mainloop, pass the data back.
     """
     results = queue.Queue()
-    
+
     @gcall
     def run():
         try:
             data = func(*args, **kwargs)
             results.put(data)
             results.put(None)
-        except BaseException, e: #XXX: handle
+        except BaseException:  # XXX: handle
             results.put(None)
             results.put(sys.exc_info())
             raise
 
     data = results.get()
-    tp, val, tb = results.get()
+    exception = results.get()
 
     if exception is None:
         return data
     else:
+        tp, val, tb = results.get()
         raise tp, val, tb

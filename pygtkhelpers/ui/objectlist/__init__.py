@@ -10,6 +10,7 @@
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 from si_prefix import si_format, si_parse
+import gtk
 import numpy as np
 
 from .column import PropertyMapper, Cell, Column

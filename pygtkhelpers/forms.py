@@ -17,16 +17,16 @@ from collections import OrderedDict
 import sys
 import gtk
 
-from flatland import Dict, String, Integer, Boolean, Enum
+from flatland import String, Integer, Boolean
 
 from .delegates import SlaveView
-from .proxy import proxy_for
+from .proxy import proxy_for, ProxyGroup
 from .utils import gsignal
 
 
 def _view_type_for_element(element):
     # now do something with element.__class__
-    ## something nasty
+    # XXX something nasty
     for element_type in element.__class__.__mro__:
         if element_type in element_views:
             return element_views[element_type]
@@ -69,16 +69,14 @@ class Field(object):
         self._unparent()
         self.label_widget.set_alignment(1.0, 0.5)
         table.attach(self.label_event_box, 0, 1, row, row+1,
-                     xoptions=gtk.SHRINK|gtk.FILL, yoptions=gtk.SHRINK)
+                     xoptions=gtk.SHRINK | gtk.FILL, yoptions=gtk.SHRINK)
         table.attach(self.widget, 1, 2, row, row+1,
-                     xoptions=gtk.EXPAND|gtk.FILL, yoptions=gtk.SHRINK)
+                     xoptions=gtk.EXPAND | gtk.FILL, yoptions=gtk.SHRINK)
 
 
 # XXX AA: Needs splitting into view component, and controller component
 class FieldSet(object):
     def __init__(self, delegate, schema_type):
-        from pygtkhelpers.proxy import ProxyGroup, proxy_for
-
         self.delegate = delegate
         self.schema = schema_type()
         self.proxies = ProxyGroup()
@@ -89,7 +87,7 @@ class FieldSet(object):
 
     def _setup_widget(self, name, element):
         widget = getattr(self.delegate, name, None)
-        #XXX (AA) this will always be the case, we are running too soon
+        # XXX (AA) this will always be the case, we are running too soon
         if widget is None:
             widget = widget_for(element)
             setattr(self.delegate, name, widget)
@@ -115,7 +113,7 @@ class FieldSet(object):
 class FormView(SlaveView):
     # Emitted on form change `(proxy_group, proxy, field_name, new_value)`
     gsignal('changed', object, object, str, object)
-    #XXX: helper, dont use for complex
+    # XXX: helper, dont use for complex
     """A specialized delegate that adds widget proxying and schema support
     """
 
@@ -243,5 +241,3 @@ view_widgets = {
     VIEW_NUMBER: IntegerBuilder(),
     VIEW_CHECK: BooleanBuilder(),
 }
-
-

@@ -95,9 +95,10 @@ def flatten_form(form_instance):
 
 def get_fields_frame(schema):
     '''
-    Args:
-
-        schema (dict) : `JSON schema <http://spacetelescope.github.io/understanding-json-schema/>`_.
+    Parameters
+    ----------
+    schema : dict
+        `JSON schema <http://spacetelescope.github.io/understanding-json-schema/>`_
     '''
     fields = []
 
@@ -116,10 +117,11 @@ def get_fields_frame(schema):
                                                       'parents', 'field',
                                                       'field_type', 'default'])
 
-    df_fields['attributes'] = df_fields.apply(lambda row: get_nested_item(row, schema
-                                                                          ['properties'],
-                                                                          row.parents +
-                                                                          (row.field, )),
+    df_fields['attributes'] = df_fields.apply(lambda row:
+                                              get_nested_item(row, schema
+                                                              ['properties'],
+                                                              row.parents +
+                                                              (row.field, )),
                                               axis=1)
     return df_fields
 
@@ -359,15 +361,15 @@ class MetaDataDialog(SchemaDialog):
                              'button': button,
                              'callback_ids': {}}
 
-                    # Attach callback to signal triggered when symbol/symbols are
-                    # found by the scanner.
+                    # Attach callback to signal triggered when symbol/symbols
+                    # are found by the scanner.
                     row_i['callback_ids']['symbol'] =\
                         self.scanner.connect('symbols-found',
                                              on_symbols_found_i, row_i)
                     row_i['callback_ids']['scanner_window'] =\
-                        self.scanner_window.connect('delete_event',
-                                                    on_scanner_view__delete_event,
-                                                    row_i)
+                        (self.scanner_window
+                         .connect('delete_event',
+                                  on_scanner_view__delete_event, row_i))
 
                     # Launch barcode scan dialog.
                     self.scanner_window.show()
@@ -425,6 +427,8 @@ def schema_dialog(schema, data=None, device_name=None, max_width=None,
     ValueError
         If values to not validate.
     '''
+    # TODO Remove pygst code (or at least gracefully handle case where it is
+    # not available).
     if not device_name and device_name is not None:
         dialog = SchemaDialog(schema, **kwargs)
     else:
@@ -447,8 +451,9 @@ def schema_dialog(schema, data=None, device_name=None, max_width=None,
         if not df_modes.shape[0]:
             raise KeyError('No compatible video mode found.')
         config = df_modes.sort_values(['width', 'framerate'],
-                                    ascending=False).iloc[0]
-        pipeline_command = pu.pipeline_command_from_json(config, colorspace='rgb')
+                                      ascending=False).iloc[0]
+        pipeline_command = pu.pipeline_command_from_json(config,
+                                                         colorspace='rgb')
         dialog = MetaDataDialog(schema, pipeline_command, **kwargs)
     with nostderr():
         valid, results = dialog.run(values=data)
