@@ -12,7 +12,6 @@ class GtkCairoView(SlaveView):
     """
     SlaveView for Cairo drawing surface.
     """
-
     def __init__(self, width=None, height=None):
         if width is None:
             self.width = 640
@@ -32,8 +31,6 @@ class GtkCairoView(SlaveView):
 
     def show_and_run(self):
         self._set_window_title = True
-        #import IPython
-        #gtk.timeout_add(1000, IPython.embed)
         super(GtkCairoView, self).show_and_run()
 
     def on_widget__realize(self, widget):
@@ -46,7 +43,7 @@ class GtkCairoView(SlaveView):
             # the video will be drawn over top of any widgets, etc. in the
             # parent window.
             if not self.widget.window.ensure_native():
-                raise RuntimeError, 'Failed to get native window handle'
+                raise RuntimeError('Failed to get native window handle')
         if os.name == 'nt':
             self.window_xid = self.widget.window.handle
         else:

@@ -93,7 +93,6 @@ class GtkShapesCanvasView(GtkCairoView):
         '''
         Called when size of drawing area changes.
         '''
-        #logger.info('on_widget__configure_event')
         if event.x < 0 and event.y < 0:
             # Widget has not been allocated a size yet, so do nothing.
             return
@@ -140,24 +139,25 @@ class GtkShapesCanvasView(GtkCairoView):
         '''
         Draw label on specified shape.
 
-        Args:
-
-            cairo_context (cairo.Context) : Cairo context to draw text width.  Can
-                be preconfigured, for example, to set font style, etc.
-            shape_id (str) : Shape identifier.
-            text (str) : Label text.  If not specified, shape identifier is used.
-            label_scale (float) : Fraction of limiting dimension of shape bounding
-                box to scale text to.
-
-        Returns:
-
-            None
+        Parameters
+        ----------
+        cairo_context : cairo.Context
+            Cairo context to draw text width.  Can be preconfigured, for
+            example, to set font style, etc.
+        shape_id : str
+            Shape identifier.
+        text : str, optional
+            Label text.  If not specified, shape identifier is used.
+        label_scale : float, optional
+            Fraction of limiting dimension of shape bounding box to scale text
+            to.
         '''
         text = shape_id if text is None else text
         shape = self.canvas.df_bounding_shapes.ix[shape_id]
         shape_center = self.canvas.df_shape_centers.ix[shape_id]
-        font_size, text_shape = aspect_fit_font_size(text, shape * label_scale,
-                                                     cairo_context=cairo_context)
+        font_size, text_shape = \
+            aspect_fit_font_size(text, shape * label_scale,
+                                 cairo_context=cairo_context)
         cairo_context.set_font_size(font_size)
         cairo_context.move_to(shape_center[0] - .5 * text_shape.width,
                               shape_center[1] + .5 * text_shape.height)
@@ -189,6 +189,7 @@ class GtkShapesCanvasView(GtkCairoView):
             self.render_label(cairo_context, shape_id, label_i,
                               label_scale=0.6)
         return surface
+
 
 def parse_args(args=None):
     """Parses arguments, returns (options, args)."""

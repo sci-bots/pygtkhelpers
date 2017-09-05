@@ -42,7 +42,7 @@ class CommandTextView(SlaveView):
                 self_._write(fd, re.sub(r'(\r?\n)+', r'\1', data))
 
             def connection_lost(self, exc):
-                loop.stop() # end loop.run_forever()
+                loop.stop()  # end loop.run_forever()
 
         if os.name == 'nt':
             # For subprocess' pipes on Windows
@@ -188,7 +188,7 @@ def get_run_command_dialog(command, shell=False, title='', data_callback=None,
 
 
 if __name__ == '__main__':
-    command =  r"dir C:\Windows\System32"
+    command = r"dir C:\Windows\System32"
     title = 'List system files...'
 
     # Update label to display each `.exe` file encountered.
