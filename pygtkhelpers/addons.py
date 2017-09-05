@@ -78,4 +78,3 @@ class GObjectPlugin(object):
 
         For overriding in implementations.
         """
-

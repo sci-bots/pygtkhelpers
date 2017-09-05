@@ -10,6 +10,7 @@
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
+
 class CheckCalled(object):
     """Utility to check whether a signal has been emitted
 
@@ -39,4 +40,3 @@ class CheckCalled(object):
     def __call__(self, *k):
         self.called = k
         self.called_count += 1
-
