@@ -9,9 +9,7 @@
 """
 
 import sys
-import traceback
 import linecache
-from cgi import escape
 
 import gtk
 import gobject
@@ -24,7 +22,7 @@ def scrolled(widget, shadow=gtk.SHADOW_NONE):
     window.set_shadow_type(shadow)
     window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
     if widget.set_scroll_adjustments(window.get_hadjustment(),
-                                      window.get_vadjustment()):
+                                     window.get_vadjustment()):
         window.add(widget)
     else:
         window.add_with_viewport(widget)
@@ -34,11 +32,8 @@ def scrolled(widget, shadow=gtk.SHADOW_NONE):
 class SimpleExceptionDialog(gtk.MessageDialog):
     def __init__(self, exc, tb, parent=None, **extra):
 
-        gtk.MessageDialog.__init__(self,
-                buttons=gtk.BUTTONS_CLOSE,
-                type=gtk.MESSAGE_ERROR,
-                parent=parent
-                )
+        gtk.MessageDialog.__init__(self, buttons=gtk.BUTTONS_CLOSE,
+                                   type=gtk.MESSAGE_ERROR, parent=parent)
 
         self.extra = extra
         self.exc = exc
@@ -47,18 +42,17 @@ class SimpleExceptionDialog(gtk.MessageDialog):
         self.set_resizable(True)
 
         text = 'An exception Occured\n\n<b>%s</b>: %s'
-        self.set_markup(text%(exc.__class__.__name__, exc))
+        self.set_markup(text % (exc.__class__.__name__, exc))
 
-        #XXX: add support for showing url's for pastebins
+        # XXX: add support for showing url's for pastebins
 
         expander = gtk.Expander("Exception Details")
         self.vbox.pack_start(expander)
         expander.add(scrolled(self.get_trace_view(exc, tb)))
 
-        #XXX: add additional buttons for pastebin/bugreport
+        # XXX: add additional buttons for pastebin/bugreport
 
         self.show_all()
-
 
     def get_trace_view(self, exc, tb):
         olist = ObjectList([Column('markup', use_markup=True)])
@@ -93,16 +87,15 @@ class TracebackEntry(MarkupMixin):
 
 _old_hook = None
 
+
 def dialog_handler(dialog, etype, eval, trace, extra):
     if etype not in (KeyboardInterrupt, SystemExit):
         d = dialog(eval, trace, **extra)
         d.run()
         d.destroy()
 
-def install_hook(
-        dialog=SimpleExceptionDialog,
-        invoke_old_hook=False,
-        **extra):
+
+def install_hook(dialog=SimpleExceptionDialog, invoke_old_hook=False, **extra):
     """
     install the configured exception hook wrapping the old exception hook
 
@@ -122,9 +115,12 @@ def install_hook(
     _old_hook = sys.excepthook
     sys.excepthook = new_hook
 
+
 def uninstall_hook():
     """
     uninstall our hook
     """
+    global _old_hook
+
     sys.excepthook = _old_hook
     _old_hook = None

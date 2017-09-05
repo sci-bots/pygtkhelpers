@@ -18,17 +18,20 @@
 # This module 'runs' python interpreter in a TextView widget.
 # The main class is Console, usage is:
 # Console(locals=None, banner=None, completer=None, use_rlcompleter=True, start_script='') -
-# it creates the widget and 'starts' interactive session; see the end of
-# this file. If start_script is not empty, it pastes it as it was entered from keyboard.
+# it creates the widget and 'starts' interactive session; see the end of this
+# file. If start_script is not empty, it pastes it as it was entered from
+# keyboard.
 #
-# Console has "command" signal which is emitted when code is about to
-# be executed. You may connect to it using console.connect or console.connect_after
-# to get your callback ran before or after the code is executed.
+# Console has "command" signal which is emitted when code is about to be
+# executed. You may connect to it using console.connect or
+# console.connect_after to get your callback ran before or after the code is
+# executed.
 #
 # To modify output appearance, set attributes of console.stdout_tag and
 # console.stderr_tag.
 #
-# Console may subclass a type other than gtk.TextView, to allow syntax highlighting and stuff,
+# Console may subclass a type other than gtk.TextView, to allow syntax
+# highlighting and stuff,
 # e.g.:
 #   console_type = pyconsole.ConsoleType(moo.edit.TextView)
 #   console = console_type(use_rlcompleter=False, start_script="import moo\nimport gtk\n")
@@ -48,10 +51,12 @@ import sys
 import keyword
 import re
 
+
 # commonprefix() from posixpath
 def _commonprefix(m):
     "Given a list of pathnames, returns the longest common leading component"
-    if not m: return ''
+    if not m:
+        return ''
     prefix = m[0]
     for item in m:
         for i in range(len(prefix)):
@@ -62,13 +67,14 @@ def _commonprefix(m):
                 break
     return prefix
 
-class _ReadLine(object):
 
+class _ReadLine(object):
     class Output(object):
         def __init__(self, console, tag_name):
             object.__init__(self)
             self.buffer = console.get_buffer()
             self.tag_name = tag_name
+
         def write(self, text):
             pos = self.buffer.get_iter_at_mark(self.buffer.get_insert())
             self.buffer.insert_with_tags_by_name(pos, text, self.tag_name)
@@ -92,7 +98,7 @@ class _ReadLine(object):
 
             if text != self.items[self.ptr]:
                 self.edited[self.ptr] = text
-            elif self.edited.has_key(self.ptr):
+            elif self.ptr in self.edited:
                 del self.edited[self.ptr]
 
             self.ptr = self.ptr + dir
@@ -139,12 +145,16 @@ class _ReadLine(object):
         self.nonword_re = re.compile("[^\w\._]")
 
     def freeze_undo(self):
-        try: self.begin_not_undoable_action()
-        except: pass
+        try:
+            self.begin_not_undoable_action()
+        except Exception:
+            pass
 
     def thaw_undo(self):
-        try: self.end_not_undoable_action()
-        except: pass
+        try:
+            self.end_not_undoable_action()
+        except Exception:
+            pass
 
     def raw_input(self, ps=None):
         if ps:
@@ -172,8 +182,6 @@ class _ReadLine(object):
     def on_buf_mark_set(self, buffer, iter, mark):
         if mark is not buffer.get_insert():
             return
-        start = self.__get_start()
-        end = self.__get_end()
         if iter.compare(self.__get_start()) >= 0 and \
            iter.compare(self.__get_end()) <= 0:
             buffer.move_mark_by_name("cursor", iter)
@@ -242,9 +250,8 @@ class _ReadLine(object):
         self.tab_pressed = 0
         handled = True
 
-        state = event.state & (gdk.SHIFT_MASK |
-                                gdk.CONTROL_MASK |
-                                gdk.MOD1_MASK)
+        state = event.state & (gdk.SHIFT_MASK | gdk.CONTROL_MASK |
+                               gdk.MOD1_MASK)
         keyval = event.keyval
 
         if not state:
@@ -293,17 +300,19 @@ class _ReadLine(object):
     def __history(self, dir):
         text = self._get_line()
         new_text = self.history.get(dir, text)
-        if not new_text is None:
+        if new_text is not None:
             self.__replace_line(new_text)
         self.__move_cursor(0)
         self.scroll_to_mark(self.cursor, 0.2)
 
     def __get_cursor(self):
         return self.buffer.get_iter_at_mark(self.cursor)
+
     def __get_start(self):
         iter = self.__get_cursor()
         iter.set_line_offset(len(self.ps))
         return iter
+
     def __get_end(self):
         iter = self.__get_cursor()
         if not iter.ends_line():
@@ -520,7 +529,7 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
             execfile(filename, self.locals)
         except SystemExit:
             raise
-        except:
+        except Exception:
             self.showtraceback()
         finally:
             sys.stdout, sys.stderr = saved_stdout, saved_stderr
@@ -530,7 +539,7 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
             eval(code, self.locals)
         except SystemExit:
             raise
-        except:
+        except Exception:
             self.showtraceback()
 
     def runcode(self, code):
@@ -561,7 +570,7 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
 
             completions.sort()
             return [start + "." + s for s in completions]
-        except:
+        except Exception:
             return None
 
     def complete(self, text):
@@ -590,13 +599,15 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
         if self.locals:
             strings.extend(self.locals.keys())
 
-        try: strings.extend(eval("globals()", self.locals).keys())
-        except: pass
+        try:
+            strings.extend(eval("globals()", self.locals).keys())
+        except Exception:
+            pass
 
         try:
             exec "import __builtin__" in self.locals
             strings.extend(eval("dir(__builtin__)", self.locals))
-        except:
+        except Exception:
             pass
 
         for s in strings:
@@ -618,22 +629,25 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
     def truncate(self):
         raise IOError('cant truncate fake file')
 
+
 def ReadLineType(t=gtk.TextView):
     class readline(t, _ReadLine):
         def __init__(self, *args, **kwargs):
             t.__init__(self)
             _ReadLine.__init__(self, *args, **kwargs)
+
         def do_key_press_event(self, event):
             return _ReadLine.do_key_press_event(self, event, t)
     gobject.type_register(readline)
     return readline
 
+
 def ConsoleType(t=gtk.TextView):
     class console_type(t, _Console):
         __gsignals__ = {
-            'command' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (object,)),
-            'key-press-event' : 'override'
-          }
+            'command': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
+                        (object, )),
+            'key-press-event': 'override'}
 
         def __init__(self, *args, **kwargs):
             if gtk.pygtk_version[1] < 8:
@@ -653,8 +667,10 @@ def ConsoleType(t=gtk.TextView):
 
     return console_type
 
+
 ReadLine = ReadLineType()
 Console = ConsoleType()
+
 
 def _create_widget(start_script):
     try:
@@ -664,7 +680,7 @@ def _create_widget(start_script):
                                use_rlcompleter=False,
                                start_script=start_script)
         console.set_property("highlight-current-line", False)
-        editor = moo.edit.create_editor_instance()
+        moo.edit.create_editor_instance()
         console.set_lang_by_id("python-console")
     except ImportError:
         console = Console(banner="Hello there!",
@@ -672,6 +688,7 @@ def _create_widget(start_script):
                           start_script=start_script)
     console.modify_font(pango.FontDescription("Monospace"))
     return console
+
 
 def _make_window(start_script="from gtk import *\n"):
     window = gtk.Window()
@@ -690,8 +707,9 @@ def _make_window(start_script="from gtk import *\n"):
 
     return console
 
+
 if __name__ == '__main__':
-    import sys
     import os
+
     sys.path.insert(0, os.getcwd())
     _make_window(sys.argv[1:] and '\n'.join(sys.argv[1:]) + '\n' or None)
