@@ -13,9 +13,13 @@
 """
 
 # XXX: i18n
+import itertools as it
 import os
+import threading
+import types
 
 import gtk
+import gobject
 from functools import partial
 
 
@@ -354,3 +358,70 @@ warning = partial(simple, gtk.MESSAGE_WARNING)
 yesno = partial(simple, gtk.MESSAGE_WARNING,
                 default=gtk.RESPONSE_YES,
                 buttons=gtk.BUTTONS_YES_NO,)
+
+
+def animation_dialog(images, delay_s=1., loop=True, **kwargs):
+    '''
+    .. versionadded:: v0.19
+
+    Parameters
+    ----------
+    images : list
+        Filepaths to images or :class:`gtk.Pixbuf` instances.
+    delay_s : float, optional
+        Number of seconds to display each frame.
+
+        Default: ``1.0``.
+    loop : bool, optional
+        If ``True``, restart animation after last image has been displayed.
+
+        Default: ``True``.
+
+    Returns
+    -------
+    gtk.MessageDialog
+        Message dialog with animation displayed in `gtk.Image` widget when
+        dialog is run.
+    '''
+    def _as_pixbuf(image):
+        if isinstance(image, types.StringTypes):
+            return gtk.gdk.pixbuf_new_from_file(image)
+        else:
+            return image
+
+    pixbufs = map(_as_pixbuf, images)
+
+    # Need this to support background thread execution with GTK.
+    gtk.gdk.threads_init()
+
+    dialog = gtk.MessageDialog(**kwargs)
+
+    # Append image to dialog content area.
+    image = gtk.Image()
+    content_area = dialog.get_content_area()
+    content_area.pack_start(image)
+    content_area.show_all()
+
+    stop_animation = threading.Event()
+
+    def _stop_animation(*args):
+        stop_animation.set()
+
+    def _animate(dialog):
+        def __animate():
+            if loop:
+                frames = it.cycle(pixbufs)
+            else:
+                frames = pixbufs
+
+            for pixbuf_i in frames:
+                gobject.idle_add(image.set_from_pixbuf, pixbuf_i)
+                if stop_animation.wait(1.):
+                    break
+        thread = threading.Thread(target=__animate)
+        thread.daemon = True
+        thread.start()
+
+    dialog.connect('destroy', _stop_animation)
+    dialog.connect('show', _animate)
+    return dialog
