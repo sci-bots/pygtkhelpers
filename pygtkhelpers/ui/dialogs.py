@@ -416,7 +416,7 @@ def animation_dialog(images, delay_s=1., loop=True, **kwargs):
 
             for pixbuf_i in frames:
                 gobject.idle_add(image.set_from_pixbuf, pixbuf_i)
-                if stop_animation.wait(1.):
+                if stop_animation.wait(delay_s):
                     break
         thread = threading.Thread(target=__animate)
         thread.daemon = True
