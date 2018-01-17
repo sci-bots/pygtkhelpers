@@ -42,7 +42,7 @@ class GtkShapesCanvasView(GtkCairoView):
 
     def create_ui(self):
         '''
-        .. versionchanged:: X.X.X
+        .. versionchanged:: 0.20
             Debounce window expose and resize handlers to improve
             responsiveness.
         '''
@@ -84,7 +84,7 @@ class GtkShapesCanvasView(GtkCairoView):
 
     def check_dirty(self):
         '''
-        .. versionchanged:: X.X.X
+        .. versionchanged:: 0.20
             Do not log size change.
         '''
         if self._dirty_size is None:
@@ -113,7 +113,7 @@ class GtkShapesCanvasView(GtkCairoView):
 
     def _resize(self, width, height):
         '''
-        .. versionadded:: X.X.X
+        .. versionadded:: 0.20
 
         Clear canvas, draw frame off screen, and mark dirty.
 
@@ -127,7 +127,7 @@ class GtkShapesCanvasView(GtkCairoView):
 
     def _on_expose_event(self, widget, event):
         '''
-        .. versionchanged:: X.X.X
+        .. versionchanged:: 0.20
             Renamed from ``on_widget__expose_event`` to allow wrapping for
             debouncing to improve responsiveness.
 
