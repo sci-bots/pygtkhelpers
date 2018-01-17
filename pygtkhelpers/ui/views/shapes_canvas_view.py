@@ -3,6 +3,7 @@ import logging
 
 from cairo_helpers.surface import flatten_surfaces
 from cairo_helpers.font import aspect_fit_font_size
+from debounce import Debounce
 from svg_model import svg_polygons_to_df
 from svg_model.shapes_canvas import ShapesCanvas
 import cairo
@@ -40,6 +41,11 @@ class GtkShapesCanvasView(GtkCairoView):
         return cls(df_shapes, 'path_id', **kwargs)
 
     def create_ui(self):
+        '''
+        .. versionchanged:: 0.20
+            Debounce window expose and resize handlers to improve
+            responsiveness.
+        '''
         super(GtkShapesCanvasView, self).create_ui()
         self.widget.set_events(gtk.gdk.BUTTON_PRESS |
                                gtk.gdk.BUTTON_RELEASE |
@@ -48,6 +54,10 @@ class GtkShapesCanvasView(GtkCairoView):
                                gtk.gdk.BUTTON_RELEASE_MASK |
                                gtk.gdk.POINTER_MOTION_HINT_MASK)
         self._dirty_check_timeout_id = gtk.timeout_add(30, self.check_dirty)
+
+        self.resize = Debounce(self._resize, wait=750)
+        debounced_on_expose_event = Debounce(self._on_expose_event, wait=750)
+        self.widget.connect('expose-event', debounced_on_expose_event)
 
     def reset_canvas(self, width, height):
         canvas_shape = pd.Series([width, height], index=['width', 'height'])
@@ -73,6 +83,10 @@ class GtkShapesCanvasView(GtkCairoView):
         self.cairo_surface = flatten_surfaces(self.df_surfaces)
 
     def check_dirty(self):
+        '''
+        .. versionchanged:: 0.20
+            Do not log size change.
+        '''
         if self._dirty_size is None:
             if self._dirty_render:
                 self.render()
@@ -81,7 +95,6 @@ class GtkShapesCanvasView(GtkCairoView):
                 self.draw()
                 self._dirty_draw = False
             return True
-        logger.info('[check_dirty] %s', self._dirty_size)
         width, height = self._dirty_size
         self._dirty_size = None
         self.reset_canvas(width, height)
@@ -96,14 +109,35 @@ class GtkShapesCanvasView(GtkCairoView):
         if event.x < 0 and event.y < 0:
             # Widget has not been allocated a size yet, so do nothing.
             return
-        self._dirty_size = event.width, event.height
+        self.resize(event.width, event.height)
 
-    def on_widget__expose_event(self, widget, event):
+    def _resize(self, width, height):
         '''
+        .. versionadded:: 0.20
+
+        Clear canvas, draw frame off screen, and mark dirty.
+
+        ..notes::
+            This method is debounced to improve responsiveness.
+        '''
+        self._dirty_size = width, height
+        self.reset_canvas(width, height)
+        self.draw()
+        self._dirty_draw = True
+
+    def _on_expose_event(self, widget, event):
+        '''
+        .. versionchanged:: 0.20
+            Renamed from ``on_widget__expose_event`` to allow wrapping for
+            debouncing to improve responsiveness.
+
         Called when drawing area is first displayed and, for example, when part
         of drawing area is uncovered after being covered up by another window.
+
+        Clear canvas, draw frame off screen, and mark dirty.
         '''
         logger.info('on_widget__expose_event')
+
         # Request immediate paint of pre-rendered off-screen Cairo surface to
         # drawing area widget, but also mark as dirty to redraw after next
         # render.

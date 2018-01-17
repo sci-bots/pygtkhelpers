@@ -15,6 +15,8 @@ requirements:
   build:
     - python 2.7*
     - cairo-helpers
+    #: ..versionadded:: X.X.X
+    - debounce
     - flatland-fork
     - jupyter-helpers >=0.10
     - jsonschema
@@ -27,6 +29,8 @@ requirements:
   run:
     - blinker
     - cairo-helpers
+    #: ..versionadded:: X.X.X
+    - debounce
     - flatland-fork
     - jupyter-helpers >=0.10
     - jsonschema
