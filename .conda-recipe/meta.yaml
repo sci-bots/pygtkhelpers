@@ -17,7 +17,7 @@ build:
 requirements:
   build:
     - cairo-helpers
-    #: ..versionadded:: X.X.X
+    #: ..versionadded:: 0.20
     - debounce
     - flatland-fork
     - jupyter-helpers >=0.10
@@ -31,7 +31,7 @@ requirements:
   run:
     - blinker
     - cairo-helpers
-    #: ..versionadded:: X.X.X
+    #: ..versionadded:: 0.20
     - debounce
     - flatland-fork
     - jupyter-helpers >=0.10

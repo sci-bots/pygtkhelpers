@@ -14,7 +14,7 @@ def find_closest(df_points, point):
         :data:`point`.
 
 
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 0.21
         Discontinue use of deprecated ``pandas.Series.argmin``.
     '''
     return df_points.iloc[((df_points - point) ** 2).sum(axis=1).values

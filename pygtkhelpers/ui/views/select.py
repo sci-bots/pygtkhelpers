@@ -5,7 +5,7 @@ from ..objectlist import (get_list_store, add_columns,
 
 class ListSelect(SlaveView):
     '''
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 0.21
         Specify :attr:`builder_file` instead of :attr:`builder_path` to support
         loading ``.glade`` file from ``.zip`` files (e.g., in app packaged with
         Py2Exe).
