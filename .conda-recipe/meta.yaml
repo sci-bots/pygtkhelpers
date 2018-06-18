@@ -12,10 +12,10 @@ package:
 
 build:
     script: python -B setup.py install --single-version-externally-managed --record record.txt
+    noarch: python
 
 requirements:
   build:
-    - python 2.7*
     - cairo-helpers
     #: ..versionadded:: X.X.X
     - debounce
