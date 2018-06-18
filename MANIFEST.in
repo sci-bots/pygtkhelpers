@@ -1,8 +1,8 @@
 include README.md
-include RELEASE-VERSION
-include version.py
 include *.py *.txt
 recursive-include pygtkhelpers *.py
 recursive-include examples *.py *.ui
 recursive-include tests *.py *.ui *.png
 recursive-include docs *.py *.rst *.png
+include versioneer.py
+include pygtkhelpers/_version.py

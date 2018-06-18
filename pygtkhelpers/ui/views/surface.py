@@ -1,5 +1,3 @@
-import os
-
 import gtk
 import pandas as pd
 
@@ -10,14 +8,19 @@ from ..objectlist import (get_list_store, add_columns,
 
 
 class LayerAlphaController(SlaveView):
+    '''
+    .. versionchanged:: 0.21
+        Specify :attr:`builder_file` instead of :attr:`builder_path` to support
+        loading ``.glade`` file from ``.zip`` files (e.g., in app packaged with
+        Py2Exe).
+    '''
     # Emit signal when layer alpha has changed (layer name, alpha).
     gsignal('alpha-changed', str, float)
     # Emit signal when order of layers has changed (list of reordered row
     # indices).
     gsignal('layers-reordered', object)
 
-    builder_path = os.path.join(os.path.dirname(__file__), 'glade',
-                                'layers.glade')
+    builder_file = 'layers.glade'
 
     def create_ui(self):
         super(LayerAlphaController, self).create_ui()
