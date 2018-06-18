@@ -1,13 +1,16 @@
-import os
-
 from ...delegates import SlaveView
 from ..objectlist import (get_list_store, add_columns,
                           on_edited_dataframe_sync)
 
 
 class ListSelect(SlaveView):
-    builder_path = os.path.join(os.path.dirname(__file__), 'glade',
-                                'list_select.glade')
+    '''
+    .. versionchanged:: X.X.X
+        Specify :attr:`builder_file` instead of :attr:`builder_path` to support
+        loading ``.glade`` file from ``.zip`` files (e.g., in app packaged with
+        Py2Exe).
+    '''
+    builder_file = 'list_select.glade'
 
     def __init__(self, df_data=None):
         self.df_data = df_data
