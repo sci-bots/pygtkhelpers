@@ -1,15 +1,17 @@
-# source will be downloaded prior to filling in jinja templates
-# Example assumes that this folder has setup.py in it
+{% if GIT_DESCRIBE_NUMBER > '0' %}
+{% set GIT_VERSION = GIT_DESCRIBE_TAG[1:] + '.post' + GIT_DESCRIBE_NUMBER %}
+{% else %}
+{% set GIT_VERSION = GIT_DESCRIBE_TAG[1:] %}
+{% endif %}
 source:
   git_url: ../
 
 package:
   name: wheeler.pygtkhelpers
-{% if GIT_DESCRIBE_NUMBER > '0' %}
-  version: {{ GIT_DESCRIBE_TAG[1:] }}.post{{ GIT_DESCRIBE_NUMBER }}
-{% else %}
-  version: {{ GIT_DESCRIBE_TAG[1:] }}
-{% endif %}
+  version: {{ GIT_VERSION }}
+
+build:
+    script: python -B setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
   build:
