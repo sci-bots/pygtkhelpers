@@ -5,7 +5,7 @@ except ImportError:
 import platform
 import sys
 
-import version
+import versioneer
 
 
 short_description = """
@@ -52,10 +52,11 @@ else:
 
 
 setup(name='wheeler.pygtkhelpers',
-      version=version.getVersion(),
+      version=versioneer.get_version(),
+      cmdclass=versioneer.get_cmdclass(),
       author='Christian Fobel',
       author_email='christian@fobel.net',
-      url='https://github.com/wheeler-microfluidics/pygtk_helpers',
+      url='https://github.com/sci-bots/pygtk_helpers',
       description=short_description,
       long_description=long_description,
       license='LGPL-3.0',
