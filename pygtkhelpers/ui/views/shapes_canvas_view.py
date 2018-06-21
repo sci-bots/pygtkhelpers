@@ -45,6 +45,12 @@ class GtkShapesCanvasView(GtkCairoView):
         .. versionchanged:: 0.20
             Debounce window expose and resize handlers to improve
             responsiveness.
+
+        .. versionchanged:: X.X.X
+            Call debounced `_on_expose_event` handler on _leading_ edge to make
+            UI update more responsive when, e.g., changing window focus.
+
+            Decrease debounce time to 250 ms.
         '''
         super(GtkShapesCanvasView, self).create_ui()
         self.widget.set_events(gtk.gdk.BUTTON_PRESS |
@@ -55,9 +61,11 @@ class GtkShapesCanvasView(GtkCairoView):
                                gtk.gdk.POINTER_MOTION_HINT_MASK)
         self._dirty_check_timeout_id = gtk.timeout_add(30, self.check_dirty)
 
-        self.resize = Debounce(self._resize, wait=750)
-        debounced_on_expose_event = Debounce(self._on_expose_event, wait=750)
+        self.resize = Debounce(self._resize, wait=250)
+        debounced_on_expose_event = Debounce(self._on_expose_event, wait=250,
+                                             leading=True, trailing=True)
         self.widget.connect('expose-event', debounced_on_expose_event)
+        # self.widget.connect('expose-event', self._on_expose_event)
 
     def reset_canvas(self, width, height):
         canvas_shape = pd.Series([width, height], index=['width', 'height'])
