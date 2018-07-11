@@ -17,14 +17,11 @@ You should have received a copy of the GNU General Public License
 along with Microdrop.  If not, see <http://www.gnu.org/licenses/>.
 """
 from collections import OrderedDict
+import pkgutil
 
-from path_helpers import path
 import gtk
 
 from ..forms import FormView
-
-
-script_dir = path(__file__).abspath().parent
 
 
 def create_form_view(form, values=None, use_markup=True):
@@ -71,9 +68,19 @@ class FormViewDialog(object):
         self.form_class = form_class
 
     def create_ui(self):
+        '''
+        .. versionchanged:: 0.21.2
+            Load the builder configuration file using :func:`pkgutil.getdata`,
+            which supports loading from `.zip` archives (e.g., in an app
+            packaged with Py2Exe).
+        '''
         builder = gtk.Builder()
-        builder.add_from_file(script_dir.joinpath('glade',
-                                                  'form_view_dialog.glade'))
+        # Read glade file using `pkgutil` to also support loading from `.zip`
+        # files (e.g., in app packaged with Py2Exe).
+        glade_str = pkgutil.get_data(__name__,
+                                     'glade/form_view_dialog.glade')
+        builder.add_from_string(glade_str)
+
         self.window = builder.get_object('form_view_dialog')
         self.vbox_form = builder.get_object('vbox_form')
         if self.title:
