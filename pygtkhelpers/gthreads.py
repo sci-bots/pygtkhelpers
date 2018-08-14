@@ -232,16 +232,33 @@ def gtk_threadsafe(func):
 
     .. versionadded:: 0.18
 
+    .. versionchanged:: 0.22
+        Add support for keyword arguments in callbacks by supporting functions
+        wrapped by `functools.partial()`.  Also, ignore callback return value
+        to prevent callback from being called repeatedly indefinitely.  See the
+        `gobject.idle_add() documentation`_ for further information.
+
+
+    .. _`gobject.idle_add() documentation`: http://library.isr.ist.utl.pt/docs/pygtk2reference/gobject-functions.html#function-gobject--idle-add
+
+
     Parameters
     ----------
-    func : function
+    func : function or functools.partial
     '''
     # Set up GDK threading.
     # XXX This must be done to support running multiple threads in GTK
     # applications.
     gtk.gdk.threads_init()
 
-    @functools.wraps(func)
+    # Support
+    wraps_func = func.func if isinstance(func, functools.partial) else func
+
+    @functools.wraps(wraps_func)
     def _gtk_threadsafe(*args):
-        gobject.idle_add(func, *args)
+        def _no_return_func(*args):
+            func(*args)
+
+        gobject.idle_add(_no_return_func, *args)
+
     return _gtk_threadsafe
